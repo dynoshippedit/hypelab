@@ -25,9 +25,11 @@ def gate_aspect(edl: dict, out: Path):
         f"{edl['target']['w']}x{edl['target']['h']}", "check renderer target"
 
 def gate_first_frame(edl: dict, out: Path):
+    # freezedetect n=0.01: <1% of pixels changing for a full second = frozen.
+    # (n=0.5 proved hypersensitive: flagged slow-moving test patterns.)
     p = subprocess.run(
         ["ffmpeg", "-v", "info", "-i", str(out),
-         "-vf", "blackdetect=d=0.3:pix_th=0.10,freezedetect=n=0.5:d=0.5",
+         "-vf", "blackdetect=d=0.3:pix_th=0.10,freezedetect=n=0.01:d=1.0",
          "-t", "2", "-f", "null", "-"],
         capture_output=True, text=True, timeout=120)
     black = "black_start" in p.stderr

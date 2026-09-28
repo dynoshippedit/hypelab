@@ -71,7 +71,7 @@ def cmd_show(args):
     print(json.dumps({k: job[k] for k in
                       ("id", "mode", "state", "title", "error")}, indent=1))
     for t in job["tasks"]:
-        print(f"  task {t['id'][:14]} {t['kind']:10} {t['state']:7} "
+        print(f"  task {t['id']} {t['kind']:10} {t['state']:7} "
               f"attempts={t['attempts']}")
     for a in job["assets"]:
         print(f"  asset {a['slot']:12} {a['kind']:6} {a['provenance']}")

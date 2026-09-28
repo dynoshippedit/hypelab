@@ -125,7 +125,9 @@ def measure_loudness(edl: dict, assets: dict[str, dict], words: list[dict],
                      ass_path: Path) -> dict:
     """Audio-only pass: run the exact audio chain, parse loudnorm JSON."""
     graph, meta = build_filtergraph(edl, assets, words, ass_path, measured=None)
-    argv = (["ffmpeg", "-y", "-v", "error"]
+    # NOTE: loudnorm print_format=json logs at info level; -v error would
+    # swallow it, so this pass runs at info verbosity.
+    argv = (["ffmpeg", "-y", "-hide_banner", "-nostats"]
             + _input_args_for_beats(edl["beats"], assets)[0]
             + ["-i", assets[edl["audio"]["vo"]["slot"]]["path"],
                "-i", assets[edl["audio"]["music"]["slot"]]["path"],

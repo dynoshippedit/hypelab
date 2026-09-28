@@ -48,6 +48,12 @@ def group_into_beats(sentences: list[str], words: list[dict],
     # renumber sequentially
     for i, b in enumerate(beats):
         b["id"] = f"b{i+1}"
+    # tile contiguously: each beat starts where the previous ended (b1 at 0).
+    # Inter-sentence pauses belong to the following beat's clip hold.
+    for i, b in enumerate(beats):
+        b["t_in"] = 0.0 if i == 0 else beats[i - 1]["t_out"]
+        b["t_in"] = round(b["t_in"], 3)
+        b["t_out"] = round(b["t_out"], 3)
     return beats
 
 def _beat(bid: str, role: str, span: list[dict]) -> dict:

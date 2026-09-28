@@ -1,0 +1,26 @@
+{
+ "edl_version": 1,
+ "renderer_version": "0.1.0",
+ "kit": "kit_2d0b3169@1",
+ "ffmpeg": "ffmpeg version 8.1.2 Copyright (c) 2000-2026 the FFmpeg developers",
+ "asset_shas": {
+  "vo": "98d60ab0ced0e9af7c3d64a7b2c0080933f372b05b4c53d68400439612ef1ae9",
+  "music": "880f6c7cc2fa01f7792425c922e5b2434d2f00e7962ae6577585398ad1587b56",
+  "beat:b1": "0bf1e27af6088460d5e34d84c5a8dc77d03d51659d5fb26da1dfe735f29f9ed5",
+  "beat:b2": "349375640431b69d7b50f1758878cdc7f1c8e28d1d8860d36ce260c057048a55",
+  "beat:b3": "368480467224f7c1907cfaaa5a3aef4da9959457bafa6ed041ad2c40c7b46258",
+  "beat:b4": "e3ed8963c3cd913a2eacee18791eb7d25e3cc7281386440b898ba6e77def4c8f",
+  "beat:b5": "e3fae8cc8ca9c6832521d048ba75d54006bf3282b6c6caaee6770e7e44a6b47b",
+  "beat:b6": "a5e44203b28d5a150752aa800b764f689127b473d014002c09966a730470b2fd",
+  "vo.words": "cd097525203d72d1ec8cb445511fc3d9c3f8482a258ded8e5b778191fc92f537"
+ },
+ "ass_sha256": "ccf87a23133dc2f5e241d5d8adbc5c01ae18e41675b0be7299ea2367690a7fb2",
+ "filtergraph_sha256": "ed347eb1ab721711344765354bb3030b800b222b02ee6e3d9751dc74df7caec4",
+ "loudnorm_measured": {
+  "input_i": "-27.00",
+  "input_tp": "-9.56",
+  "input_lra": "1.60"
+ },
+ "output": "/home/dino/hypelab/jobs/job_c656669a5147/master.mp4",
+ "duration_s": 21.0
+}

@@ -42,7 +42,7 @@ class Services:
         self.cx.execute(
             """INSERT INTO jobs(id, mode, state, kit_id, kit_version, title,
                                 created_at, updated_at)
-               VALUES(?,?, 'asset_building', ?,?,?, ?,?,?)""",
+               VALUES(?, ?, 'asset_building', ?, ?, ?, ?, ?)""",
             (jid, mode, kit["kit_id"], kit["version"], title, now, now))
         d = config.job_dir(jid)
         (d / "script.txt").write_text(script)
@@ -89,21 +89,32 @@ class Services:
         return plan_mod.shot_prompts(beats, kit)
 
     # -- pipeline ------------------------------------------------------
+    def _enqueue(self, job_id: str, kind: str, payload: dict,
+                 max_attempts: int = 3) -> dict:
+        """Enqueue. An explicit operator re-request means 'run it now': a task
+        of the same kind that is failed or waiting in backoff is revived.
+        (A leased task — a worker is on it — is left alone.)"""
+        t = self.q.enqueue(job_id, kind, payload, max_attempts=max_attempts)
+        if t["state"] in ("failed", "queued"):
+            self.q.reset_attempts(t["id"])
+            t = self.q.get_task(t["id"])
+        return t
+
     def align(self, job_id: str, whisper_model: str = "tiny") -> dict:
-        return self.q.enqueue(job_id, "align_vo",
-                              {"job_id": job_id, "whisper_model": whisper_model})
+        return self._enqueue(job_id, "align_vo",
+                             {"job_id": job_id, "whisper_model": whisper_model})
 
     def plan(self, job_id: str, aspect: str = "9:16") -> dict:
-        return self.q.enqueue(job_id, "build_edl",
-                              {"job_id": job_id, "aspect": aspect})
+        return self._enqueue(job_id, "build_edl",
+                             {"job_id": job_id, "aspect": aspect})
 
     def render(self, job_id: str, aspects: list[str] | None = None) -> dict:
-        return self.q.enqueue(job_id, "render",
-                              {"job_id": job_id,
-                               "aspects": aspects or ["9:16"]})
+        return self._enqueue(job_id, "render",
+                             {"job_id": job_id,
+                              "aspects": aspects or ["9:16"]})
 
     def gates(self, job_id: str) -> dict:
-        return self.q.enqueue(job_id, "run_gates", {"job_id": job_id})
+        return self._enqueue(job_id, "run_gates", {"job_id": job_id})
 
     # -- hype ----------------------------------------------------------
     def pitch(self, job_id: str, handle: str, platform: str = "instagram") -> dict:

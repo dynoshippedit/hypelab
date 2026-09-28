@@ -138,7 +138,12 @@ class Queue:
             "SELECT * FROM tasks WHERE job_id=? ORDER BY created_at", (job_id,))]
 
     def reset_attempts(self, task_id: str) -> None:
-        self.cx.execute(
+        # run_after is set slightly in the past: a manual reset means "run now",
+        # and must not be defeated by clock jitter.
+        past = (datetime.now(timezone.utc) - timedelta(seconds=60)).isoformat()
+        cur = self.cx.execute(
             "UPDATE tasks SET attempts=0, state='queued', run_after=?, updated_at=? WHERE id=?",
-            (_now(), _now(), task_id),
+            (past, _now(), task_id),
         )
+        if cur.rowcount == 0:
+            raise KeyError(f"task {task_id} not found")

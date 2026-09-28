@@ -80,7 +80,7 @@ def handle_build_edl(payload: dict) -> dict:
     data["render_hash"] = h
     cx.execute(
         """INSERT INTO edls(job_id, version, render_json, render_hash, created_at)
-           VALUES(?,?,?,?,datetime('now'))
+           VALUES(?, 1, ?, ?, datetime('now'))
            ON CONFLICT(job_id) DO UPDATE SET version=version+1,
              render_json=excluded.render_json, render_hash=excluded.render_hash,
              created_at=excluded.created_at""",

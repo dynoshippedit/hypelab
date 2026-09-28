@@ -1,0 +1,61 @@
+{
+ "passed": true,
+ "gates": [
+  {
+   "gate": "duration",
+   "passed": true,
+   "measured": 21.0,
+   "threshold": "3.0\u201360s",
+   "fix": "check beat timings / VO length"
+  },
+  {
+   "gate": "aspect",
+   "passed": true,
+   "measured": "1080x1920",
+   "threshold": "1080x1920",
+   "fix": "check renderer target"
+  },
+  {
+   "gate": "first_frame",
+   "passed": true,
+   "measured": "clean",
+   "threshold": "clean",
+   "fix": "replace the first beat's clip"
+  },
+  {
+   "gate": "hook",
+   "passed": true,
+   "measured": 2.66,
+   "threshold": "<=3.0s",
+   "fix": "shorten the hook beat (cut words or tighten VO)"
+  },
+  {
+   "gate": "captions_safe",
+   "passed": true,
+   "measured": "1 lines, block 1366\u20131458px",
+   "threshold": "inside 269\u20131498px, dialogues>0",
+   "fix": "reduce caption size or max_chars_per_card"
+  },
+  {
+   "gate": "loudness",
+   "passed": true,
+   "measured": -15.4,
+   "threshold": "-14 \u00b11.5 LUFS",
+   "fix": "check loudnorm pass / music bed level"
+  },
+  {
+   "gate": "slots_filled",
+   "passed": true,
+   "measured": "5/5",
+   "threshold": "all beats",
+   "fix": "attach clips for slots: []"
+  },
+  {
+   "gate": "audio_present",
+   "passed": true,
+   "measured": "video+audio",
+   "threshold": "video+audio",
+   "fix": "check render audio chain"
+  }
+ ]
+}
