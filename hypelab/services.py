@@ -193,6 +193,7 @@ class Services:
             "ffmpeg": sh.which("ffmpeg"),
             "ffprobe": sh.which("ffprobe"),
             "whisper": _has("whisper"),
+            "faster_whisper": _has("faster_whisper"),
             "edge_tts": sh.which("edge-tts"),
             "chromium": sh.which("chromium") or sh.which("google-chrome"),
             "supervision": config.SUPERVISION,

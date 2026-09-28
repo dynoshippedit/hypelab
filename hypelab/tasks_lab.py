@@ -4,7 +4,10 @@ Handlers are thin: validate inputs, call the pure modules, record results.
 Any exception -> queue.fail (retryable or not, decided per error type).
 """
 from __future__ import annotations
+import hashlib
 import json
+import uuid
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from . import config
@@ -16,6 +19,37 @@ from . import render as render_mod
 from . import gates as gates_mod
 from .kits import Kits
 from .assets import Assets
+
+def _requeue_gates(cx, job_id: str) -> None:
+    """Chain render -> gates: ensure a fresh run_gates task is queued.
+
+    Recovery scenario: a render re-run must invalidate the previous gates
+    verdict, so any existing run_gates task is reset to queued (never
+    duplicated).
+    """
+    # run_after is compared lexicographically as ISO-8601 in queue.claim();
+    # epoch floats would silently break that contract.
+    due = (datetime.now(timezone.utc) - timedelta(seconds=1)).isoformat()
+    now = datetime.now(timezone.utc).isoformat()
+    row = cx.execute("SELECT id FROM tasks WHERE job_id=? AND kind='run_gates'",
+                     (job_id,)).fetchone()
+    if row:
+        cx.execute("""UPDATE tasks SET state='queued', attempts=0, run_after=?,
+                      lease_owner=NULL, lease_expires=NULL, result_json=NULL,
+                      updated_at=? WHERE id=?""",
+                   (due, now, row["id"]))
+    else:
+        tid = f"task_{uuid.uuid4().hex[:12]}"
+        payload = json.dumps({"job_id": job_id})
+        key = ("run_gates:" + job_id + ":" +
+               hashlib.sha256(payload.encode()).hexdigest()[:16])
+        cx.execute("""INSERT INTO tasks(id, job_id, kind, state, payload_json,
+                      attempts, max_attempts, idempotency_key, run_after,
+                      created_at, updated_at)
+                      VALUES(?,?,?,?,?,0,?,?,?,?,?)""",
+                   (tid, job_id, "run_gates", "queued", payload,
+                    5, key, due, now, now))
+    cx.commit()
 
 def _cx():
     cx = connect()
@@ -42,8 +76,10 @@ def handle_align_vo(payload: dict) -> dict:
     if not vo:
         raise ValueError("no VO attached (slot 'vo') — job waits in awaiting_media")
     out = config.job_dir(job_id) / "vo.words.json"
+    script = config.job_dir(job_id) / "script.txt"
     data = align_mod.align_words(Path(vo["path"]), out,
-                                 model=payload.get("whisper_model", "tiny"))
+                                 model=payload.get("whisper_model", "tiny"),
+                                 script_path=script if script.exists() else None)
     rec = assets.add(job_id, "vo.words", out, provenance="generated:whisper-cpu")
     return {"words": len(data["words"]), "asset_id": rec["id"],
             "duration_s": data["words"][-1]["t1"] if data["words"] else 0}
@@ -78,15 +114,25 @@ def handle_build_edl(payload: dict) -> dict:
 
     h = plan_mod.render_hash(data)
     data["render_hash"] = h
+    ver = _upsert_edl(cx, job_id, json.dumps(data), h)
+    return {"render_hash": h, "edl_version": ver, "beats": len(beats),
+            "duration_s": round(beats[-1]["t_out"], 2)}
+
+def _upsert_edl(cx, job_id: str, render_json_str: str, h: str) -> int:
+    """Insert EDL version 1, or bump version on conflict. Returns version."""
+    row = cx.execute("SELECT version FROM edls WHERE job_id=?", (job_id,)).fetchone()
+    if row:
+        cx.execute("""UPDATE edls SET version=version+1, render_json=?,
+                      render_hash=?, created_at=datetime('now')
+                      WHERE job_id=?""", (render_json_str, h, job_id))
+        cx.commit()
+        return row["version"] + 1
     cx.execute(
         """INSERT INTO edls(job_id, version, render_json, render_hash, created_at)
-           VALUES(?, 1, ?, ?, datetime('now'))
-           ON CONFLICT(job_id) DO UPDATE SET version=version+1,
-             render_json=excluded.render_json, render_hash=excluded.render_hash,
-             created_at=excluded.created_at""",
-        (job_id, json.dumps(data), h))
-    return {"render_hash": h, "beats": len(beats),
-            "duration_s": round(beats[-1]["t_out"], 2)}
+           VALUES(?, 1, ?, ?, datetime('now'))""",
+        (job_id, render_json_str, h))
+    cx.commit()
+    return 1
 
 # ---------------------------------------------------------------- render
 
@@ -133,6 +179,7 @@ def handle_render(payload: dict) -> dict:
         derived[asp] = str(dp)
 
     _set_state(cx, job_id, "gates")
+    _requeue_gates(cx, job_id)
     return {"output": str(out), "derived": derived, "record": record}
 
 # ---------------------------------------------------------------- run_gates

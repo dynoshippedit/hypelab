@@ -11,18 +11,17 @@ Style: WordPop,DejaVu Sans,74,&H00FFFFFF,&H000AD6FF,&H00000000,&H5F000000,-1,0,0
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 Dialogue: 0,0:00:00.00,0:00:01.59,WordPop,,0,0,0,,{\k44}This {\k26}is {\k6}a {\k26}test {\k22}of {\k10}the
-Dialogue: 0,0:00:01.34,0:00:02.37,WordPop,,0,0,0,,{\k46}Hyplab {\k32}Render
-Dialogue: 0,0:00:02.12,0:00:04.43,WordPop,,0,0,0,,{\k54}Pipeline. {\k20}Every {\k24}word
+Dialogue: 0,0:00:01.34,0:00:02.37,WordPop,,0,0,0,,{\k46}HypeLab {\k32}render
+Dialogue: 0,0:00:02.12,0:00:04.43,WordPop,,0,0,0,,{\k54}pipeline {\k20}Every {\k24}word
 Dialogue: 0,0:00:04.18,0:00:05.49,WordPop,,0,0,0,,{\k16}you {\k24}hear {\k32}becomes {\k34}a
-Dialogue: 0,0:00:05.24,0:00:06.65,WordPop,,0,0,0,,{\k26}caption, {\k18}time {\k20}to {\k16}the
-Dialogue: 0,0:00:06.40,0:00:08.65,WordPop,,0,0,0,,{\k46}frame. {\k8}The {\k24}hook {\k32}lands
+Dialogue: 0,0:00:05.24,0:00:06.65,WordPop,,0,0,0,,{\k26}caption {\k18}timed {\k20}to {\k16}the
+Dialogue: 0,0:00:06.40,0:00:08.65,WordPop,,0,0,0,,{\k46}frame {\k8}The {\k24}hook {\k32}lands
 Dialogue: 0,0:00:08.40,0:00:09.35,WordPop,,0,0,0,,{\k24}in {\k22}under {\k24}three
-Dialogue: 0,0:00:09.10,0:00:10.69,WordPop,,0,0,0,,{\k52}seconds, {\k16}or {\k14}the {\k26}gate
-Dialogue: 0,0:00:10.44,0:00:12.83,WordPop,,0,0,0,,{\k28}fails {\k22}the {\k38}job. {\k20}Music
-Dialogue: 0,0:00:12.58,0:00:13.71,WordPop,,0,0,0,,{\k38}ducks {\k26}under {\k24}the
-Dialogue: 0,0:00:13.46,0:00:14.71,WordPop,,0,0,0,,{\k30}voice, {\k16}then {\k26}comes
-Dialogue: 0,0:00:14.46,0:00:15.87,WordPop,,0,0,0,,{\k30}back {\k22}up {\k10}in {\k12}the {\k42}gaps.
-Dialogue: 0,0:00:16.60,0:00:17.95,WordPop,,0,0,0,,{\k20}If {\k20}any {\k18}beat {\k28}has {\k24}no
-Dialogue: 0,0:00:17.70,0:00:19.13,WordPop,,0,0,0,,{\k30}clip, {\k20}the {\k18}plan {\k22}is
-Dialogue: 0,0:00:18.88,0:00:20.21,WordPop,,0,0,0,,{\k42}rejected {\k42}before {\k24}a
-Dialogue: 0,0:00:19.96,0:00:21.25,WordPop,,0,0,0,,{\k24}single {\k32}frame {\k48}renders.
+Dialogue: 0,0:00:09.10,0:00:10.69,WordPop,,0,0,0,,{\k52}seconds {\k16}or {\k14}the {\k26}gate
+Dialogue: 0,0:00:10.44,0:00:12.83,WordPop,,0,0,0,,{\k28}fails {\k22}the {\k38}job {\k20}Music
+Dialogue: 0,0:00:12.58,0:00:14.01,WordPop,,0,0,0,,{\k38}ducks {\k26}under {\k24}the {\k30}voice
+Dialogue: 0,0:00:14.04,0:00:15.33,WordPop,,0,0,0,,{\k16}then {\k26}comes {\k30}back {\k22}up {\k10}in
+Dialogue: 0,0:00:15.08,0:00:17.43,WordPop,,0,0,0,,{\k12}the {\k42}gaps {\k20}If {\k20}any {\k18}beat
+Dialogue: 0,0:00:17.18,0:00:18.91,WordPop,,0,0,0,,{\k28}has {\k24}no {\k30}clip {\k20}the {\k18}plan
+Dialogue: 0,0:00:18.66,0:00:20.21,WordPop,,0,0,0,,{\k22}is {\k42}rejected {\k42}before {\k24}a
+Dialogue: 0,0:00:19.96,0:00:21.25,WordPop,,0,0,0,,{\k24}single {\k32}frame {\k48}renders
