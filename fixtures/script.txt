@@ -1,0 +1,9 @@
+This is a test of the HypeLab render pipeline.
+
+Every word you hear becomes a caption, timed to the frame.
+
+The hook lands in under three seconds, or the gate fails the job.
+
+Music ducks under the voice, then comes back up in the gaps.
+
+If any beat has no clip, the plan is rejected before a single frame renders.
