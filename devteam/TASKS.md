@@ -68,7 +68,7 @@ DEFERRED · REJECTED.
   /home/dino/.local/bin/pytest tests/ -q` before/after.
 
 ### T-002 — feed_back() provenance filter (DAT-350 · S1/Confirmed)
-- Status: IMPLEMENTED (hl-cycle-02; awaiting controller acceptance).
+- Status: **VERIFIED** (hl-cycle-02; controller: new tests FAIL pre-fix + PASS post-fix, full suite 199/199 green)
 - Evidence: 2 new regression tests FAILED on unfixed code (reproduced DAT-350:
   user_entered MAX 99999 consumed instead of official 100; uncalibrated-only
   post consumed), PASS after fix; full suite 199 passed / 0 failed / 3 warnings
@@ -295,3 +295,13 @@ DEFERRED · REJECTED.
   exception swallowing.
 - BLD lane: `whisper` installed but unused (info); torch CUDA build on
   CPU-only box (info); no committed secrets.
+
+### T-042 -- Unify best_views aggregation semantics (controller-observed, S3)
+- Status: READY.
+- Problem: metrics.best_views() returns latest-by-provenance-rank (official_api
+  preferred, then latest at), while feedback._best_views() returns MAX(views)
+  over calibration-grade rows. Both are provenance-filtered since T-002, but
+  two "best views" definitions can disagree on the same post.
+- Fix: decide one semantic (recommend adopting the metrics.py ranking in
+  feedback, or delegating outright), add a test pinning agreement, run the
+  full suite. Effort: XS.
