@@ -34,3 +34,12 @@
 - Notes updated: JOURNAL.md
 - Commands: none (lane report)
 - Next: await DOC lane report; then Phase 1 gate check (coverage tiers set, baseline real, flows confirmed, B3 current)
+
+## 2026-09-29 02:35 · Tech Lead · Phase 1 gate
+- Did: Received DOC lane report (completed). Claims audit: 30 TRUE / 31 FALSE / 25 PARTIAL / 5 UNVERIFIABLE across README/ARCHITECTURE/VERTICAL_SLICE_REPORT/pitch.md — FALSE/PARTIAL cluster is staleness (docs describe the 2026-09-28 slice-era app: tasks table, services.py, argparse CLI; code is the rewritten job-level Books 1-3). 24 findings DOC-001–024 (11 S2, 10 S3, 3 S4). P4 one-paragraph "what this app is" written to notes/claims-audit.md; Q-001 (owner confirm/correct) appended to QUESTIONS.md; IDEA-001–011 appended to IDEAS.md. DOC independently reproduced 191-pass suite.
+- Found: DOC-001–004 (S2, README setup/walkthrough/not-built/test-cmd) · DOC-005 (S3, env vars) · DOC-006–007 (S2, ARCHITECTURE queue/services) · DOC-008 (S3, budget fields) · DOC-009 (S2, render.json schema) · DOC-010 (S3, schema listings) · DOC-011–013 (S2, module list/docs promise/CLI ref) · DOC-014 (S2, ops claims) · DOC-015–021 (S3, gate/render/cache/schedule tables) · DOC-022–024 (S4)
+- Gate 1 check: COVERAGE 88/88 tiered (High 29/Med 14/Low 45, none unclassified) ✔ · BASELINE holds real outputs (191 pass, smoke runs, secret scan clean) ✔ · crown jewels + 6 corrected critical flows in B3 ✔ · all committed ✔ → GATE 1: PASS
+- Phase 1 finding totals: S0 0 · S1 2 · S2 24 · S3 22 · S4 6 = 54 NEW (MAP 5, TST 12, BLD 13, DOC 24). Known duplicate clusters for Phase 4 triage: README-staleness (MAP-002/DOC-001–004/BLD-002–005), jobs/-in-git (MAP-001/BLD-010), VSR status (MAP-003 vs DOC "accurate as historical" — reconcile as archival).
+- Notes updated: JOURNAL.md, STATUS.md (Phase 2)
+- Commands: none (lane report)
+- Next: Phase 2 critical-flow tracing — spawn BUG (flows 1,2,5), SEC (flow 4 + threat model + authz matrix), ARC (flows 3,6 + as-is assessment), DAT (data model + integrations), STR (media/ffmpeg paths). ID ranges: BUG-001–099, SEC-100–199, ARC-300–349, DAT-350–399, STR-450–499.
