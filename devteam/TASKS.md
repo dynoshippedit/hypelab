@@ -259,7 +259,8 @@ DEFERRED · REJECTED.
   gates; sub-quadratic score_windows; single-decode audio features. M.
 
 ### T-040 — Tracked job outputs (~34–39 MB) in jobs/ (BLD-010 S3 + MAP-001 S3 · Confirmed)
-- Status: **APPROVED 2026-09-29 with constraints** — git rm --cached, move to outputs/ under new root, gitignore it; keep small test samples only; DO NOT touch character store (reference.png/voice.wav); send Dino the moved list; NO history rewrite. Spec: devteam/proposals/owner-decisions-2026-09-29.md (D4). Queued.
+- Status: **IMPLEMENTED 2026-09-29** (hl-cycle-11) — git rm --cached the 17 tracked files under jobs/job_c656669a5147/ (history intact, no rewrite); files moved to <HYPELAB_HOME>/outputs/job_c656669a5147/ (HYPELAB_OUTPUTS_DIR default); /outputs/ added to .gitignore; only two small test fixtures kept tracked (tests/fixtures/vo.mp3 131K, tests/fixtures/music.mp3 961K, wired into test_align.py + test_cli.py); character store, reference.png, voice.wav untouched (not present in repo); regression tests tests/test_outputs_dir.py (5 tests); moved-file list in devteam/cycles/hl-cycle-11.json.
+- Awaiting controller verification.
 
 ### T-041 — S3/S4 backlog (grouped; evidence in findings/*.md)
 - Status: **VERIFIED** (hl-cycle-07; commit 8b1c9f6; controller acceptance 2026-09-29 — inspected allowlist.py + watcher/compliance integration, new tests 24/24, full suite 250/250 green on final HEAD).

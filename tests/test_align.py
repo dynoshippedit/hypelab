@@ -27,7 +27,7 @@ from hypelab.align import (
 )
 
 REPO = Path(__file__).resolve().parents[1]
-VO = REPO / "jobs/job_c656669a5147/assets/vo.mp3"
+VO = REPO / "tests/fixtures/vo.mp3"
 SCRIPT = REPO / "fixtures/script.txt"
 
 _WORD_RE = re.compile(r"[A-Za-z0-9']+")

@@ -32,8 +32,8 @@ from hypelab import util as util_mod  # noqa: E402
 
 FIXTURE_SCRIPT = REPO / "fixtures" / "script.txt"
 KIT_JSON = REPO / "kits" / "cerebratico" / "kit.json"
-FIXTURE_VO = REPO / "jobs" / "job_c656669a5147" / "assets" / "vo.mp3"
-FIXTURE_MUSIC = REPO / "jobs" / "job_c656669a5147" / "assets" / "music.mp3"
+FIXTURE_VO = REPO / "tests" / "fixtures" / "vo.mp3"
+FIXTURE_MUSIC = REPO / "tests" / "fixtures" / "music.mp3"
 
 
 # ---------------------------------------------------------------------------
