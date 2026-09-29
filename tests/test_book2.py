@@ -28,6 +28,7 @@ from hypelab import metrics as metrics_mod  # noqa: E402
 from hypelab import reframe as reframe_mod  # noqa: E402
 from hypelab import render as render_mod  # noqa: E402
 from hypelab import score as score_mod  # noqa: E402
+from hypelab import tray as tray_mod  # noqa: E402
 from hypelab import watcher as watcher_mod  # noqa: E402
 from hypelab.db import connect  # noqa: E402
 
@@ -523,7 +524,8 @@ def test_tray_ranks_and_materializes(conn, camp, tiny_916, tmp_path,
             " predicted, state, compliance_json, created_at)"
             " VALUES(?,?,?,?,?,?,?,?,?)",
             (cid, jid, camp["id"], str(src), "cap", pred, "tray",
-             json.dumps({"passed": True}), "2026-09-28T00:00:00+00:00"))
+             json.dumps({"passed": True, "rules_version": 1}),
+             "2026-09-28T00:00:00+00:00"))
     ranked = __import__("hypelab.tray", fromlist=["build_tray"]).build_tray(
         conn, jid, tmp_path)
     assert [c["predicted"] for c in ranked] == [0.9, 0.5, 0.2]
@@ -535,6 +537,68 @@ def test_tray_ranks_and_materializes(conn, camp, tiny_916, tmp_path,
         assert (d / name).is_file(), name
     meta = json.loads((d / "meta.json").read_text())
     assert meta["campaign"]["id"] == camp["id"]
+
+
+def _stale_clip(conn, camp, tmp_path, cid, caption, monkeypatch):
+    """One tray clip gated under rules_version=1 (7s 9:16, genuinely
+    compliant under the fixture rules), returned with its job id."""
+    monkeypatch.setenv("HYPELAB_WORK_DIR", str(tmp_path))
+    src = _tiny_mp4(tmp_path / f"{cid}.mp4", 1080, 1920, dur=7.0)
+    jid = jobs_mod.new(conn, mode="clip", campaign_id=camp["id"],
+                       title="reg", state="tray")
+    conn.execute(
+        "INSERT INTO clips(id, job_id, campaign_id, path, caption,"
+        " predicted, state, compliance_json, created_at)"
+        " VALUES(?,?,?,?,?,?,?,?,?)",
+        (cid, jid, camp["id"], str(src), caption, 0.9, "tray",
+         json.dumps({"passed": True, "rules_version": 1}),
+         "2026-09-28T00:00:00+00:00"))
+    return jid
+
+
+def _bump(conn, camp, **rule_over):
+    rules = dict(camp["rules"], **rule_over)
+    rules.pop("source_allowlist", None)  # re-gate probes with source_url=""
+    return campaigns_mod.bump_rules(
+        conn, camp["id"], rules,
+        {"who": "test", "source_url": "https://example.com/rules",
+         "captured_at": "2026-09-28T00:00:00+00:00"})
+
+
+def test_tray_regates_stale_compliance_pass(conn, camp, tmp_path,
+                                            monkeypatch):
+    """Book 2 §3: rules changed since gating -> the tray re-runs the gate
+    first. A clip that passes the new rules is handed over, with a
+    refreshed compliance record (new rules_version)."""
+    caption = ("@testcreator a great training clip #test #v2\n"
+               "Clip: Test Creator")
+    jid = _stale_clip(conn, camp, tmp_path, "rc1", caption, monkeypatch)
+    v = _bump(conn, camp, required_hashtags=["#test", "#v2"])
+    assert v == 2
+    ranked = tray_mod.build_tray(conn, jid, tmp_path)
+    assert len(ranked) == 1
+    rec = json.loads(conn.execute(
+        "SELECT compliance_json FROM clips WHERE id='rc1'").fetchone()[0])
+    assert rec["passed"] is True and rec["rules_version"] == 2
+    assert (tmp_path / "work" / jid / "tray" / "clip_0001"
+            / "clip.mp4").is_file()
+
+
+def test_tray_excludes_clip_failing_regate(conn, camp, tmp_path,
+                                           monkeypatch):
+    """A clip that fails the re-gate is refused by the tray: excluded from
+    the handoff, routed to failed, job re-aggregated."""
+    caption = ("@testcreator a great training clip #test\n"
+               "Clip: Test Creator")
+    jid = _stale_clip(conn, camp, tmp_path, "rc2", caption, monkeypatch)
+    _bump(conn, camp, required_hashtags=["#test", "#newtag"])
+    ranked = tray_mod.build_tray(conn, jid, tmp_path)
+    assert ranked == []
+    st = conn.execute(
+        "SELECT state FROM clips WHERE id='rc2'").fetchone()[0]
+    assert st == "failed"
+    assert jobs_mod.get(conn, jid)["state"] == "failed"
+    assert not (tmp_path / "work" / jid / "tray" / "clip_0001").exists()
 
 
 # ------------------------------------------------------------------ metrics

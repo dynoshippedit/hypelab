@@ -8,6 +8,16 @@
 -- Book 1 additions over the wave-1 schema: jobs gains lease_owner,
 -- lease_expires, attempts, max_attempts (queue leases, improved section 5);
 -- renders gains manifest_json (tool provenance per render, delta item 4).
+--
+-- NOTE (deliberate, documented): this file pre-creates the Book 2/3 layer
+-- tables as well (all CREATE TABLE IF NOT EXISTS), so a fresh database is
+-- fully formed after 0001 alone. The progressive-disclosure contract lives
+-- in the migration FILES, not in application order: 0002/0003 are purely
+-- additive (ALTER TABLE ... ADD COLUMN plus their few new tables, also
+-- IF NOT EXISTS) and re-declare their layer's contract, so reading 0002
+-- or 0003 shows exactly what that book added. Restructuring 0001 now would
+-- desync databases that already applied it; schema_migrations + the
+-- boot-time set check make the current layout safe and idempotent.
 
 CREATE TABLE jobs(
   id TEXT PRIMARY KEY,

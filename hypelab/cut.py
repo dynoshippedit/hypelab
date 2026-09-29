@@ -272,31 +272,11 @@ def record_posted(conn: sqlite3.Connection, clip_id: str, post_url: str,
     prev = json.loads(clip["compliance_json"] or "{}")
     if campaign.get("rules_version") != prev.get("rules_version"):
         # Rules changed since gating: re-run the gate on the rendered file.
-        check_clip = {
-            "id": clip_id, "job_id": clip["job_id"], "path": clip["path"],
-            "caption": clip["caption"] or "",
-            "burned_text": "", "ocr_confidence": 1.0,
-            "overlays_text": [], "duration_s": None,
-            "source_url": "", "audio_provenance": "campaign_supplied",
-            "mixed_music": False, "watermark_verified": False,
-            "target_aspect": "9:16",
-            "platforms": campaign.get("platforms") or [],
-        }
-        try:
-            info = ffprobe(clip["path"])
-            check_clip["duration_s"] = info.get("duration_s")
-        except Exception:
-            pass
-        record = compliance_mod.check(conn, check_clip, campaign)
-        if not record["passed"]:
-            new_state = ("compliance_unknown" if record["unknowns"]
-                         else "failed")
-            conn.execute(
-                "UPDATE clips SET state=?, compliance_json=? WHERE id=?",
-                (new_state, json.dumps(record), clip_id))
-            jobs_mod.transition(conn, clip["job_id"], new_state,
+        res = compliance_mod.regated_if_stale(conn, clip, campaign)
+        if not res["passed"]:
+            jobs_mod.transition(conn, clip["job_id"], res["state"],
                                 f"re-gate at submission failed ({operator})")
-            return {"clip_id": clip_id, "state": new_state,
+            return {"clip_id": clip_id, "state": res["state"],
                     "regated": True, "passed": False}
     at = now()
     # NOTE: clips has no posted_at column (0001); posted_at lives on posts

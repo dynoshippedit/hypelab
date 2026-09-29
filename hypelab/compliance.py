@@ -233,6 +233,61 @@ def check(conn: sqlite3.Connection, clip: dict, campaign: dict) -> dict:
     return record
 
 
+def regated_if_stale(conn: sqlite3.Connection, clip_row,
+                     campaign: dict) -> dict:
+    """Re-run the compliance gate on a rendered clip when the campaign
+    rules changed since the clip was gated (Book 2 section 9: the gate
+    runs again at submission if rules changed; section 3: the tray
+    refuses to hand over a clip with stale compliance — it re-runs the
+    gate first).
+
+    ``clip_row`` is a clips row (sqlite3.Row or dict); ``campaign`` is the
+    parsed campaigns.load() dict. Returns
+    {"clip_id", "regated", "passed", "state"}.
+
+    The clip row is updated in place: a failed re-gate moves it to
+    failed/compliance_unknown with the fresh record; a passing re-gate
+    refreshes compliance_json (new rules_version). The JOB is not touched
+    — callers aggregate via route_job() (cut) or their own transition
+    (record_posted).
+    """
+    from .util import ffprobe
+
+    clip = dict(clip_row)
+    prev = json.loads(clip.get("compliance_json") or "{}")
+    if campaign.get("rules_version") == prev.get("rules_version"):
+        return {"clip_id": clip["id"], "regated": False,
+                "passed": bool(prev.get("passed")), "state": clip["state"]}
+    check_clip = {
+        "id": clip["id"], "job_id": clip["job_id"], "path": clip["path"],
+        "caption": clip.get("caption") or "",
+        "burned_text": "", "ocr_confidence": 1.0,
+        "overlays_text": [], "duration_s": None,
+        "source_url": "", "audio_provenance": "campaign_supplied",
+        "mixed_music": False, "watermark_verified": False,
+        "target_aspect": "9:16",
+        "platforms": campaign.get("platforms") or [],
+    }
+    try:
+        info = ffprobe(clip["path"])
+        check_clip["duration_s"] = info.get("duration_s")
+    except Exception:
+        pass
+    record = check(conn, check_clip, campaign)
+    if not record["passed"]:
+        new_state = ("compliance_unknown" if record["unknowns"]
+                     else "failed")
+        conn.execute(
+            "UPDATE clips SET state=?, compliance_json=? WHERE id=?",
+            (new_state, json.dumps(record), clip["id"]))
+        return {"clip_id": clip["id"], "regated": True, "passed": False,
+                "state": new_state}
+    conn.execute("UPDATE clips SET compliance_json=? WHERE id=?",
+                 (json.dumps(record), clip["id"]))
+    return {"clip_id": clip["id"], "regated": True, "passed": True,
+            "state": clip["state"]}
+
+
 def route_job(conn: sqlite3.Connection, job_id: str) -> str:
     """Aggregate routing after all of a job's clips are gated.
 

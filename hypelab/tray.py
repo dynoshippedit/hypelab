@@ -110,8 +110,15 @@ def build_tray(conn: sqlite3.Connection, job_id: str, root) -> list[dict]:
     Moves each clip's rendered mp4 into work/<job_id>/tray/clip_NNNN/ and
     writes caption.txt, meta.json, submit.url, thumb.jpg. Updates clips.path
     and tray_rank. Returns the ranked clip dicts.
+
+    Book 2 section 3: the tray refuses to hand over a clip with stale
+    compliance — it re-runs the gate first. Any clip whose campaign rules
+    changed since gating is re-gated via compliance.regated_if_stale();
+    failed re-gates are excluded from the tray (routed to
+    failed/compliance_unknown) and the job is re-aggregated.
     """
     from . import campaigns as campaigns_mod
+    from . import compliance as compliance_mod
 
     job = conn.execute("SELECT * FROM jobs WHERE id=?",
                        (job_id,)).fetchone()
@@ -120,7 +127,20 @@ def build_tray(conn: sqlite3.Connection, job_id: str, root) -> list[dict]:
     campaign = (campaigns_mod.load(conn, job["campaign_id"])
                 if job["campaign_id"] else {"rules": {}})
     clips = [dict(r) for r in conn.execute(TRAY_CLIP_QUERY, (job_id,))]
-    ranked = sorted(clips, key=lambda c: -(c.get("predicted") or 0.0))
+    fresh = []
+    for clip in clips:
+        res = compliance_mod.regated_if_stale(conn, clip, campaign)
+        if res["passed"]:
+            if res["regated"]:
+                clip["compliance_json"] = conn.execute(
+                    "SELECT compliance_json FROM clips WHERE id=?",
+                    (clip["id"],)).fetchone()[0]
+            fresh.append(clip)
+        # else: re-gate failed — clip already moved to failed /
+        # compliance_unknown by regated_if_stale; excluded from the tray.
+    if len(fresh) != len(clips):
+        compliance_mod.route_job(conn, job_id)
+    ranked = sorted(fresh, key=lambda c: -(c.get("predicted") or 0.0))
 
     tray_root = Path(root) / "work" / job_id / "tray"
     tray_root.mkdir(parents=True, exist_ok=True)
