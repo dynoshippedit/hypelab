@@ -15,12 +15,17 @@ Hard exclusions (never auto-retry, even on a transient failure):
 Unknown/unrecognized failures default to TERMINAL (fail closed: they land
 in the review pile, never auto-retried).
 
+Env kill switch: HYPELAB_AUTO_REQUEUE=0/false/no/off sends
+transient failures to the review pile instead of auto-requeueing.
+Default ON.
+
 The requeue path respects the hl-cycle-06 atomicity contract: legality is
 enforced by predicates ON the UPDATE, and the state change + audit log +
 cost row commit in ONE explicit transaction.
 """
 from __future__ import annotations
 
+import os
 import re
 import sqlite3
 from datetime import datetime, timedelta, timezone
@@ -33,6 +38,14 @@ from .util import now
 BACKOFF_BASE_S = 60
 #: Hard cap on a single backoff delay (seconds).
 BACKOFF_CAP_S = 900
+
+#: Env kill switch for auto-requeue (owner decision 2026-09-29). Default ON:
+#: when HYPELAB_AUTO_REQUEUE is 0/false/no/off, transient failures go to the
+#: manual review pile instead of auto-requeueing. Read live at each routing
+#: decision so the owner can flip it with no code change and no restart.
+def auto_requeue_enabled():
+    return os.environ.get("HYPELAB_AUTO_REQUEUE", "1").strip().lower() not in (
+        "0", "false", "no", "off")
 
 #: Job states that belong to the publish handshake. A timeout here can mean
 #: the post already happened, so these NEVER auto-requeue (D1).
@@ -237,7 +250,10 @@ def handle_failure(conn, job_id, owner, err):
         return _to_review(conn, job_id, owner, err,
                           "owner-waiting:%s" % detail)
     if kind == "transient" and attempts < max_attempts:
-        return _requeue(conn, job_id, owner, err, state, attempts, detail)
+        if auto_requeue_enabled():
+            return _requeue(conn, job_id, owner, err, state, attempts, detail)
+        return _to_review(conn, job_id, owner, err,
+                          "auto-requeue-disabled:%s" % detail)
     return _to_review(conn, job_id, owner, err, "%s:%s" % (kind, detail))
 
 

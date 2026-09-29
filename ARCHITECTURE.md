@@ -93,6 +93,14 @@ creates two render tasks for the same inputs.
   exponential backoff (`run_after = now + 2^attempts minutes`), state back to
   `queued`. Non-retryable errors (validation failure, missing asset, consent
   refused): `failed` immediately, job → terminal or repair state with the reason.
+- **Auto-requeue kill switch:** the job-level failure policy (`hypelab/retry.py`)
+  auto-requeues only transient failures (timeouts, rate limits, provider 5xx),
+  max 3 attempts with backoff, cost logged per attempt. Set
+  `HYPELAB_AUTO_REQUEUE=0` (`false`/`no`/`off` also accepted) to route those
+  failures to the manual review pile instead of auto-requeueing; default is
+  on (read live at each routing decision, no restart needed). Jobs in
+  publish-handshake states and jobs paused waiting on the owner are never
+  auto-retried, regardless of the switch.
 - **Cancellation:** `hypelab cancel <job>` sets job state to `cancelled`;
   workers check the job state before and after each task and abort. Leased tasks
   for a cancelled job are released, never executed.
@@ -381,6 +389,17 @@ clip segments (keyed by beat id + clip sha + fit params) so re-renders are fast.
 `~/.cache/hypelab/` (or `$HYPELAB_CACHE`): keyed artifacts —
 `clipseg:{beat}:{sha}:{fit}`, `ass:{words_sha}:{style_sha}`, `loudnorm:{mix_sha}`.
 Cache is content-addressed; stale entries are impossible by construction.
+
+**ffmpeg version pin (T-044, 2026-09-29):** `sidechaincompress` (VO ducking)
+is nondeterministic in ffmpeg 8.1.2 on the Threadripper (~2.5%/render, audio
+tail only, ~25 ms). Single-threading the filter graph (`-filter_threads 1
+-filter_complex_threads 1`) was tried and did NOT fix it: 450 renders ->
+6 distinct PCM hashes with and without the flags (identical variant set), so
+the flags were not shipped. T-044's assertion instead tolerates the measured
+perturbation (video bytes bit-identical; audio within -40 dBFS of program,
+citing the -48 dBFS measured max). `render()` fails loudly (`RenderError`)
+if the installed ffmpeg is not the pinned 8.1.2, so a new ffmpeg version can
+never silently change render behavior.
 
 ## Part 5 — Quality gates and carousels
 

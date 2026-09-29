@@ -415,3 +415,49 @@ def test_handle_failure_unknown_job_raises(env):
             retry_mod.handle_failure(conn, "j_nope", "w1", TimeoutError("x"))
     finally:
         conn.close()
+
+
+def test_auto_requeue_kill_switch_sends_transient_to_review(env, monkeypatch):
+    """HYPELAB_AUTO_REQUEUE=0 routes transient failures to the review pile."""
+    dbp = env["db"]
+    monkeypatch.setenv("HYPELAB_AUTO_REQUEUE", "0")
+    jid = _claim_pipeline_job(dbp)
+    conn = _conn(dbp)
+    try:
+        outcome = retry_mod.handle_failure(conn, jid, "w1", TimeoutError("boom"))
+    finally:
+        conn.close()
+    assert outcome == "review"
+    row = _get(dbp, jid)
+    assert row["state"] == "failed"
+    assert row["review_reason"].startswith("auto-requeue-disabled:")
+
+
+def test_auto_requeue_still_requeues_when_enabled(env, monkeypatch):
+    """Default (env unset) keeps the auto-requeue behavior for transients."""
+    dbp = env["db"]
+    monkeypatch.delenv("HYPELAB_AUTO_REQUEUE", raising=False)
+    jid = _claim_pipeline_job(dbp)
+    conn = _conn(dbp)
+    try:
+        outcome = retry_mod.handle_failure(conn, jid, "w1", TimeoutError("boom"))
+    finally:
+        conn.close()
+    assert outcome == "requeued"
+
+
+@pytest.mark.parametrize("val", ["false", "no", "off", "0", "FALSE", " Off "])
+def test_auto_requeue_kill_switch_spellings(val, monkeypatch):
+    monkeypatch.setenv("HYPELAB_AUTO_REQUEUE", val)
+    assert retry_mod.auto_requeue_enabled() is False
+
+
+@pytest.mark.parametrize("val", ["1", "true", "yes", "on"])
+def test_auto_requeue_enabled_spellings(val, monkeypatch):
+    monkeypatch.setenv("HYPELAB_AUTO_REQUEUE", val)
+    assert retry_mod.auto_requeue_enabled() is True
+
+
+def test_auto_requeue_default_is_on(monkeypatch):
+    monkeypatch.delenv("HYPELAB_AUTO_REQUEUE", raising=False)
+    assert retry_mod.auto_requeue_enabled() is True
