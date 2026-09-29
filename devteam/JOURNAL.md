@@ -106,3 +106,11 @@
 - Notes updated: JOURNAL.md
 - Commands: none (delegation only)
 - Next: receive 6 lane reports → Phase 3 gate → Phase 4 triage (dedupe, verify S0/S1 + sample S2, fix queue, QUESTIONS.md)
+
+## 2026-09-29 03:30 · Tech Lead · Phase 3
+- Did: Received PRF lane report (completed). perf.md + 12 findings (PRF-500–511: 1x S1, 4x S2, 4x S3, 3x S4). Key: PRF-500 S1 — no model caching anywhere; every alignment job reloads wav2vec2/Whisper from disk (N jobs = N full model loads). PRF-501 S2 — render SHA-256-hashes all input media 3x even on skip path. PRF-502/503 S2 — gates re-decode finished render ~4x + ffprobe 3x per job; score_windows is O(duration^2). Notable negative: parallel.py does not exist — worker is single-threaded sequential (DOC-006/007 task-level-queue claims further undermined); no test_parallel.py / test_stress* exist; perf entirely untested.
+- Found: PRF-500 (S1) · PRF-501/502/503/504 (S2) · PRF-505/506/507/508 (S3) · PRF-509/510/511 (S4)
+- Running totals: 126 findings — S0 0 · S1 11 · S2 44 · S3 53 · S4 18.
+- Notes updated: JOURNAL.md
+- Commands: none (lane report)
+- Next: await UIX, PAT, ENV, SWEEP-A, SWEEP-B; then Phase 3 gate → Phase 4 triage
