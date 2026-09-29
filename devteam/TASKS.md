@@ -137,8 +137,11 @@ DEFERRED · REJECTED.
 - Verify: `pip install -r requirements.txt --dry-run` resolves; import smoke.
 
 ### T-011 — Worker retry path absent; fail() docstring lies (BUG-007+TST-003 · S2/Confirmed)
-- Status: **IN PROGRESS** [hl-cycle-08] -- DECIDED 2026-09-29 — failure-type requeue (transient only: timeouts/rate-limits/5xx, backoff, max 3, cost logged; rest to manual review pile; never auto-retry publish or Dino-waiting jobs). Spec: devteam/proposals/owner-decisions-2026-09-29.md (D1). Race-fix gate OPEN (T-007 verified). Queued.
+- Status: **VERIFIED** (hl-cycle-08; commit e23f538; controller acceptance 2026-09-29 — inspected retry.py classifier/backoff/exclusions + review-pile CLI, new tests 20/20, full suite 270 on clean run, flaky 268/270/269 across runs in areas this commit cannot touch [pre-existing flakiness, tracked separately]). Caveats: (G1) ledger rows written usd=0.0 'cost unmetered' labeled ACTUAL| — no metering exists; owner decision pending: accept honest unmetered rows (fix label) vs scope real cost model; (G2) text-hint path checks transient before terminal hints — bad config can auto-retry, bounded by max 3; (G3) compliance_unknown absent from OWNER_WAITING_STATES, defense-in-depth only. G2+G3 queued as follow-up hardening.
   or correct docstring + add CLI retry command.
+
+### T-041b — Requeue hardening: text-hint order + OWNER_WAITING completeness (S2, follow-up to T-011)
+- Status: READY. (a) In classify_failure()'s text path, check TERMINAL hints before TRANSIENT hints (or route mixed-signal to terminal) so bad config like "invalid timeout value" can't auto-retry; keep the status-code path as-is (it takes precedence and is correct). (b) Add compliance_unknown to OWNER_WAITING_STATES (defense-in-depth; currently unreachable via the work loop). Tests: "invalid timeout value: must be positive" -> terminal, no auto-retry; "connection timeout: invalid API key" -> terminal. Effort S.
 
 ### T-012 — CLI `gates` accepts worker-claimed `gating` (BUG-008 · S2/Confirmed)
 - Status: READY. Refuse `gating` when a live lease is held by another owner.
