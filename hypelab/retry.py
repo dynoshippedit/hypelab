@@ -45,8 +45,11 @@ PUBLISH_STATES = frozenset({
 })
 
 #: Job states where the job is paused waiting on the owner. Never auto-retry.
+#: (compliance_unknown is defense-in-depth: jobs paused for human
+#: compliance review; currently unreachable via the work loop.)
 OWNER_WAITING_STATES = frozenset({
     "awaiting_consent", "awaiting_accept", "awaiting_media",
+    "compliance_unknown",
 })
 
 _TRANSIENT_CODES = {408, 425, 429, 500, 502, 503, 504}
@@ -112,10 +115,15 @@ def classify_failure(err: BaseException) -> tuple:
         # Covers builtin TimeoutError, asyncio.TimeoutError, socket.timeout.
         return "transient", "timeout"
     text = ("%s: %s" % (type(err).__name__, err)).lower()
-    if any(h in text for h in _TRANSIENT_HINTS):
-        return "transient", "transient signal in error text"
+    # T-041b: check TERMINAL hints BEFORE transient hints. Mixed-signal
+    # text (e.g. "invalid timeout value", "connection timeout: invalid
+    # API key") is bad config, not a flaky provider -- it must land in
+    # the review pile, never auto-retry. The status-code path above is
+    # untouched and still takes precedence.
     if any(h in text for h in _TERMINAL_HINTS):
         return "terminal", "terminal signal in error text"
+    if any(h in text for h in _TRANSIENT_HINTS):
+        return "transient", "transient signal in error text"
     return "terminal", "unrecognized failure (fail closed)"
 
 

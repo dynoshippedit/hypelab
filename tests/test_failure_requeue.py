@@ -121,6 +121,20 @@ def test_classifier_terminal_shapes():
         RuntimeError("something completely novel"))[0] == "terminal"
 
 
+def test_classifier_terminal_hints_take_precedence_over_transient():
+    """T-041b: mixed-signal error text (terminal + transient hints) must
+    classify terminal so bad config can never auto-retry."""
+    assert retry_mod.classify_failure(
+        ValueError("invalid timeout value: must be positive"))[0] == "terminal"
+    assert retry_mod.classify_failure(
+        RuntimeError("connection timeout: invalid API key"))[0] == "terminal"
+    # Pure transient signals still retry.
+    assert retry_mod.classify_failure(
+        TimeoutError("connection timed out"))[0] == "transient"
+    assert retry_mod.classify_failure(
+        RuntimeError("rate limit exceeded"))[0] == "transient"
+
+
 def test_backoff_schedule():
     assert retry_mod.backoff_delay_s(1) == 60
     assert retry_mod.backoff_delay_s(2) == 120
@@ -254,6 +268,26 @@ def test_terminal_failures_go_straight_to_review(env, err):
     assert "review pile" in costs[0]["note"]
 
 
+def test_mixed_signal_failure_goes_to_review_not_requeue(env):
+    """T-041b routing: an error whose text mentions a timeout but is
+    really bad config ("invalid timeout value") must land in the review
+    pile, not auto-requeue."""
+    dbp = env["db"]
+    jid = _claim_pipeline_job(dbp)  # rendering, attempts=1
+    conn = _conn(dbp)
+    try:
+        outcome = retry_mod.handle_failure(
+            conn, jid, "w1",
+            ValueError("invalid timeout value: must be positive"))
+    finally:
+        conn.close()
+    assert outcome == "review"
+    row = _get(dbp, jid)
+    assert row["state"] == "failed"
+    assert row["requeue_not_before"] is None  # never requeued
+    assert (row["review_reason"] or "").startswith("terminal:")
+
+
 # ---------------------------------------------------------------------------
 # Hard exclusions: publish jobs and owner-waiting jobs never auto-retry
 # ---------------------------------------------------------------------------
@@ -294,7 +328,7 @@ def test_publish_jobs_never_autorequeue(env, state):
     assert "publish-excluded" in (row["review_reason"] or "")
 
 
-@pytest.mark.parametrize("state", ["awaiting_media"])
+@pytest.mark.parametrize("state", ["awaiting_media", "compliance_unknown"])
 def test_owner_waiting_jobs_never_autorequeue(env, state):
     dbp = env["db"]
     jid = _leased_job_in_state(dbp, state)

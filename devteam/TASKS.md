@@ -141,7 +141,7 @@ DEFERRED · REJECTED.
   or correct docstring + add CLI retry command.
 
 ### T-041b — Requeue hardening: text-hint order + OWNER_WAITING completeness (S2, follow-up to T-011)
-- Status: READY. (a) In classify_failure()'s text path, check TERMINAL hints before TRANSIENT hints (or route mixed-signal to terminal) so bad config like "invalid timeout value" can't auto-retry; keep the status-code path as-is (it takes precedence and is correct). (b) Add compliance_unknown to OWNER_WAITING_STATES (defense-in-depth; currently unreachable via the work loop). Tests: "invalid timeout value: must be positive" -> terminal, no auto-retry; "connection timeout: invalid API key" -> terminal. Effort S.
+- Status: **IMPLEMENTED** [hl-cycle-12] — (a) classify_failure() text path now checks TERMINAL hints before TRANSIENT hints (status-code path untouched, still takes precedence); (b) "compliance_unknown" added to OWNER_WAITING_STATES. Tests extended in tests/test_failure_requeue.py: "invalid timeout value: must be positive" -> terminal, "connection timeout: invalid API key" -> terminal, mixed-signal failure routes to review (never requeued), compliance_unknown jobs never auto-requeue. Falsified (new tests fail with the fix stashed); focused 23/23 green; full suite 293/293 green on final tree. Awaiting controller verification.
 
 ### T-012 — CLI `gates` accepts worker-claimed `gating` (BUG-008 · S2/Confirmed)
 - Status: READY. Refuse `gating` when a live lease is held by another owner.
