@@ -321,7 +321,11 @@ def cut(job_id, numbers, reframe_mode, work_minutes):
         res = cut_mod.cut(conn, job_id, ids, root=_root(),
                           reframe_mode=reframe_mode,
                           work_minutes=work_minutes)
-    except (cut_mod.CutError, ValueError) as e:
+    except Exception as e:
+        # T-004 (BUG-003): cut() moves the job to `cutting` (lease cleared);
+        # a failure must fail the job, not strand it in an active state with
+        # a NULL lease. _die preserves the CLI error contract.
+        jobs_mod.fail_drive(conn, job_id, e)
         _die(str(e))
     for c in res["clips"]:
         print(f"{c['id']}  {c['state']}  reframe={c['reframe_mode']}  "

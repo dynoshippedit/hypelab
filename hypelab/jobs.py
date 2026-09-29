@@ -135,6 +135,51 @@ def transition(conn: sqlite3.Connection, job_id: str, to: str, note=None) -> str
     return to
 
 
+#: Drive-active states: a direct CLI drive (audio/render/gates/cut) moves
+#: the job here via transition(), which clears the lease. If the drive then
+#: fails, the job would sit in the active state with a NULL lease —
+#: unclaimable (claim() only reclaims active jobs with a non-NULL expired
+#: lease) and unrecoverable without SQL. T-004 (BUG-003).
+DRIVE_ACTIVE_STATES = frozenset({"aligning", "rendering", "gating", "cutting"})
+
+
+def fail_drive(conn: sqlite3.Connection, job_id: str, err) -> bool:
+    """Fail-equivalent for a direct CLI drive failure (T-004 / BUG-003).
+
+    When the job sits in a drive-active state with NO lease held, move it to
+    ``failed`` with the error recorded on the row and in job_events — the
+    same terminal state queue.fail() produces, minus attempts accounting (a
+    direct drive never claims the job, so no attempt was consumed; the
+    operator sees the failure immediately).
+
+    Returns True when the job was moved to failed. Returns False without
+    touching anything when a lease is held (the lease holder's fail() path
+    owns the failure — e.g. the work loop), when the job is unknown, or
+    when it is not in a drive-active state.
+    """
+    row = conn.execute(
+        "SELECT state, lease_owner, lease_expires FROM jobs WHERE id=?",
+        (job_id,),
+    ).fetchone()
+    if row is None:
+        return False
+    frm = row["state"]
+    if row["lease_owner"] is not None or row["lease_expires"] is not None:
+        return False
+    if frm not in DRIVE_ACTIVE_STATES or "failed" not in ALLOWED.get(frm, ()):
+        return False
+    ts = now()
+    err_s = str(err)
+    conn.execute(
+        "UPDATE jobs SET state='failed', error=?,"
+        " lease_owner=NULL, lease_expires=NULL, updated_at=? WHERE id=?",
+        (err_s, ts, job_id),
+    )
+    log(conn, job_id, frm, "failed",
+        f"drive failure, no lease held -> failed: {err_s}")
+    return True
+
+
 def get(conn: sqlite3.Connection, job_id: str):
     """Return the job row, or None."""
     return conn.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()

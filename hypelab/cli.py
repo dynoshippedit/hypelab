@@ -616,30 +616,41 @@ def audio(job_id, vo_src, music_src):
     _transition(conn, job_id, "queued_align", "VO present")
     _transition(conn, job_id, "aligning", "forced alignment running")
 
-    # 3. Local wav2vec2 forced alignment (words are the normalized tokens).
     try:
-        doc, flagged = _do_align(conn, job_id, kit, work, edl)
-    except align_mod.AlignError as e:
-        # Genuine alignment failure (no speech, script/VO mismatch): this is a
-        # processing error, surfaced loudly — not a silent gate pass.
-        _die(f"alignment failed: {e}")
-    print(f"aligned {doc['n_words']} words "
-          f"(timing={doc['timing']}, model={doc['model']}, "
-          f"mean_p={doc['mean_confidence']:.3f}, "
-          f"min_p={min((w.get('p', 0.0) for w in doc['words']), default=0.0):.3f})")
+        # 3. Local wav2vec2 forced alignment (words are the normalized tokens).
+        try:
+            doc, flagged = _do_align(conn, job_id, kit, work, edl)
+        except align_mod.AlignError as e:
+            # Genuine alignment failure (no speech, script/VO mismatch): this is a
+            # processing error, surfaced loudly — not a silent gate pass.
+            _die(f"alignment failed: {e}")
+        print(f"aligned {doc['n_words']} words "
+              f"(timing={doc['timing']}, model={doc['model']}, "
+              f"mean_p={doc['mean_confidence']:.3f}, "
+              f"min_p={min((w.get('p', 0.0) for w in doc['words']), default=0.0):.3f})")
 
-    # 4. Book section 10: low confidence is a GATE outcome, never a crash.
-    if flagged:
-        reasons = "; ".join(
-            f"{f['beat_id']} mean_p={f['mean_word_p']}" for f in flagged
-        )
-        _transition(conn, job_id, "gate_failed",
-                    f"low word confidence: {reasons}")
-        print(f"gate_failed: low-confidence beats: {reasons}")
-        return
+        # 4. Book section 10: low confidence is a GATE outcome, never a crash.
+        if flagged:
+            reasons = "; ".join(
+                f"{f['beat_id']} mean_p={f['mean_word_p']}" for f in flagged
+            )
+            _transition(conn, job_id, "gate_failed",
+                        f"low word confidence: {reasons}")
+            print(f"gate_failed: low-confidence beats: {reasons}")
+            return
 
-    _transition(conn, job_id, "aligned", f"{doc['n_words']} words retimed")
-    _transition(conn, job_id, "queued_render", "ready to render")
+        _transition(conn, job_id, "aligned", f"{doc['n_words']} words retimed")
+        _transition(conn, job_id, "queued_render", "ready to render")
+    except Exception as e:
+        # T-004 (BUG-003): a drive failure must not strand the job in an
+        # active state with a NULL lease (unclaimable, unrecoverable without
+        # SQL). Fail it (fail-equivalent) when no lease is held; re-raise so
+        # the CLI error contract (stderr + nonzero exit) is unchanged. The
+        # work loop is unaffected: a held lease makes fail_drive() a no-op
+        # and queue.fail() still owns that path.
+        jobs_mod.fail_drive(conn, job_id, e)
+        raise
+
 
 
 def _retarget_edl(edl, aspect):
@@ -706,42 +717,53 @@ def _render_job(conn, job_id, aspect=None, heartbeat_owner=None):
         beat_thread.start()
 
     try:
-        rec = render_mod.render(
-            edl, work, out, conn=conn, job_id=job_id,
-            provenance=manifests_mod.provenance(kit),
-        )
-    except (render_mod.RenderError, manifests_mod.ManifestError) as e:
-        _die(f"render failed: {e}")
-    finally:
-        if beat_thread is not None:
-            stop.set()
-            beat_thread.join()
+        try:
+            rec = render_mod.render(
+                edl, work, out, conn=conn, job_id=job_id,
+                provenance=manifests_mod.provenance(kit),
+            )
+        except (render_mod.RenderError, manifests_mod.ManifestError) as e:
+            _die(f"render failed: {e}")
+        finally:
+            if beat_thread is not None:
+                stop.set()
+                beat_thread.join()
 
-    if rec["skipped"]:
-        # Exact message the book's acceptance greps for.  A skip means the
-        # output is already current, so the state is left untouched.
-        print("hash unchanged, skipping")
+        if rec["skipped"]:
+            # Exact message the book's acceptance greps for.  A skip means the
+            # output is already current, so the state is left untouched.
+            print("hash unchanged, skipping")
+            return rec
+
+        print(f"rendered {out}")
+        print(f"sha256: {rec['render_hash']}")
+
+        # Hash changed: the output is new, so it must be re-gated.
+        state = jobs_mod.get(conn, job_id)["state"]
+        if state == "rendering":
+            _transition(conn, job_id, "rendered", out.name)
+            state = "rendered"
+        if state == "rendered":
+            _transition(conn, job_id, "queued_gates", "ready for gates")
+        elif state == "queued_gates":
+            pass  # already where a fresh render belongs
+        else:
+            # Unreachable via this CLI (attach/audio are blocked in ready and
+            # gate_failed, so the hash cannot change there); fail open with a
+            # warning rather than a bogus transition.
+            print(f"warning: re-rendered from {entry}; state left as {state} — "
+                  f"re-run 'hypelab gates {job_id}' after re-driving the pipeline")
         return rec
+    except Exception as e:
+        # T-004 (BUG-003): a drive failure must not strand the job in an
+        # active state with a NULL lease (unclaimable, unrecoverable without
+        # SQL). Fail it (fail-equivalent) when no lease is held; re-raise so
+        # the CLI error contract (stderr + nonzero exit) is unchanged. The
+        # work loop is unaffected: a held lease makes fail_drive() a no-op
+        # and queue.fail() still owns that path.
+        jobs_mod.fail_drive(conn, job_id, e)
+        raise
 
-    print(f"rendered {out}")
-    print(f"sha256: {rec['render_hash']}")
-
-    # Hash changed: the output is new, so it must be re-gated.
-    state = jobs_mod.get(conn, job_id)["state"]
-    if state == "rendering":
-        _transition(conn, job_id, "rendered", out.name)
-        state = "rendered"
-    if state == "rendered":
-        _transition(conn, job_id, "queued_gates", "ready for gates")
-    elif state == "queued_gates":
-        pass  # already where a fresh render belongs
-    else:
-        # Unreachable via this CLI (attach/audio are blocked in ready and
-        # gate_failed, so the hash cannot change there); fail open with a
-        # warning rather than a bogus transition.
-        print(f"warning: re-rendered from {entry}; state left as {state} — "
-              f"re-run 'hypelab gates {job_id}' after re-driving the pipeline")
-    return rec
 
 
 @cli.command("render")
@@ -812,11 +834,22 @@ def gates_cmd(job_id):
     if state == "queued_gates":
         _transition(conn, job_id, "gating", "gates running")
 
-    ok = _run_gates(conn, job_id)
-    if ok:
-        _transition(conn, job_id, "ready", "all gates passed")
-    else:
-        _transition(conn, job_id, "gate_failed", "one or more gates failed")
+    try:
+        ok = _run_gates(conn, job_id)
+        if ok:
+            _transition(conn, job_id, "ready", "all gates passed")
+        else:
+            _transition(conn, job_id, "gate_failed", "one or more gates failed")
+    except Exception as e:
+        # T-004 (BUG-003): a drive failure must not strand the job in an
+        # active state with a NULL lease (unclaimable, unrecoverable without
+        # SQL). Fail it (fail-equivalent) when no lease is held; re-raise so
+        # the CLI error contract (stderr + nonzero exit) is unchanged. The
+        # work loop is unaffected: a held lease makes fail_drive() a no-op
+        # and queue.fail() still owns that path.
+        jobs_mod.fail_drive(conn, job_id, e)
+        raise
+
 
 
 # ---------------------------------------------------------------------------
