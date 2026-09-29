@@ -138,3 +138,11 @@
 - Notes updated: JOURNAL.md
 - Commands: none (lane report)
 - Next: await PAT, SWEEP-A; then Phase 3 gate → Phase 4 triage
+
+## 2026-09-29 03:58 · Tech Lead · Phase 3
+- Did: Received Pattern Pack report (completed). pattern-pack.md (19 patterns dispositioned) + 4 new findings (PAT-600–603, all S3). Key negatives verified: no shell injection (19 sites argv), no SQL injection (178 sites parameterized), no traversal, no secrets in working tree or history, no mutable defaults, no silent exception swallowing. New: PAT-600 S3 — 13 dead functions incl. a dead sanitizer (render._esc_filter) and align._constrain_to_script kept "for regression tests" with zero test refs; PAT-601 S3 — quarantine TOCTOU (concurrent quarantines overwrite evidence); PAT-602 S3 — unbounded RSS read + yt-dlp no --max-filesize; PAT-603 S3 — util.work_dir docstring promises atomic writes, ingest/tray write direct. Duplicates absorbed into BLD-009, DAT-352/353, BUG-006/007, DAT-355, STR-453/454, SEC-105/106 — no double-counting.
+- Found: PAT-600/601/602/603 (S3)
+- Running totals: 180 findings — S0 0 · S1 11 · S2 49 · S3 75 · S4 45.
+- Notes updated: JOURNAL.md
+- Commands: none (lane report)
+- Next: await SWEEP-A; then Phase 3 gate → Phase 4 triage
