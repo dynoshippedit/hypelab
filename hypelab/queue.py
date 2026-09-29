@@ -12,6 +12,15 @@ state and clears the lease (expiry is not a failure — attempts unchanged).
 ``attempts`` reaches ``MAX_ATTEMPTS`` the failure is marked POISON and the
 job needs operator review. ``transition`` (in jobs.py) clears the lease
 fields on every move.
+
+Atomicity contract (T-007 / C2): connections are autocommit, so every
+state-changing operation runs its legality check, the conditional UPDATE,
+and the audit ``log()`` inside ONE explicit transaction (BEGIN IMMEDIATE
+... COMMIT). Legality is enforced by predicates ON the UPDATE itself
+(``AND state=?``, ``AND lease_owner=?``), never by a Python check on a
+separately-read row — a stale read can no longer authorize a write, and a
+lost race surfaces as "0 rows updated" instead of a silent overwrite. The
+audit entry can never be lost to a crash between the UPDATE and the log.
 """
 from __future__ import annotations
 
@@ -74,6 +83,9 @@ def claim(conn: sqlite3.Connection, owner: str,
     ``lease_expires=now+30min``, and ``attempts=attempts+1`` (claiming is
     the attempt; expiry/release never consume one).
 
+    The winning UPDATE and its audit ``log()`` commit in one transaction,
+    so a crash can never leave a claimed job without its audit entry.
+
     Returns the claimed job row (in its active state), or None when no
     claimable job exists. Raises ValueError for an empty owner or an
     unknown state name.
@@ -87,43 +99,60 @@ def claim(conn: sqlite3.Connection, owner: str,
     ordered = [s for s in _CLAIM_PRIORITY if s in wanted]
     ts = now()
     expires = _lease_expires()
-    for src in ordered:
-        dst = CLAIMABLE[src]
-        # (1) fresh queued work
-        cur = conn.execute(
-            """UPDATE jobs
-               SET state=?, lease_owner=?, lease_expires=?,
-                   attempts=attempts+1, updated_at=?
-               WHERE id=(SELECT id FROM jobs WHERE state=?
-                         AND (lease_expires IS NULL OR lease_expires <= ?)
-                         ORDER BY created_at LIMIT 1)
-               RETURNING *""",
-            (dst, owner, expires, ts, src, ts),
-        )
-        row = cur.fetchone()
-        if row is not None:
-            log(conn, row["id"], src, dst,
-                f"claimed by {owner} (attempt {row['attempts']})")
-            return row
-        # (2) crashed-worker reclaim: active, lease expired
-        cur = conn.execute(
-            """UPDATE jobs
-               SET lease_owner=?, lease_expires=?,
-                   attempts=attempts+1, updated_at=?
-               WHERE id=(SELECT id FROM jobs WHERE state=?
-                         AND lease_expires IS NOT NULL
-                         AND lease_expires <= ?
-                         ORDER BY lease_expires LIMIT 1)
-               RETURNING *""",
-            (owner, expires, ts, dst, ts),
-        )
-        row = cur.fetchone()
-        if row is not None:
-            log(conn, row["id"], dst, dst,
-                f"lease reclaimed by {owner} after expiry"
-                f" (attempt {row['attempts']})")
-            return row
-    return None
+    # Re-entrant: participate in a caller-held transaction instead of
+    # starting a nested one. Only COMMIT/ROLLBACK what we started.
+    own = not conn.in_transaction
+    if own:
+        conn.execute("BEGIN IMMEDIATE")
+    try:
+        for src in ordered:
+            dst = CLAIMABLE[src]
+            # (1) fresh queued work
+            cur = conn.execute(
+                """UPDATE jobs
+                   SET state=?, lease_owner=?, lease_expires=?,
+                       attempts=attempts+1, updated_at=?
+                   WHERE id=(SELECT id FROM jobs WHERE state=?
+                             AND (lease_expires IS NULL OR lease_expires <= ?)
+                             ORDER BY created_at LIMIT 1)
+                   RETURNING *""",
+                (dst, owner, expires, ts, src, ts),
+            )
+            row = cur.fetchone()
+            if row is not None:
+                log(conn, row["id"], src, dst,
+                    f"claimed by {owner} (attempt {row['attempts']})")
+                if own:
+                    conn.execute("COMMIT")
+                return row
+            # (2) crashed-worker reclaim: active, lease expired
+            cur = conn.execute(
+                """UPDATE jobs
+                   SET lease_owner=?, lease_expires=?,
+                       attempts=attempts+1, updated_at=?
+                   WHERE id=(SELECT id FROM jobs WHERE state=?
+                             AND lease_expires IS NOT NULL
+                             AND lease_expires <= ?
+                             ORDER BY lease_expires LIMIT 1)
+                   RETURNING *""",
+                (owner, expires, ts, dst, ts),
+            )
+            row = cur.fetchone()
+            if row is not None:
+                log(conn, row["id"], dst, dst,
+                    f"lease reclaimed by {owner} after expiry"
+                    f" (attempt {row['attempts']})")
+                if own:
+                    conn.execute("COMMIT")
+                return row
+        if own:
+            # Nothing matched: nothing changed; release the lock.
+            conn.execute("ROLLBACK")
+        return None
+    except Exception:
+        if own:
+            conn.execute("ROLLBACK")
+        raise
 
 
 def heartbeat(conn: sqlite3.Connection, job_id: str, owner: str) -> bool:
@@ -146,61 +175,106 @@ def release(conn: sqlite3.Connection, job_id: str, owner: str) -> bool:
 
     Allowed for the lease owner, or for anyone when the lease has expired
     (the reaper path). Lease expiry is not a failure: ``attempts`` is left
-    unchanged. Returns False when a live lease is held by another owner.
+    unchanged. Returns False when a live lease is held by another owner,
+    or when the job's state/lease changed under us (lost race — the
+    caller re-reads and retries instead of acting on a stale row).
     Raises ValueError for an unknown job.
+
+    The ownership/expiry check lives ON the UPDATE (``AND state=? AND
+    (lease_owner=? OR lease_expires IS NULL OR lease_expires <= ?)``), so
+    a lease renewed between our read and our write cannot be silently
+    released. The state change and its audit ``log()`` commit atomically.
     """
-    row = conn.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
-    if row is None:
-        raise ValueError(f"unknown job {job_id}")
-    ts = now()
-    lease_owner, lease_expires = row["lease_owner"], row["lease_expires"]
-    lease_live = lease_expires is not None and lease_expires > ts
-    if lease_live and lease_owner != owner:
-        return False
-    frm = row["state"]
-    dst = ACTIVE_TO_QUEUED.get(frm, frm)
-    conn.execute(
-        "UPDATE jobs SET state=?, lease_owner=NULL, lease_expires=NULL,"
-        " updated_at=? WHERE id=?",
-        (dst, ts, job_id),
-    )
-    if dst != frm:
-        log(conn, job_id, frm, dst, f"released by {owner}; lease cleared")
-    return True
+    own = not conn.in_transaction
+    if own:
+        conn.execute("BEGIN IMMEDIATE")
+    try:
+        row = conn.execute(
+            "SELECT state FROM jobs WHERE id=?", (job_id,)).fetchone()
+        if row is None:
+            raise ValueError(f"unknown job {job_id}")
+        frm = row["state"]
+        dst = ACTIVE_TO_QUEUED.get(frm, frm)
+        ts = now()
+        cur = conn.execute(
+            "UPDATE jobs SET state=?, lease_owner=NULL, lease_expires=NULL,"
+            " updated_at=? WHERE id=? AND state=?"
+            " AND (lease_owner=? OR lease_expires IS NULL"
+            "      OR lease_expires <= ?)",
+            (dst, ts, job_id, frm, owner, ts),
+        )
+        if cur.rowcount != 1:
+            # Lost race: the state moved, or the lease was renewed /
+            # taken by someone else after our read. Change nothing.
+            if own:
+                conn.execute("ROLLBACK")
+            return False
+        if dst != frm:
+            log(conn, job_id, frm, dst, f"released by {owner}; lease cleared")
+        if own:
+            conn.execute("COMMIT")
+        return True
+    except Exception:
+        if own:
+            conn.execute("ROLLBACK")
+        raise
 
 
 def fail(conn: sqlite3.Connection, job_id: str, owner: str, err) -> sqlite3.Row:
     """Fail a leased job: state -> ``failed``, error recorded, lease cleared.
 
-    Only the lease owner may fail its job. When ``attempts`` has reached
-    ``MAX_ATTEMPTS`` the job_events note is stamped ``POISON|`` — the job
-    is terminal and needs operator review (the poison-review path); below
-    the limit the work loop may re-queue it while attempts remain.
-    Returns the updated job row.
+    Only the lease owner may fail its job — enforced by ``AND
+    lease_owner=?`` ON the UPDATE, so a lease reclaimed by another worker
+    between our read and our write makes this a no-op instead of failing
+    someone else's job (T-007). A lost race raises ValueError, like the
+    not-the-owner case; the work loop already treats that as "skip".
+
+    When ``attempts`` has reached ``MAX_ATTEMPTS`` the job_events note is
+    stamped ``POISON|`` — the job is terminal and needs operator review
+    (the poison-review path); below the limit the work loop may re-queue
+    it while attempts remain.
+
+    The state change and its audit ``log()`` commit in one transaction.
+    Returns the updated job row. Raises ValueError for an unknown job.
     """
-    row = conn.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
-    if row is None:
-        raise ValueError(f"unknown job {job_id}")
-    if row["lease_owner"] != owner:
-        raise ValueError(
-            f"lease on {job_id} is not held by {owner!r}"
+    own = not conn.in_transaction
+    if own:
+        conn.execute("BEGIN IMMEDIATE")
+    try:
+        row = conn.execute(
+            "SELECT state, attempts FROM jobs WHERE id=?",
+            (job_id,)).fetchone()
+        if row is None:
+            raise ValueError(f"unknown job {job_id}")
+        frm = row["state"]
+        attempts = int(row["attempts"] or 0)
+        ts = now()
+        err_s = str(err)
+        if attempts >= MAX_ATTEMPTS:
+            note = (f"POISON|attempts {attempts}/{MAX_ATTEMPTS} exhausted — "
+                    f"operator review required: {err_s}")
+        else:
+            note = err_s
+        cur = conn.execute(
+            "UPDATE jobs SET state='failed', error=?,"
+            " lease_owner=NULL, lease_expires=NULL, updated_at=?"
+            " WHERE id=? AND lease_owner=?"
+            " RETURNING *",
+            (err_s, ts, job_id, owner),
         )
-    attempts = int(row["attempts"] or 0)
-    ts = now()
-    err_s = str(err)
-    if attempts >= MAX_ATTEMPTS:
-        note = (f"POISON|attempts {attempts}/{MAX_ATTEMPTS} exhausted — "
-                f"operator review required: {err_s}")
-    else:
-        note = err_s
-    conn.execute(
-        "UPDATE jobs SET state='failed', error=?,"
-        " lease_owner=NULL, lease_expires=NULL, updated_at=?"
-        " WHERE id=?",
-        (err_s, ts, job_id),
-    )
-    log(conn, job_id, row["state"], "failed", note)
-    return conn.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
+        updated = cur.fetchone()
+        if updated is None:
+            raise ValueError(
+                f"lease on {job_id} is not held by {owner!r} (lost race)"
+            )
+        log(conn, job_id, frm, "failed", note)
+        if own:
+            conn.execute("COMMIT")
+        return updated
+    except Exception:
+        if own:
+            conn.execute("ROLLBACK")
+        raise
 
 
 def log(conn: sqlite3.Connection, job_id: str, frm, to: str, note) -> None:
