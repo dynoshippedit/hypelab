@@ -114,7 +114,7 @@ DEFERRED · REJECTED.
   the mean computation. Test with stubbed low-p words → `gate_failed`.
 
 ### T-007 — claim() double-claim race; fail() TOCTOU (BUG-006 · S1/Likely; + TST-007 S2)
-- Status: **IN PROGRESS** (hl-cycle-06). `fail()` UPDATE lacks
+- Status: **VERIFIED** (hl-cycle-06; commit 68b2565; controller acceptance 2026-09-29 — diff inspected, work-loop fail() ValueError contract confirmed safe, new tests 7/7, full suite 226/226 green on final HEAD). `fail()` UPDATE lacks
   `AND lease_owner=?`. Fix: add predicates, check rowcount, treat empty
   RETURNING as lost race. Verify: two-process claim race test (TST-007).
 
