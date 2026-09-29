@@ -24,8 +24,15 @@ import json
 import re
 from pathlib import Path
 
+from hypelab import config as config_mod
+
 #: Default on-disk cache for the wav2vec2 CTC model used by forced alignment.
-DEFAULT_CACHE_DIR = "/home/dino/hypelab/models/wav2vec2-base-960h"
+DEFAULT_CACHE_DIR = "/home/dino/hypelab/models/wav2vec2-base-960h"  # legacy default (kept for compat)
+
+
+def _default_cache_dir() -> str:
+    """Model cache dir derived from the single-root config (D3)."""
+    return str(config_mod.resolve_config().models_dir / "wav2vec2-base-960h")
 
 #: HF repo id of the CTC acoustic model (downloaded once by fetch_model).
 WAV2VEC2_REPO = "facebook/wav2vec2-base-960h"
@@ -156,7 +163,7 @@ def transcribe(path: str | Path, asr_cfg=None) -> dict:
 # 2. one-time model fetch (ONLY network-touching function in this module)
 # --------------------------------------------------------------------------
 
-def fetch_model(cache_dir: str = DEFAULT_CACHE_DIR) -> str:
+def fetch_model(cache_dir: str | None = None) -> str:
     """Download facebook/wav2vec2-base-960h ONCE into cache_dir.
 
     This is the only function in this module permitted to use the network.
@@ -164,6 +171,7 @@ def fetch_model(cache_dir: str = DEFAULT_CACHE_DIR) -> str:
     """
     from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 
+    cache_dir = cache_dir or _default_cache_dir()
     dest = Path(cache_dir)
     dest.mkdir(parents=True, exist_ok=True)
     model = Wav2Vec2ForCTC.from_pretrained(WAV2VEC2_REPO)
@@ -239,7 +247,7 @@ def _align_chunk(
 def force_align_words(
     wav_path: str | Path,
     words: list[str],
-    cache_dir: str = DEFAULT_CACHE_DIR,
+    cache_dir: str | None = None,
     chunk_s: float = CHUNK_S,
     asr_cfg=None,
 ) -> list[dict]:
@@ -266,6 +274,7 @@ def force_align_words(
     import torchaudio  # noqa: F401  (ensures functional API present)
 
     _asr_cfg(asr_cfg)  # validate the shape; whisper keys unused on this path
+    cache_dir = cache_dir or _default_cache_dir()
     cache = _check_cache(cache_dir)
 
     from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
@@ -524,7 +533,7 @@ def align_words(
             model=f"wav2vec2:{WAV2VEC2_REPO}",
             transcript_source=str(script_path),
             audio_sha256=sha256_file(vo_path),
-            cache_dir=DEFAULT_CACHE_DIR,
+            cache_dir=_default_cache_dir(),
         )
         data["language"] = language
     else:

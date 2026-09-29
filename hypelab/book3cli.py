@@ -3,8 +3,9 @@
 Registered onto the main ``hypelab`` click group by cli.py (Book 3's
 commands live here so Book 1's cli.py diff stays a small registration).
 
-Conventions mirror cli.py / b2cli.py: HYPELAB_DB / HYPELAB_ROOT env
-overrides, errors via _die to stderr with a nonzero exit. No external
+Conventions mirror cli.py / b2cli.py: paths resolve from the single-root
+config (hypelab/config.py; HYPELAB_HOME with per-path overrides), errors
+via _die to stderr with a nonzero exit. No external
 side effect without a recorded authorization row — enforced in the
 modules, not just the CLI.
 """
@@ -18,6 +19,7 @@ from pathlib import Path
 import click
 
 from hypelab import authorize as authorize_mod
+from hypelab import config as config_mod
 from hypelab import carousel as carousel_mod
 from hypelab.cli_errors import CliError
 from hypelab import consent as consent_mod
@@ -47,11 +49,11 @@ def _die(msg, code=1):
 
 
 def _root():
-    return os.environ.get("HYPELAB_ROOT", DEFAULT_ROOT)
+    return config_mod.resolve_config().home
 
 
 def _conn():
-    return db_mod.connect(os.environ.get("HYPELAB_DB") or None)
+    return db_mod.connect()
 
 
 def _cmd(name=None, **kw):

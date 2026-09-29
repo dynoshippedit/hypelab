@@ -14,6 +14,8 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
+from hypelab import config as config_mod
+
 #: version -> migration file stem. The code's expected migration set.
 EXPECTED_MIGRATIONS = {
     1: "0001_book1_foundation",
@@ -25,6 +27,8 @@ EXPECTED_MIGRATIONS = {
 
 MIGRATIONS_DIR = Path(__file__).resolve().parent.parent / "migrations"
 
+# Legacy default (kept for compat). connect() resolves its default from
+# the single-root config (D3) so HYPELAB_HOME / HYPELAB_DB_PATH take effect.
 DEFAULT_DB_PATH = Path("/home/dino/hypelab/hypelab.db")
 
 _SCHEMA_MIGRATIONS_DDL = """CREATE TABLE IF NOT EXISTS schema_migrations(
@@ -139,7 +143,7 @@ def connect(path=None) -> sqlite3.Connection:
     30 s busy timeout, autocommit (isolation_level=None), WAL journal mode,
     foreign keys enforced.
     """
-    p = Path(path) if path else DEFAULT_DB_PATH
+    p = Path(path) if path else config_mod.resolve_config().db_path
     p.parent.mkdir(parents=True, exist_ok=True)
     cx = sqlite3.connect(str(p), timeout=30, isolation_level=None)
     cx.row_factory = sqlite3.Row

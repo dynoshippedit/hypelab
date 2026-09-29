@@ -16,8 +16,10 @@ Write domains (improved Book 1, section 1):
     kits/, user media  READ ONLY (never written by this CLI)
 
 Test isolation (no landed-module changes needed):
-    HYPELAB_DB             sqlite path (default: the repo hypelab.db)
-    HYPELAB_ROOT           repo root used for work/ dirs (default: /home/dino/hypelab)
+    HYPELAB_HOME           single root; every path derives from it by default
+                           (default: /home/dino/hypelab). See hypelab/config.py
+                           for the full variable list and per-path overrides.
+                           Legacy HYPELAB_ROOT / HYPELAB_DB are still honored.
     HYPELAB_LEASE_SECONDS  worker lease seconds (default 1800; tests use a short one)
 """
 
@@ -36,6 +38,7 @@ import click
 
 from hypelab import align as align_mod
 from hypelab.cli_errors import CliError, CliGroup
+from hypelab import config as config_mod
 from hypelab import db as db_mod
 from hypelab import edl as edl_mod
 from hypelab import gates as gates_mod
@@ -91,11 +94,15 @@ def _die(msg, code=1):
 
 
 def _repo_root():
-    return os.environ.get("HYPELAB_ROOT", DEFAULT_ROOT)
+    # Single-root config (D3): HYPELAB_HOME owns the root; HYPELAB_ROOT is a
+    # legacy alias honored inside config.resolve_config().
+    return config_mod.resolve_config().home
 
 
 def _conn():
-    return db_mod.connect(os.environ.get("HYPELAB_DB") or None)
+    # db.connect() resolves its default path from the config (D3);
+    # HYPELAB_DB is honored as a legacy alias for HYPELAB_DB_PATH.
+    return db_mod.connect()
 
 
 def _lease_seconds():
@@ -1088,6 +1095,8 @@ _b3cli.register(cli)
 
 
 def main():
+    # Startup (D3): validate paths and print the resolved configuration.
+    config_mod.startup()
     cli()
 
 

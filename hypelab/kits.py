@@ -14,8 +14,12 @@ import copy
 import json
 from pathlib import Path
 
+from hypelab import config as config_mod
+
 # Default location of the shipped cerebratico kit source (read, never written).
-CEREBRATICO_KIT_PATH = Path("/home/dino/hypelab/kits/cerebratico/kit.json")
+def _default_kit_path() -> Path:
+    """Kit path derived from the single-root config (D3); kits/ is read-only."""
+    return config_mod.resolve_config().kits_dir / "cerebratico" / "kit.json"
 
 
 def _ensure(conn) -> None:
@@ -170,7 +174,7 @@ def seed_cerebratico(conn, kit_path: str | Path | None = None) -> int:
     NOT run automatically — the integrator seeds via CLI. Raises
     FileNotFoundError when the shipped kit.json is absent.
     """
-    path = Path(kit_path) if kit_path else CEREBRATICO_KIT_PATH
+    path = Path(kit_path) if kit_path else _default_kit_path()
     if not path.is_file():
         raise FileNotFoundError(
             f"cerebratico kit source not found: {path} "

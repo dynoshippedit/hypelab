@@ -3,7 +3,8 @@
 Registered onto the main ``hypelab`` click group by cli.py (Book 2's
 commands live here so Book 1's cli.py diff stays a two-line registration).
 
-Conventions mirror cli.py: HYPELAB_DB / HYPELAB_ROOT env overrides, errors
+Conventions mirror cli.py: paths resolve from the single-root config
+(hypelab/config.py; HYPELAB_HOME with per-path overrides), errors
 via _die to stderr with a nonzero exit.
 """
 from __future__ import annotations
@@ -20,6 +21,7 @@ import click
 import hypelab
 from hypelab import attribution as attribution_mod
 from hypelab import campaigns as campaigns_mod
+from hypelab import config as config_mod
 from hypelab.cli_errors import CliError, CliGroup
 from hypelab import compliance as compliance_mod
 from hypelab import cut as cut_mod
@@ -51,11 +53,11 @@ def _die(msg, code=1):
 
 
 def _root():
-    return os.environ.get("HYPELAB_ROOT", DEFAULT_ROOT)
+    return config_mod.resolve_config().home
 
 
 def _conn():
-    return db_mod.connect(os.environ.get("HYPELAB_DB") or None)
+    return db_mod.connect()
 
 
 def _work(job_id):
