@@ -90,3 +90,12 @@
 - Notes updated: JOURNAL.md
 - Commands: grep charge callers; sed tests/test_cli.py:239-258
 - Next: await SEC lane report; then Phase 2 gate check
+
+## 2026-09-29 03:20 · Tech Lead · Phase 2
+- Did: Received SEC lane report (completed). Threat model + authz matrix (36 leaf command paths, not 30 — playbook figure stale) + flow 4 traced. 7 findings (SEC-100–106: 2x S3, 5x S4). Key verdicts: LIVE PUBLISHING CANNOT EXECUTE — four independent refusals verified (CLI --live dies; DryRunPublisher/Meta raise LiveRefused; Postiz/Zernio/Ayrshare share _refuse_live). All three externally-visible effects (pitch, invite, publish) gated in module code, not just CLI. Consent expiry is a lexicographic string comparison (SEC-100 S3 — "--expires never" never expires). No shell=True, no pickle/YAML, all SQL parameterized, no traversal in intake — all verified negative.
+- Found: SEC-100/104 (S3) · SEC-101/102/103/105/106 (S4)
+- Phase 2 totals: 114 findings — S0 0 · S1 10 · S2 40 · S3 49 · S4 15.
+- PHASE 2 GATE: PASS — all six critical flows traced hop-by-hop (flow1/2/5 bug, flow3/6 arc, flow4 sec). Criteria met: flow docs exist for all six; every threat crossing traced to a sink; no unvalidated source-to-sink paths remain.
+- Notes updated: JOURNAL.md
+- Commands: none (lane report)
+- Next: Phase 3 deep lanes — PRF (performance), UIX (operator UX), Pattern Pack disposition, ENV cross-cutting, fresh-eyes full-file sweeps A/B
