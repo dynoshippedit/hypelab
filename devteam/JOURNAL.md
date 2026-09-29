@@ -146,3 +146,12 @@
 - Notes updated: JOURNAL.md
 - Commands: none (lane report)
 - Next: await SWEEP-A; then Phase 3 gate → Phase 4 triage
+
+## 2026-09-29 04:05 · Tech Lead · Phase 3
+- Did: Received SWEEP-A report (completed). 24 files A–M read fully; sweep-a.md + 20 new findings (REV-700–719: 4x S2, 5x S3, 11x S4). Most surprising: REV-703 S2 — submission re-gate rebuilds the clip from hardcoded placeholders instead of the stored clip row (false-FAILS compliant clips, false-PASSES banned-words — the guarantee inverted). REV-705 S2 — tokenizer drift: align tokenizes with _WORD_RE but beat retiming counts with str.split(), hyphens silently shift every later beat's timing. REV-700 S2 — campaign list KeyError 'status'. Confirmed existing ARC-301/BUG-004 mechanisms without duplicating (BUG-004 verified precisely: min_word_prob=0.0 -> by_beat always empty -> flagged always empty).
+- Found: REV-700/702/703/705 (S2) · REV-704/706/707/714/718 (S3) · REV-708–713/715–717/719 (S4)
+- Phase 3 totals: 200 findings — S0 0 · S1 11 · S2 53 · S3 80 · S4 45.
+- PHASE 3 GATE: PASS — full file/lens coverage complete: SWEEP-A (24 files A–M) + SWEEP-B (14 files N–Z) read every module; PRF/UIX/PAT/ENV covered the lens/cross-cutting audits; Pattern Pack dispositioned (19 patterns). All 15 lanes completed.
+- Notes updated: JOURNAL.md
+- Commands: none (lane report)
+- Next: Phase 4 triage — (a) merged findings register + dedupe, (b) independent verification of all 11 S1s + S2 sample, (c) fix queue, (d) severity-count reconciliation, (e) QUESTIONS.md audit
