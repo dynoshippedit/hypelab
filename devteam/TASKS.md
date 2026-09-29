@@ -45,7 +45,7 @@ DEFERRED · REJECTED.
 ## Queue
 
 ### T-001 — Campaign CLI commands repaired (ARC-301 S1, REV-700 S2, REV-701 S4)
-- Status: **IN PROGRESS** (hl-cycle-01)
+- Status: **VERIFIED** (hl-cycle-01; controller re-ran: 6/6 focused + 197/197 full suite green, exit 0)
 - Root: `/home/dino/hypelab`
 - Problem: `campaign bump-rules` can never succeed (passes operator *string*
   as the `provenance` dict `bump_rules` requires — every invocation raises
