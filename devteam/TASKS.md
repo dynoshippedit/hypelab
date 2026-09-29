@@ -102,7 +102,7 @@ DEFERRED · REJECTED.
   follows as the structural fix.
 
 ### T-005 — Render hash-skip wedges job in `rendering` (BUG-002 · S1/Confirmed)
-- Status: **IN PROGRESS** (hl-cycle-05). Skip path returns with state untouched after the caller moved
+- Status: **VERIFIED** (hl-cycle-05; commit c91b765; controller acceptance 2026-09-29 — diff inspected, new tests 2/2, full suite 219/219 green on final HEAD). Skip path no longer returns with state untouched after the caller moved
   `queued_render → rendering`; `rendering` not claimable (lease cleared).
 - Fix: on skip from `rendering`, transition `rendering → rendered →
   queued_gates`. Test: gate_failed → audio (same media) → render → assert
