@@ -1,1 +1,63 @@
-{"blockers":[],"changed_files":["hypelab/config.py (new: single-root config module)","hypelab/cli.py (main() validates+prints at startup; _repo_root/_conn delegate to config)","hypelab/b2cli.py (ditto _root/_conn)","hypelab/book3cli.py (ditto _root/_conn)","hypelab/db.py (connect() default path from config)","hypelab/util.py (work_dir root defaults to HYPELAB_HOME)","hypelab/align.py (model cache dir resolves via config)","hypelab/kits.py (kit path resolves via config)","hypelab/reframe.py (scratch frame under <home>/tmp)","tests/test_config.py (new: 13 tests)","devteam/notes/config.md (new: variable documentation)","devteam/TASKS.md (T-019 marker)"],"checks":[{"command":"pytest tests/test_config.py -q","result":"13 passed"},{"command":"git stash push hypelab/ (config.py moved away) + pytest tests/test_config.py -q","result":"13/13 fail at collection (no config module) — falsified; tree restored after"},{"command":"pytest tests/test_config.py tests/test_render_hash_skip.py -q","result":"15 passed (after models_dir fix)"},{"command":"pytest tests/ -q (full suite)","result":"285 passed, 3 warnings (first full run: 7 failed incl. 2 render_hash_skip — model cache wrongly derived from tmp HYPELAB_HOME; fixed by making models_dir machine-global default; second run: 285/285 green)"}],"cycle_id":"hl-cycle-10","lessons":["The wav2vec2 model cache is a machine-global read-mostly cache: deriving it from HYPELAB_HOME broke tests that isolate the home in a tmp dir while sharing the real model. models_dir now defaults to /home/dino/hypelab/models (absolute), with HYPELAB_MODELS_DIR as explicit override. Documented in config.py and devteam/notes/config.md.","Startup print lives in cli.main() (real process entrypoint), not in the click group — CliRunner-based tests are unaffected."],"next_action":"D4 — T-040 outputs extraction (depends on this cycle's HYPELAB_OUTPUTS_DIR). Controller decides dispatch.","project_id":"hypelab","project_root":"/home/dino/hypelab","proposed_status":"IMPLEMENTED","root_cause":"T-019/C9 ENV-651: path configuration was split across HYPELAB_ROOT, HYPELAB_DB, and hardcoded /home/dino/hypelab/... literals in six modules (split-brain). One variable (HYPELAB_HOME) now owns every path; all others derive from it by default with documented per-path overrides.","schema_version":"1.0","source_identity":{"after":"<this commit>","before":"a3cadf9","method":"git rev-parse + git status (clean tree, branch devteam/review-2026-09-29, HEAD a3cadf9 before editing)"},"summary":"D3 implemented: new hypelab/config.py with resolve_config()/validate_config()/print_config()/startup(); all CLIs, db.connect(), util.work_dir, align model cache, kits path, and reframe scratch route through it. HYPELAB_HOME is the single root; HYPELAB_DB_PATH/WORK/MODELS/OUTPUTS/LOGS/TMP/KITS_DIR are documented optional overrides; legacy HYPELAB_ROOT/HYPELAB_DB honored. Startup validates paths (fail fast) and prints the resolved config with source tags; secrets are never derived from the root and never printed (rule documented + tested).","task_id":"HL-010"}
+{
+  "blockers": [],
+  "changed_files": [
+    "hypelab/config.py (new: single-root config module)",
+    "hypelab/cli.py (main() validates+prints at startup; _repo_root/_conn delegate to config)",
+    "hypelab/b2cli.py (ditto _root/_conn)",
+    "hypelab/book3cli.py (ditto _root/_conn)",
+    "hypelab/db.py (connect() default path from config)",
+    "hypelab/util.py (work_dir root defaults to HYPELAB_HOME)",
+    "hypelab/align.py (model cache dir resolves via config)",
+    "hypelab/kits.py (kit path resolves via config)",
+    "hypelab/reframe.py (scratch frame under <home>/tmp)",
+    "tests/test_config.py (new: 13 tests)",
+    "devteam/notes/config.md (new: variable documentation)",
+    "devteam/TASKS.md (T-019 marker)"
+  ],
+  "checks": [
+    {
+      "command": "pytest tests/test_config.py -q",
+      "result": "13 passed"
+    },
+    {
+      "command": "git stash push hypelab/ (config.py moved away) + pytest tests/test_config.py -q",
+      "result": "13/13 fail at collection (no config module) \u2014 falsified; tree restored after"
+    },
+    {
+      "command": "pytest tests/test_config.py tests/test_render_hash_skip.py -q",
+      "result": "15 passed (after models_dir fix)"
+    },
+    {
+      "command": "pytest tests/ -q (full suite)",
+      "result": "285 passed, 3 warnings (first full run: 7 failed incl. 2 render_hash_skip \u2014 model cache wrongly derived from tmp HYPELAB_HOME; fixed by making models_dir machine-global default; second run: 285/285 green)"
+    }
+  ],
+  "cycle_id": "hl-cycle-10",
+  "lessons": [
+    "The wav2vec2 model cache is a machine-global read-mostly cache: deriving it from HYPELAB_HOME broke tests that isolate the home in a tmp dir while sharing the real model. models_dir now defaults to /home/dino/hypelab/models (absolute), with HYPELAB_MODELS_DIR as explicit override. Documented in config.py and devteam/notes/config.md.",
+    "Startup print lives in cli.main() (real process entrypoint), not in the click group \u2014 CliRunner-based tests are unaffected."
+  ],
+  "next_action": "D4 \u2014 T-040 outputs extraction (depends on this cycle's HYPELAB_OUTPUTS_DIR). Controller decides dispatch.",
+  "project_id": "hypelab",
+  "project_root": "/home/dino/hypelab",
+  "proposed_status": "VERIFIED",
+  "root_cause": "T-019/C9 ENV-651: path configuration was split across HYPELAB_ROOT, HYPELAB_DB, and hardcoded /home/dino/hypelab/... literals in six modules (split-brain). One variable (HYPELAB_HOME) now owns every path; all others derive from it by default with documented per-path overrides.",
+  "schema_version": "1.0",
+  "source_identity": {
+    "after": "<this commit>",
+    "before": "a3cadf9",
+    "method": "git rev-parse + git status (clean tree, branch devteam/review-2026-09-29, HEAD a3cadf9 before editing)"
+  },
+  "summary": "D3 implemented: new hypelab/config.py with resolve_config()/validate_config()/print_config()/startup(); all CLIs, db.connect(), util.work_dir, align model cache, kits path, and reframe scratch route through it. HYPELAB_HOME is the single root; HYPELAB_DB_PATH/WORK/MODELS/OUTPUTS/LOGS/TMP/KITS_DIR are documented optional overrides; legacy HYPELAB_ROOT/HYPELAB_DB honored. Startup validates paths (fail fast) and prints the resolved config with source tags; secrets are never derived from the root and never printed (rule documented + tested).",
+  "task_id": "HL-010",
+  "controller_verification": {
+    "date": "2026-09-29",
+    "source_identity": "da6bfd0 on devteam/review-2026-09-29, tree clean, nothing pushed",
+    "checks": [
+      "tests/test_config.py: 13/13 pass (independently re-run)",
+      "full suite: 285/285 pass (272 rest + 13 config), 3 warnings",
+      "functional: fresh HYPELAB_HOME prints resolved config with source tags, no secrets; dirs created"
+    ],
+    "result": "VERIFIED"
+  }
+}

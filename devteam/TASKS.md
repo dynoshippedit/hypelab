@@ -170,7 +170,7 @@ DEFERRED · REJECTED.
   document the egress; align with module docstring. S.
 
 ### T-019 — HYPELAB_ROOT/DB/model-cache split-brain (ENV-651 · S2/Confirmed)
-- Status: **IMPLEMENTED** [hl-cycle-10] — HYPELAB_HOME single root (hypelab/config.py: resolve/validate/print/startup), all CLIs + db.connect + work_dir + model cache + kits + reframe scratch routed through it; per-path vars as documented overrides; legacy HYPELAB_ROOT/HYPELAB_DB honored; models_dir machine-global default (not under home); secrets never derived/printed. New tests 13/13, full suite 285/285. Awaiting controller verification.
+- Status: **VERIFIED** [hl-cycle-10] — HYPELAB_HOME single root (hypelab/config.py: resolve/validate/print/startup), all CLIs + db.connect + work_dir + model cache + kits + reframe scratch routed through it; per-path vars as documented overrides; legacy HYPELAB_ROOT/HYPELAB_DB honored; models_dir machine-global default (not under home); secrets never derived/printed. Controller acceptance: test_config.py 13/13 green, full suite 285/285 green (272 + 13, independently re-run on da6bfd0), functional spot check (fresh HYPELAB_HOME: startup prints resolved config with per-variable source tags, no secrets, work/logs/tmp/outputs created), tree clean, nothing pushed.
 
 ### T-020 — Lazy imports / missing ffmpeg fail with raw tracebacks (ENV-652 · S2/Confirmed)
 - Status: READY. Wrap lazy imports with helper raising domain error naming
