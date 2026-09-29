@@ -1,25 +1,27 @@
 # STATUS — resume here
-Updated: 2026-09-29 02:35 by Tech Lead
-Phase: 2 — Critical-flow tracing · Mode: A multi-agent · Branch: devteam/review-2026-09-29
+Updated: 2026-09-29 02:45 UTC by hl-cycle-01 (Engineering Kit v3.0 worker)
+Phase: Engineering cycle hl-cycle-01 · Branch: devteam/review-2026-09-29
+(Cycle on top of the old-kit review: Phases 1–3 complete, 200 findings in
+devteam/findings/*.md; old Phase 4 triage reports were lost on kit switchover.)
 
 ## Progress
-- Coverage: 88/88 files tiered (High 29 · Medium 14 · Low 45); lens work list open for Phase 3
-- Issues: S0 0 · S1 2 · S2 24 · S3 22 · S4 6 — open 54 (all NEW) · fixed 0 · verified 0
-- Gates passed: P0 ✔ P1 ✔
+- Triage: complete 2026-09-29 → devteam/TASKS.md (authoritative queue).
+  Old-kit severities reconciled to the v3.0 scale (S0/S1/S2/S3/Idea);
+  duplicates merged; challenged items recorded in TASKS.md.
+- ISSUES.md now points at TASKS.md (single source of truth).
+- Queue head: T-001 campaign CLI repairs — IN PROGRESS this cycle.
+- BLOCKED on owner (in devteam/QUESTIONS.md): T-011 retry policy, T-013
+  charge() wiring, T-019 root/DB split-brain, T-040 git rm jobs/.
+- Baseline suite (pre-edit): 191 passed, exit 0.
 
 ## In progress
-- Tech Lead: Phase 2 lanes running (BUG, SEC, ARC, DAT, STR)
+- hl-cycle-01: T-001 implemented (b2cli.py campaign commands), 6 new
+  CliRunner tests green; full post-edit suite running.
 
 ## Next actions (in order)
-1. BUG: trace flows 1, 2, 5 (correctness) → notes/flows/*-bug.md + findings/bug.md
-2. SEC: trace flow 4 + threat model + authz matrix (all 30 commands) → notes/security/* + findings/sec.md
-3. ARC: trace flows 3, 6 + as-is architecture assessment → notes/flows/*-arc.md + findings/arc.md
-4. DAT: data model (migrations, ledgers) + integrations inventory → notes/data-model.md, notes/integrations.md + findings/dat.md
-5. STR: media/ffmpeg paths (ingest, transcode, render, reframe, cut, captions) → notes/flows/media-str.md + findings/str.md
-6. Lead: collect reports → Phase 2 gate (every flow traced hop-by-hop) → launch Phase 3 deep lanes
-
-## Fix queue (from Phase 4)
-- (empty — triage not started)
+1. Land this cycle: post-edit suite green → cycle JSON → commit (no push).
+2. Next task: T-002 feed_back() provenance filter (DAT-350 · S1 · XS).
+3. Then T-003 (BUG-001 SystemExit kills worker · S1 · S).
 
 ## Blockers / waiting on owner
-- none
+- 4 tasks BLOCKED on owner policy decisions — see devteam/QUESTIONS.md.

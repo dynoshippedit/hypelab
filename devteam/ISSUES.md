@@ -1,11 +1,6 @@
-# ISSUES — the ledger
-Summary: S0 0 · S1 0 · S2 0 · S3 0 · S4 0 | NEW 0 · CONFIRMED 0 · IN-PROGRESS 0 · FIXED 0 · VERIFIED 0 · other 0
-Last updated: 2026-09-29 by Tech Lead
+# ISSUES — superseded by TASKS.md
 
-## Index
-| ID | Sev | Conf | Status | Title | Location | Effort |
-|---|---|---|---|---|---|---|
-| (empty — findings begin in Phase 1/2) | | | | | | |
-
-## Entries
-(none yet)
+The triage ledger lives at  (authoritative queue,
+Engineering Kit v3.0 Phase 5, triaged 2026-09-29, hl-cycle-01).
+This file is kept only to avoid a second competing source of truth.
+Raw lane findings:  (200 findings, 15 lanes).

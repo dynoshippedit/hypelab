@@ -163,3 +163,26 @@
 - Notes updated: JOURNAL.md
 - Commands: none (delegation only)
 - Next: receive 4 triage reports → Phase 4 gate → Phase 5 sequential test-first fixes (S0–S3)
+
+---
+
+## 2026-09-29 02:45 UTC — hl-cycle-01: triage reconciled, T-001 implemented
+
+- Kit switchover: old-kit Phase 4 triage reports never arrived (Tech Lead
+  closed). Triage re-derived directly from durable lane findings.
+- Wrote devteam/TASKS.md: all 200 findings accounted for; severities
+  reconciled to v3.0 scale; merges: BUG-009/DAT-352, BUG-007/TST-003,
+  ARC-307/REV-750, REV-706/SEC-102, SEC-100/DAT-362, BLD-002/DOC-004,
+  BLD-003/DOC-001, BLD-005/DOC-005, ENV-650/BLD-001, REV-718/BUG-003;
+  challenge: BLD-008 S1 -> S3 (document HYPELAB_CHROMIUM).
+- ISSUES.md now defers to TASKS.md. STATUS.md updated to cycle reality.
+- T-001 (ARC-301 + REV-700 + REV-701) implemented in hypelab/b2cli.py:
+  bump-rules builds {who, source_url, captured_at} provenance;
+  refresh-budget extracts numeric seen_usd (bare number or
+  {"budget_seen_usd": ...}) with clean errors; list prints the schema state column;
+  show catches CampaignError. Adjacent latent defect found and fixed:
+  refresh-budget stored a raw operator string in budget_provenance, which
+  campaigns._parse() json.loads() on the next load -> JSONDecodeError;
+  CLI now stores json.dumps(provenance) matching bump-rules shape.
+- 6 new tests in tests/test_b2cli_campaigns.py (CliRunner, isolated DB):
+  6/6 pass. Baseline suite pre-edit: 191 passed. Post-edit full suite running.
