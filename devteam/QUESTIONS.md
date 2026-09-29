@@ -41,3 +41,52 @@ verified against the code. It will anchor the Phase 5 docs rewrite.
 the Phase 5 docs rewrite (README/ARCHITECTURE corrections per DOC-001..DOC-024).
 
 **Answer (owner):**
+
+---
+
+## ENV (2026-09-29) — config-model questions for Dino
+
+Findings: `devteam/findings/env.md` (ENV-650–657). Notes: `devteam/notes/environment.md`.
+
+**Q-ENV-1 (ENV-651): Should `HYPELAB_ROOT` become the single root?**
+Today `HYPELAB_ROOT` moves only `work/<job_id>/`; the DB stays at the hardcoded
+`/home/dino/hypelab/hypelab.db` (`db.py:26`) and the wav2vec2 model cache stays
+at the hardcoded `/home/dino/hypelab/models/` (`align.py:28`). **Options:** (a)
+derive DB path and model cache from `HYPELAB_ROOT` (with `HYPELAB_DB` as explicit
+override) — true single-root relocation; (b) keep the split and document it as
+required behavior. **Recommendation:** (a) — a root variable that doesn't move
+the state is a trap. **Default assumption meanwhile:** (b) — no behavior change
+made; split documented in `devteam/notes/environment.md`.
+
+**Q-ENV-2 (ENV-653): How should the ASR model be bootstrapped?**
+`transcribe()` downloads the faster-whisper `"medium"` model on first use from a
+second, undocumented HF cache (`~/.cache/huggingface`); no `fetch` step, no
+offline flag honored, raw traceback when offline. **Options:** (a) add a `fetch`
+CLI step for the ASR model mirroring `fetch_model()` for wav2vec2; (b) honor
+`HF_HUB_OFFLINE` with a clean "model not cached" error; (c) leave as-is and
+document both caches + sizes. **Recommendation:** (a)+(b) — pre-flight beats
+tracebacks. **Default assumption meanwhile:** (c) — document only; nothing changed.
+
+**Q-ENV-3 (ENV-650): Minimum-version policy for native tools?**
+No version floors exist for ffmpeg/ffprobe, Chromium, tesseract, yt-dlp (or any
+Python package — BLD-001). **Options:** (a) declare minimums (ffmpeg ≥ 6?,
+Chromium ≥ 120?, tesseract ≥ 5?) in docs + a startup check; (b) document only
+what's installed/known-good (ffmpeg 8.1.2, Chrome 153, tesseract absent). **Recommendation:**
+(b) now, (a) when the manifest lands. **Default assumption meanwhile:** (b).
+
+**Q-ENV-4 (ENV-655): Should the pipeline auto-detect CUDA?**
+Default compute is `"medium"` model on forced `"cpu"` (`align.py:84-89`) — a GPU
+machine silently runs CPU. **Options:** (a) probe `torch.cuda.is_available()` at
+transcribe time and use GPU when present; (b) keep forced CPU, log the resolved
+config and document the estimate. **Recommendation:** (b) now — (a) changes
+render determinism/cost profile; your call. **Default assumption meanwhile:** (b).
+
+**Answers (owner):**
+
+---
+
+## Q-002 — UIX (2026-09-29): failed-job recovery policy — CLI retry command vs auto-requeue
+
+**Status:** OPEN
+
+**Context:** BUG-007 / UIX-552. `queue.fail()`s docstring promises a re-queue

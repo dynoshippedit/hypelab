@@ -122,3 +122,11 @@
 - Notes updated: JOURNAL.md
 - Commands: none (lane report)
 - Next: await UIX, PAT, ENV, SWEEP-A; then Phase 3 gate → Phase 4 triage
+
+## 2026-09-29 03:45 · Tech Lead · Phase 3
+- Did: Received ENV lane report (completed). environment.md + 8 findings (ENV-650–657: 4x S2, 3x S3, 1x S4) + 4 NEEDS APPROVAL questions (Q-ENV-1..4) appended to QUESTIONS.md. Key: ENV-650 S2 — zero version floors for any dependency; ENV-651 S2 — HYPELAB_ROOT relocates work dirs but not DB or model cache (split-brain); ENV-652 S2 — missing lazy Python packages surface as raw tracebacks, not the clean error: path; ENV-653 S2 — hidden second HF cache + undocumented GB-scale medium-model download with offline traceback. First-run verdict: polite for missing binaries (clean error:), tracebacks for missing Python stack. No listening ports anywhere — watcher is a poll loop. Boot minimum: click + jsonschema only; all ML imports lazy.
+- Found: ENV-650/651/652/653 (S2) · ENV-654/655/657 (S3) · ENV-656 (S4)
+- Running totals: 155 findings — S0 0 · S1 11 · S2 48 · S3 62 · S4 34.
+- Notes updated: JOURNAL.md
+- Commands: none (lane report)
+- Next: await UIX, PAT, SWEEP-A; then Phase 3 gate → Phase 4 triage
