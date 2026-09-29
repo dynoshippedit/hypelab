@@ -1,0 +1,8 @@
+{
+ "basis": "campaign_supplied",
+ "provenance": {
+  "type": "fixture",
+  "note": "synthesized fixture media for acceptance"
+ },
+ "granted_by": "fixture"
+}

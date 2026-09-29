@@ -1,0 +1,74 @@
+{
+ "duration": 600,
+ "chapters": [
+  {
+   "start_time": 0,
+   "title": "Warmup basics"
+  },
+  {
+   "start_time": 150,
+   "title": "Training myths"
+  },
+  {
+   "start_time": 300,
+   "title": "Cutting phase"
+  },
+  {
+   "start_time": 450,
+   "title": "Q and A"
+  }
+ ],
+ "heatmap": [
+  {
+   "start_time": 59,
+   "end_time": 65,
+   "value": 0.95
+  },
+  {
+   "start_time": 181,
+   "end_time": 187,
+   "value": 0.88
+  },
+  {
+   "start_time": 301,
+   "end_time": 307,
+   "value": 0.92
+  },
+  {
+   "start_time": 421,
+   "end_time": 427,
+   "value": 0.85
+  },
+  {
+   "start_time": 541,
+   "end_time": 547,
+   "value": 0.9
+  }
+ ],
+ "comments": [
+  {
+   "text": "1:02 the truth bomb about training too hard",
+   "like_count": 40
+  },
+  {
+   "text": "2:05 tracking workouts changed everything",
+   "like_count": 12
+  },
+  {
+   "text": "3:03 down 20 pounds is insane progress",
+   "like_count": 25
+  },
+  {
+   "text": "5:05 nobody talks about the cut struggles",
+   "like_count": 8
+  },
+  {
+   "text": "9:05 the stretching guy is me lol",
+   "like_count": 3
+  },
+  {
+   "text": "great video, very clear explanations",
+   "like_count": 5
+  }
+ ]
+}

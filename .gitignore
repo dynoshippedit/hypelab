@@ -1,0 +1,27 @@
+# HypeLab: local-first pipeline. Never commit these.
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Model caches (large, machine-local)
+/models/
+
+# Job working directories (renders, manifests, run logs)
+/work/
+
+# Local dev databases (rebuilt via the migration runner)
+/hypelab.db
+/hypelab.db-shm
+/hypelab.db-wal
+
+# Backup files
+*.bak*
+*.bak.*
+
+# Editor / OS litter
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/

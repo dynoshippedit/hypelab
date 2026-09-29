@@ -1,0 +1,1 @@
+{"_note":"Recorded fixtures for the dry-run publish adapter. No live provider calls are ever made against these; the adapter only reads them. Tests write their own per-test fixture files and pass fixtures_path explicitly.","collaborator_status":{},"metrics":{},"posts":{}}

@@ -1,218 +1,210 @@
-"""Validation for render.json (EDL v1), slides.json, vo.words.json, beats.json.
+"""EDL (Edit Decision List) build + validate (Book 1).
 
-Strict: anything the renderer would have to guess about is a rejection.
-Returns a list of human-readable errors; empty list == valid.
+Shape is enforced by EDL_SCHEMA (jsonschema). validate() adds the
+temporal/structural rules a schema cannot express and raises EDLError with
+a list of human-readable strings.
+
+Render fingerprinting lives in hypelab.manifests.render_hash (content-hash
+identity + provenance); edl.py no longer hashes inputs itself.
 """
 from __future__ import annotations
-import re
 
-EDL_VERSION = 1
-MODES = {"original", "clip"}
-ASPECTS = {"9:16", "1:1", "16:9"}
-REFRAME_MODES = {"static", "track", "split", "blurpad"}
-HOOK_BUDGET = {"original": 3.0, "clip": 2.0}
+import jsonschema
 
-def _err(errors: list, path: str, msg: str) -> None:
-    errors.append(f"{path}: {msg}")
+_BEAT_ROLES = ["hook", "body", "turn", "payoff", "cta"]
 
-def validate_edl(data: dict, asset_slots: set[str] | None = None) -> list[str]:
-    e: list[str] = []
-    if not isinstance(data, dict):
-        return ["<root>: must be an object"]
-
-    if data.get("edl_version") != EDL_VERSION:
-        _err(e, "edl_version", f"must be {EDL_VERSION}")
-    mode = data.get("mode")
-    if mode not in MODES:
-        _err(e, "mode", f"must be one of {sorted(MODES)}")
-    if not data.get("kit") or not re.fullmatch(r"[A-Za-z0-9_-]+@\d+", str(data.get("kit"))):
-        _err(e, "kit", "must look like 'kitid@version'")
-
-    # target
-    t = data.get("target")
-    if not isinstance(t, dict):
-        _err(e, "target", "missing object")
-    else:
-        if t.get("aspect") not in ASPECTS:
-            _err(e, "target.aspect", f"must be one of {sorted(ASPECTS)}")
-        for k in ("w", "h"):
-            if not isinstance(t.get(k), int) or t[k] <= 0:
-                _err(e, f"target.{k}", "must be a positive int")
-        if not isinstance(t.get("fps"), (int, float)) or t["fps"] <= 0 or t["fps"] > 120:
-            _err(e, "target.fps", "must be in (0, 120]")
-        if not isinstance(t.get("max_duration_s"), (int, float)) or t["max_duration_s"] <= 0:
-            _err(e, "target.max_duration_s", "must be positive")
-        if not isinstance(t.get("loudness_lufs"), (int, float)) or not -30 <= t["loudness_lufs"] <= -8:
-            _err(e, "target.loudness_lufs", "must be in [-30, -8]")
-
-    # audio
-    a = data.get("audio")
-    if not isinstance(a, dict):
-        _err(e, "audio", "missing object")
-    else:
-        vo = a.get("vo", {})
-        if not vo.get("slot"):
-            _err(e, "audio.vo.slot", "missing")
-        if not vo.get("align_slot"):
-            _err(e, "audio.vo.align_slot", "missing")
-        mu = a.get("music", {})
-        if mu:
-            if not mu.get("slot"):
-                _err(e, "audio.music.slot", "missing")
-            dd = mu.get("duck_db", -12)
-            if not isinstance(dd, (int, float)) or not -40 <= dd <= 0:
-                _err(e, "audio.music.duck_db", "must be in [-40, 0]")
-            for k in ("fade_in_s", "fade_out_s"):
-                if not isinstance(mu.get(k), (int, float)) or mu[k] < 0 or mu[k] > 10:
-                    _err(e, f"audio.music.{k}", "must be in [0, 10]")
-
-    # beats
-    beats = data.get("beats")
-    if not isinstance(beats, list) or not beats:
-        _err(e, "beats", "must be a non-empty list")
-        beats = []
-    seen_ids = set()
-    prev_out = 0.0
-    for i, b in enumerate(beats):
-        p = f"beats[{i}]"
-        if not isinstance(b, dict):
-            _err(e, p, "must be an object"); continue
-        bid = b.get("id")
-        if not bid or bid in seen_ids:
-            _err(e, p + ".id", "missing or duplicated")
-        seen_ids.add(bid)
-        if b.get("role") not in {"hook", "body", "cta"}:
-            _err(e, p + ".role", "must be hook|body|cta")
-        tin, tout = b.get("t_in"), b.get("t_out")
-        if not isinstance(tin, (int, float)) or not isinstance(tout, (int, float)):
-            _err(e, p, "t_in/t_out must be numbers"); continue
-        if not tout > tin:
-            _err(e, p, "t_out must be > t_in")
-        if i == 0 and abs(tin) > 1e-6:
-            _err(e, p + ".t_in", "first beat must start at 0")
-        if tin < prev_out - 1e-6:
-            _err(e, p + ".t_in", f"overlaps previous beat (prev t_out={prev_out})")
-        if tin > prev_out + 1e-6:
-            _err(e, p + ".t_in", f"gap before this beat (prev t_out={prev_out})")
-        prev_out = tout
-        if not b.get("line"):
-            _err(e, p + ".line", "missing script line")
-        if not b.get("clip_slot"):
-            _err(e, p + ".clip_slot", "missing")
-        elif asset_slots is not None and b["clip_slot"] not in asset_slots:
-            _err(e, p + ".clip_slot",
-                 f"slot '{b['clip_slot']}' has no attached asset")
-        if b.get("clip_fit") not in {"cover", "contain"}:
-            _err(e, p + ".clip_fit", "must be cover|contain")
-
-    # hook budget
-    if beats and mode in HOOK_BUDGET:
-        hook = beats[0]
-        dur = hook.get("t_out", 0) - hook.get("t_in", 0)
-        if dur > HOOK_BUDGET[mode] + 1e-6:
-            _err(e, "beats[0]", f"hook {dur:.2f}s exceeds budget {HOOK_BUDGET[mode]}s")
-
-    # reframe (detail-checked by validate_edl_reframe, merged in validate_all)
-    if not isinstance(data.get("reframe"), dict):
-        _err(e, "reframe", "missing object (detail-checked in validate_all)")
-
-    # captions
-    c = data.get("captions")
-    if not isinstance(c, dict):
-        _err(e, "captions", "missing object")
-    else:
-        if c.get("style") not in {"word_pop", "line", "none"}:
-            _err(e, "captions.style", "must be word_pop|line|none")
-        sz = c.get("size")
-        if not isinstance(sz, (int, float)) or not 24 <= sz <= 160:
-            _err(e, "captions.size", "must be in [24, 160]")
-        for k in ("safe_top_pct", "safe_bottom_pct"):
-            v = c.get(k)
-            if not isinstance(v, (int, float)) or not 0 <= v <= 40:
-                _err(e, f"captions.{k}", "must be in [0, 40]")
-        if isinstance(c.get("safe_top_pct"), (int, float)) and isinstance(
-                c.get("safe_bottom_pct"), (int, float)):
-            if c["safe_top_pct"] + c["safe_bottom_pct"] >= 80:
-                _err(e, "captions", "safe areas overlap")
-        mc = c.get("max_chars_per_card")
-        if not isinstance(mc, int) or not 8 <= mc <= 60:
-            _err(e, "captions.max_chars_per_card", "must be int in [8, 60]")
-
-    # creative block (attribution dimensions — required so what_worked has data)
-    cr = data.get("creative")
-    if not isinstance(cr, dict):
-        _err(e, "creative", "missing attribution block")
-    else:
-        for k in ("hook_len_s", "beat_count", "caption_style"):
-            if k not in cr:
-                _err(e, f"creative.{k}", "missing")
-
-    return e
+EDL_SCHEMA = {
+    "type": "object",
+    "required": [
+        "mode", "kit", "target", "beats",
+        "audio", "captions", "overlays", "gates_passed",
+    ],
+    "properties": {
+        "mode": {"type": "string", "enum": ["original", "clip"]},
+        "kit": {"type": "string", "pattern": "^[a-z0-9_-]+@\\d+$"},
+        "target": {
+            "type": "object",
+            "required": [
+                "aspect", "w", "h", "fps", "max_duration_s", "loudness_lufs",
+            ],
+            "properties": {
+                "aspect": {"type": "string", "enum": ["9:16", "1:1", "16:9"]},
+                "w": {"type": "integer"},
+                "h": {"type": "integer"},
+                "fps": {"type": "number"},
+                "max_duration_s": {"type": "number"},
+                "loudness_lufs": {"type": "number"},
+            },
+        },
+        "beats": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "required": [
+                    "id", "role", "t_in", "t_out",
+                    "line", "clip", "clip_in", "clip_fit",
+                ],
+                "properties": {
+                    "id": {"type": "string"},
+                    "role": {"type": "string", "enum": _BEAT_ROLES},
+                    "t_in": {"type": "number"},
+                    "t_out": {"type": "number"},
+                    "line": {"type": "string"},
+                    "clip": {"type": ["string", "null"]},
+                    "clip_in": {"type": "number"},
+                    "clip_fit": {
+                        "type": "string",
+                        "enum": ["cover", "contain", "blurpad"],
+                    },
+                    "prompt_used": {"type": ["string", "null"]},
+                    "ref_image": {"type": ["string", "null"]},
+                    # Book-2 hook: per-beat reframe plan (detail-validated by
+                    # hypelab.reframe when present).
+                    "reframe": {"type": "object"},
+                },
+            },
+        },
+        "audio": {
+            "type": "object",
+            "required": ["vo"],
+            "properties": {
+                "vo": {"type": ["object", "null"]},
+                "music": {"type": ["object", "null"]},
+            },
+        },
+        "captions": {"type": "object"},
+        "overlays": {"type": "array"},
+        "compliance": {"type": ["object", "null"]},
+        "gates_passed": {"type": "array", "items": {"type": "string"}},
+        "render_hash": {"type": ["string", "null"]},
+    },
+}
 
 
-def validate_edl_reframe(data: dict) -> list[str]:
-    """Separate so the main validator stays readable; merged by validate_all."""
-    e: list[str] = []
-    rf = data.get("reframe")
-    if not isinstance(rf, dict):
-        return ["reframe: missing object"]
-    if rf.get("mode") not in REFRAME_MODES:
-        e.append(f"reframe.mode: must be one of {sorted(REFRAME_MODES)}")
-    kfs = rf.get("keyframes")
-    if not isinstance(kfs, list) or not kfs:
-        e.append("reframe.keyframes: must be a non-empty list")
-    else:
-        for i, k in enumerate(kfs):
-            for f in ("t", "cx", "cy", "scale"):
-                if not isinstance(k.get(f), (int, float)):
-                    e.append(f"reframe.keyframes[{i}].{f}: must be a number")
-            if isinstance(k.get("cx"), (int, float)) and not 0 <= k["cx"] <= 1:
-                e.append(f"reframe.keyframes[{i}].cx: must be in [0,1]")
-            if isinstance(k.get("cy"), (int, float)) and not 0 <= k["cy"] <= 1:
-                e.append(f"reframe.keyframes[{i}].cy: must be in [0,1]")
-    return e
+class EDLError(Exception):
+    """Raised by validate(); carries the list of violation strings."""
+
+    def __init__(self, errors: list[str]):
+        self.errors = list(errors)
+        super().__init__(
+            "EDL invalid:\n" + "\n".join(f"  - {e}" for e in self.errors)
+        )
 
 
-def validate_all(data: dict, asset_slots: set[str] | None = None) -> list[str]:
-    return validate_edl(data, asset_slots) + validate_edl_reframe(data)
+def _schema_errors(edl: dict) -> list[str]:
+    v = jsonschema.Draft7Validator(EDL_SCHEMA)
+    out = []
+    for e in sorted(v.iter_errors(edl), key=lambda x: list(x.absolute_path)):
+        where = "/".join(str(p) for p in e.absolute_path) or "<root>"
+        out.append(f"{where}: {e.message}")
+    return out
 
 
-# ---------------------------------------------------------------- words/beat grids
-
-def validate_words(data: dict) -> list[str]:
-    e: list[str] = []
-    if data.get("words_version") != 1:
-        e.append("words_version: must be 1")
-    words = data.get("words")
-    if not isinstance(words, list) or not words:
-        return e + ["words: must be a non-empty list"]
-    prev_t1 = -1.0
-    for i, w in enumerate(words):
-        p = f"words[{i}]"
-        if not w.get("w"):
-            e.append(f"{p}.w: missing")
-        t0, t1 = w.get("t0"), w.get("t1")
-        if not isinstance(t0, (int, float)) or not isinstance(t1, (int, float)):
-            e.append(f"{p}: t0/t1 must be numbers"); continue
-        if not t1 > t0:
-            e.append(f"{p}: t1 must be > t0")
-        if t0 < prev_t1 - 1e-6:
-            e.append(f"{p}.t0: overlaps previous word")
-        prev_t1 = t1
-    return e
+def _beats_ok(beats) -> bool:
+    """True when beats are a non-empty list of dicts with numeric boundaries."""
+    return (
+        isinstance(beats, list)
+        and bool(beats)
+        and all(
+            isinstance(b, dict)
+            and isinstance(b.get("t_in"), (int, float))
+            and isinstance(b.get("t_out"), (int, float))
+            for b in beats
+        )
+    )
 
 
-def validate_slides(data: dict) -> list[str]:
-    e: list[str] = []
-    if data.get("slides_version") != 1:
-        e.append("slides_version: must be 1")
-    slides = data.get("slides")
-    if not isinstance(slides, list) or len(slides) != 7:
-        return e + ["slides: must be a list of exactly 7"]
-    roles = [s.get("role") for s in slides]
-    if roles[0] != "cover" or roles[-1] != "cta":
-        e.append("slides: first must be 'cover', last must be 'cta'")
-    for i, s in enumerate(slides):
-        if not s.get("heading"):
-            e.append(f"slides[{i}].heading: missing")
-    return e
+def validate(edl: dict) -> bool:
+    """Validate shape (schema) plus temporal/structural rules.
+
+    Extra rules beyond the schema:
+      1. beats contiguous: b[i].t_out == b[i+1].t_in within 1e-3
+         (no gaps, no overlaps);
+      2. beats[0].t_in == 0 and every t_out > t_in;
+      3. total = beats[-1].t_out <= target.max_duration_s;
+      4. exactly one hook: beats[0].role == "hook" and no other beat is hook.
+    Returns True; raises EDLError(list_of_strings) on any violation.
+    """
+    errors = _schema_errors(edl)
+
+    beats = edl.get("beats") if isinstance(edl, dict) else None
+    target = edl.get("target") if isinstance(edl, dict) else None
+
+    if _beats_ok(beats):
+        # Rule 2: first beat starts at 0; every beat has positive duration.
+        if abs(beats[0]["t_in"]) > 1e-6:
+            errors.append(
+                f"beats[0].t_in: must be 0, got {beats[0]['t_in']}"
+            )
+        for i, b in enumerate(beats):
+            if not b["t_out"] > b["t_in"]:
+                errors.append(
+                    f"beats[{i}].t_out: must be > t_in "
+                    f"({b['t_in']} -> {b['t_out']})"
+                )
+        # Rule 1: contiguity within 1e-3 (no gaps, no overlaps).
+        for i in range(len(beats) - 1):
+            a, b = beats[i], beats[i + 1]
+            drift = b["t_in"] - a["t_out"]
+            if abs(drift) > 1e-3:
+                kind = "gap" if drift > 0 else "overlap"
+                errors.append(
+                    f"beats[{i}]->beats[{i + 1}]: {kind} of {drift:.4f}s "
+                    f"(t_out={a['t_out']}, next t_in={b['t_in']})"
+                )
+        # Rule 4: exactly one hook, and it is the first beat.
+        hooks = [i for i, b in enumerate(beats) if b.get("role") == "hook"]
+        if not hooks or hooks[0] != 0:
+            errors.append('beats: exactly one hook required and beats[0].role must be "hook"')
+        elif len(hooks) > 1:
+            errors.append(
+                f"beats: multiple hooks at indices {hooks} "
+                '(only beats[0] may be "hook")'
+            )
+        # Rule 3: total duration within the target budget.
+        if isinstance(target, dict) and isinstance(
+            target.get("max_duration_s"), (int, float)
+        ):
+            total = beats[-1]["t_out"]
+            if total > target["max_duration_s"] + 1e-6:
+                errors.append(
+                    f"beats: total {total:.3f}s exceeds "
+                    f"target.max_duration_s={target['max_duration_s']}"
+                )
+
+    if errors:
+        raise EDLError(errors)
+    return True
+
+
+def build_edl(
+    *,
+    mode: str,
+    kit_ref: str,
+    target: dict,
+    beats: list[dict],
+    audio: dict | None = None,
+    captions: dict | None = None,
+    overlays: list | None = None,
+    compliance: dict | None = None,
+    min_word_prob: float = 0.5,
+) -> dict:
+    """Assemble the full EDL dict. Does not validate (see validate()).
+
+    ``min_word_prob`` is stamped from the kit (Book 1 §8): the word-
+    confidence gate fails beats below this word probability.
+    """
+    return {
+        "mode": mode,
+        "kit": kit_ref,
+        "target": target,
+        "beats": beats,
+        "audio": audio if audio is not None else {"vo": None, "music": None},
+        "captions": captions if captions is not None else {},
+        "overlays": overlays if overlays is not None else [],
+        "compliance": compliance,
+        "min_word_prob": float(min_word_prob),
+        "gates_passed": [],
+        "render_hash": None,
+    }

@@ -1,0 +1,13 @@
+{
+ "items": [
+  {
+   "id": "fixture-10min",
+   "url": "/home/dino/hypelab/tests/fixtures_book2/source.mp4",
+   "title": "Fixture training video (10 min)",
+   "duration": 600,
+   "published_at": "2026-09-28T00:00:00+00:00",
+   "words_path": "/home/dino/hypelab/tests/fixtures_book2/words.json",
+   "info_path": "/home/dino/hypelab/tests/fixtures_book2/info.json"
+  }
+ ]
+}

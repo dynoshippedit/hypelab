@@ -1,0 +1,55 @@
+{
+  "aspect": "4:5",
+  "kit": "cerebratico@1",
+  "slides": [
+    {
+      "idx": 1,
+      "layout": "hook",
+      "sub": "and it decides everything",
+      "title": "Nobody checks this number"
+    },
+    {
+      "big": "30x",
+      "caption": "spread between campaign rates",
+      "idx": 2,
+      "layout": "stat"
+    },
+    {
+      "bullets": [
+        "Algorithms change weekly",
+        "Your list never does"
+      ],
+      "idx": 3,
+      "layout": "body",
+      "title": "Reach is rented"
+    },
+    {
+      "big": "72h",
+      "caption": "most collab accepts land in three days",
+      "idx": 4,
+      "layout": "stat"
+    },
+    {
+      "bullets": [
+        "Hash the artifact",
+        "Expiry is mandatory"
+      ],
+      "idx": 5,
+      "layout": "body",
+      "title": "Consent is the moat"
+    },
+    {
+      "big": "n=8",
+      "caption": "below this, the loop stays quiet",
+      "idx": 6,
+      "layout": "stat"
+    },
+    {
+      "handle": "@ohio_dino",
+      "idx": 7,
+      "layout": "cta",
+      "sub": "measure everything",
+      "title": "Ship the loop"
+    }
+  ]
+}

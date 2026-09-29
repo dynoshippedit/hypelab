@@ -1,0 +1,49 @@
+{
+  "appearance": "Cerebratico host: a composed on-camera presenter in their early 30s, neutral studio backdrop, soft key light from camera-left, direct-to-lens delivery. Wardrobe is solid dark tones; no logos, no text on clothing.",
+  "asr": {
+    "compute_type": "int8",
+    "device": "cpu",
+    "model": "medium",
+    "vad_filter": true
+  },
+  "min_word_prob": 0.5,
+  "audio": {
+    "loudness_lufs": -16.0,
+    "music_duck_db": -12.0,
+    "voiceprint_dir": null
+  },
+  "captions": {
+    "fill": "#FFFFFF",
+    "font": "DejaVu Sans",
+    "highlight": "#39FF88",
+    "max_chars_per_card": 24,
+    "outline": "#000000",
+    "outline_w": 3,
+    "safe_bottom_pct": 20,
+    "safe_top_pct": 12,
+    "size": 72,
+    "style": "word_pop"
+  },
+  "generator": {
+    "max_clip_s": 10.0,
+    "min_beat_s": 1.2,
+    "prompt_prefix": "",
+    "prompt_suffix": "",
+    "words_per_sec": 2.6
+  },
+  "guardrails": {
+    "always": [
+      "on-camera presenter is fully clothed and framed chest-up or wider",
+      "captions are verbatim from the approved script line",
+      "hook beat is 2.0s or shorter in clip mode"
+    ],
+    "never": [
+      "sexualized framing, undress, or suggestive posing",
+      "text overlays that contradict the spoken line",
+      "upscaling a source beyond 1080p without allow_upscale"
+    ]
+  },
+  "reference_image": null,
+  "voice_sample": null,
+  "voiceprint_dir": null
+}

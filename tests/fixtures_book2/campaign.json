@@ -1,0 +1,51 @@
+{
+ "id": "fixture-fit-01",
+ "marketplace": "fixture-mart",
+ "creator": "Fixture Creator",
+ "rate_per_1k_usd": 4.0,
+ "rate_basis": "observed",
+ "budget_total_usd": 500.0,
+ "budget_seen_usd": 500.0,
+ "budget_checked": "2026-09-28T00:00:00+00:00",
+ "budget_provenance": {
+  "source": "campaign_page",
+  "url": "https://example.com/campaign/fixture-fit-01",
+  "captured_at": "2026-09-28T00:00:00+00:00",
+  "captured_by": "fixture"
+ },
+ "platforms": [
+  "tiktok"
+ ],
+ "rules": {
+  "min_s": 6,
+  "max_s": 45,
+  "required_handle": "@fixturecreator",
+  "handle_placement": "caption",
+  "required_hashtags": [
+   "#fixture",
+   "#training"
+  ],
+  "required_credit": "Clip: Fixture Creator",
+  "banned_words": [
+   "bannedword"
+  ],
+  "watermark_required": false,
+  "platforms": [
+   "tiktok"
+  ],
+  "source_allowlist": [
+   "fixture"
+  ],
+  "music_policy": "original_audio_only"
+ },
+ "rules_provenance": {
+  "source": "campaign_page",
+  "url": "https://example.com/campaign/fixture-fit-01/rules",
+  "captured_at": "2026-09-28T00:00:00+00:00",
+  "captured_by": "fixture"
+ },
+ "submission": {
+  "url": "https://example.com/submit/fixture-fit-01"
+ },
+ "state": "active"
+}

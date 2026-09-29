@@ -1,84 +1,147 @@
-"""SQLite schema, migrations, and connections. WAL mode. No business logic."""
+"""SQLite connections + migration runner (Book 1 improved, section 2).
+
+Migration policy: ``migrations/`` holds numbered, additive ``*.sql`` files.
+``migrate(conn)`` applies pending migrations in order — each in ONE
+transaction — and records them in ``schema_migrations(version, name,
+applied_at)``. Boot REFUSES when the database's migration set differs from
+the code's expected set (a downgrade or a foreign DB is a hard error, not a
+silent schema drift).
+
+No business logic.
+"""
 from __future__ import annotations
+
 import sqlite3
 from pathlib import Path
-from . import config
 
-SCHEMA = """
-PRAGMA journal_mode=WAL;
+#: version -> migration file stem. The code's expected migration set.
+EXPECTED_MIGRATIONS = {
+    1: "0001_book1_foundation",
+    2: "0002_book2_clip_mine",
+    3: "0003_book3_hype_layer",
+}
 
-CREATE TABLE IF NOT EXISTS jobs(
-  id TEXT PRIMARY KEY, mode TEXT NOT NULL, state TEXT NOT NULL,
-  kit_id TEXT NOT NULL, kit_version INTEGER NOT NULL, campaign_id TEXT,
-  title TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
-  cost_usd REAL NOT NULL DEFAULT 0, budget_usd REAL,
-  error TEXT, gate_failures_json TEXT
-);
-CREATE TABLE IF NOT EXISTS tasks(
-  id TEXT PRIMARY KEY, job_id TEXT NOT NULL REFERENCES jobs(id),
-  kind TEXT NOT NULL, state TEXT NOT NULL,
-  payload_json TEXT NOT NULL, result_json TEXT,
-  attempts INTEGER NOT NULL DEFAULT 0, max_attempts INTEGER NOT NULL DEFAULT 3,
-  lease_owner TEXT, lease_expires TEXT,
-  idempotency_key TEXT NOT NULL UNIQUE, run_after TEXT NOT NULL,
-  created_at TEXT NOT NULL, updated_at TEXT NOT NULL
-);
-CREATE INDEX IF NOT EXISTS idx_tasks_claim ON tasks(state, run_after, created_at);
-CREATE TABLE IF NOT EXISTS kits(
-  id TEXT PRIMARY KEY, name TEXT NOT NULL, owner TEXT NOT NULL DEFAULT 'brand',
-  created_at TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS kit_versions(
-  kit_id TEXT NOT NULL, version INTEGER NOT NULL,
-  appearance_text TEXT NOT NULL, ref_image_path TEXT, voice_ref_path TEXT,
-  writing_samples_json TEXT NOT NULL, typography_json TEXT NOT NULL,
-  colors_json TEXT NOT NULL, caption_style_json TEXT NOT NULL,
-  guardrails_json TEXT NOT NULL, max_clip_len_s REAL NOT NULL,
-  created_at TEXT NOT NULL, PRIMARY KEY (kit_id, version));
-CREATE TABLE IF NOT EXISTS assets(
-  id TEXT PRIMARY KEY, job_id TEXT NOT NULL, slot TEXT NOT NULL,
-  path TEXT NOT NULL, sha256 TEXT NOT NULL, bytes INTEGER NOT NULL,
-  kind TEXT NOT NULL, provenance TEXT NOT NULL,
-  duration_s REAL, width INTEGER, height INTEGER, fps REAL,
-  created_at TEXT NOT NULL);
-CREATE INDEX IF NOT EXISTS idx_assets_job_slot ON assets(job_id, slot);
-CREATE TABLE IF NOT EXISTS edls(
-  job_id TEXT PRIMARY KEY, version INTEGER NOT NULL,
-  render_json TEXT NOT NULL, render_hash TEXT NOT NULL, created_at TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS targets(
-  handle TEXT NOT NULL, platform TEXT NOT NULL, followers INTEGER, er REAL,
-  public INTEGER, pattern_json TEXT, contact_route TEXT,
-  consent_state TEXT, invite_history_json TEXT, outcome TEXT,
-  PRIMARY KEY (handle, platform));
-CREATE TABLE IF NOT EXISTS consents(
-  id TEXT PRIMARY KEY, target_handle TEXT NOT NULL, target_platform TEXT NOT NULL,
-  job_id TEXT NOT NULL, pitched_at TEXT, responded_at TEXT,
-  scope TEXT NOT NULL, asset_version TEXT NOT NULL,
-  evidence TEXT NOT NULL, expiry TEXT NOT NULL, revoked_at TEXT);
-CREATE TABLE IF NOT EXISTS posts(
-  id TEXT PRIMARY KEY, job_id TEXT, clip_id TEXT, platform TEXT,
-  post_url TEXT, posted_at TEXT, collaborator TEXT, dry_run INTEGER NOT NULL DEFAULT 1);
-CREATE TABLE IF NOT EXISTS metrics(
-  post_id TEXT NOT NULL, t TEXT NOT NULL, views INTEGER, likes INTEGER,
-  comments INTEGER, shares INTEGER, saves INTEGER,
-  PRIMARY KEY (post_id, t));
-CREATE TABLE IF NOT EXISTS what_worked(
-  dimension TEXT NOT NULL, value TEXT NOT NULL, n INTEGER NOT NULL,
-  mean_perf REAL NOT NULL, updated_at TEXT NOT NULL,
-  PRIMARY KEY (dimension, value));
-CREATE TABLE IF NOT EXISTS cost_ledger(
-  id TEXT PRIMARY KEY, job_id TEXT NOT NULL, task_id TEXT,
-  provider TEXT NOT NULL, units REAL NOT NULL, usd REAL NOT NULL,
-  note TEXT, created_at TEXT NOT NULL);
-"""
+MIGRATIONS_DIR = Path(__file__).resolve().parent.parent / "migrations"
 
-def connect(path: Path | None = None) -> sqlite3.Connection:
-    p = Path(path) if path else config.db_path()
+DEFAULT_DB_PATH = Path("/home/dino/hypelab/hypelab.db")
+
+_SCHEMA_MIGRATIONS_DDL = """CREATE TABLE IF NOT EXISTS schema_migrations(
+  version INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  applied_at TEXT NOT NULL DEFAULT (datetime('now'))
+)"""
+
+
+class MigrationError(Exception):
+    """Raised when the migration set mismatches or a migration fails."""
+
+
+def _migration_sql(version: int, name: str) -> str:
+    path = MIGRATIONS_DIR / f"{name}.sql"
+    if not path.is_file():
+        raise MigrationError(
+            f"migration file missing for version {version}: {path}"
+        )
+    return path.read_text(encoding="utf-8")
+
+
+def _applied_versions(conn: sqlite3.Connection) -> dict[int, str]:
+    conn.execute(_SCHEMA_MIGRATIONS_DDL)
+    return {
+        int(r[0]): str(r[1])
+        for r in conn.execute("SELECT version, name FROM schema_migrations")
+    }
+
+
+def _split_statements(sql: str) -> list[str]:
+    """Split a migration file into individual SQL statements.
+
+    Uses sqlite3.complete_statement so semicolons inside string literals
+    or comments do not split. Blank chunks are dropped.
+    """
+    stmts: list[str] = []
+    buf = ""
+    for line in sql.splitlines(keepends=True):
+        buf += line
+        if sqlite3.complete_statement(buf):
+            if buf.strip():
+                stmts.append(buf)
+            buf = ""
+    if buf.strip():
+        stmts.append(buf)
+    return stmts
+
+
+def _apply_migration(conn: sqlite3.Connection, version: int, name: str) -> None:
+    """Apply one migration file inside ONE transaction.
+
+    NOTE: sqlite3's executescript() implicitly commits, so it cannot be
+    used here — statements are executed one by one between an explicit
+    BEGIN and COMMIT. Any failure rolls the whole migration back.
+    """
+    stmts = _split_statements(_migration_sql(version, name))
+    if not stmts:
+        raise MigrationError(f"migration {version} ({name}) is empty")
+    conn.execute("BEGIN")
+    try:
+        for stmt in stmts:
+            conn.execute(stmt)
+        conn.execute(
+            "INSERT INTO schema_migrations(version, name) VALUES(?,?)",
+            (version, name),
+        )
+        conn.execute("COMMIT")
+    except Exception as e:
+        try:
+            conn.execute("ROLLBACK")
+        except Exception:
+            pass
+        raise MigrationError(
+            f"migration {version} ({name}) failed: {e}"
+        ) from e
+
+
+def migrate(conn: sqlite3.Connection) -> dict[int, str]:
+    """Boot the database: apply pending migrations, then verify the set.
+
+    Each pending migration runs inside ONE transaction (BEGIN ... COMMIT;
+    any failure rolls back and raises MigrationError). After applying, the
+    database's migration set must equal the code's expected set — otherwise
+    boot is refused (e.g. a DB migrated by newer code, or a foreign DB).
+
+    Returns the applied {version: name} map.
+    """
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA foreign_keys=ON;")
+    applied = _applied_versions(conn)
+    for version in sorted(EXPECTED_MIGRATIONS):
+        if version in applied:
+            continue
+        _apply_migration(conn, version, EXPECTED_MIGRATIONS[version])
+        applied[version] = EXPECTED_MIGRATIONS[version]
+    db_set = set(_applied_versions(conn))
+    expected_set = set(EXPECTED_MIGRATIONS)
+    if db_set != expected_set:
+        raise MigrationError(
+            "migration set mismatch: database has "
+            f"{sorted(db_set)}, code expects {sorted(expected_set)} — "
+            "refusing to boot"
+        )
+    return applied
+
+
+def connect(path=None) -> sqlite3.Connection:
+    """Open the HypeLab SQLite DB and boot it through the migration runner.
+
+    Defaults to /home/dino/hypelab/hypelab.db. Row factory is sqlite3.Row,
+    30 s busy timeout, autocommit (isolation_level=None), WAL journal mode,
+    foreign keys enforced.
+    """
+    p = Path(path) if path else DEFAULT_DB_PATH
     p.parent.mkdir(parents=True, exist_ok=True)
-    cx = sqlite3.connect(str(p), timeout=30.0, isolation_level=None)
+    cx = sqlite3.connect(str(p), timeout=30, isolation_level=None)
     cx.row_factory = sqlite3.Row
     cx.execute("PRAGMA journal_mode=WAL;")
     cx.execute("PRAGMA foreign_keys=ON;")
+    migrate(cx)
     return cx
-
-def migrate(cx: sqlite3.Connection) -> None:
-    cx.executescript(SCHEMA)
