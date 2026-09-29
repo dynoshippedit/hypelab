@@ -94,7 +94,7 @@ DEFERRED · REJECTED.
   monkeypatched handler raising via `_die` → state `failed`, worker alive.
 
 ### T-004 — CLI drive parks jobs in active states with NULL leases (BUG-003 · S1/Confirmed; + REV-718 S3)
-- Status: IN PROGRESS (hl-cycle-04). `audio`/`render`/`gates`/`cut` move to active states then
+- Status: **VERIFIED** (hl-cycle-04; controller: fail_drive diff reviewed, e2e tests falsifiable, full suite 217/217 green).
   `_die`/traceback on failure; jobs unrecoverable without SQL (claim requires
   non-null lease; no CLI path out of aligning/rendering/gating/cutting).
 - Fix: on CLI-drive failure, transition to `failed` (fail-equivalent) or
