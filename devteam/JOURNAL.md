@@ -72,3 +72,21 @@
 - Notes updated: JOURNAL.md
 - Commands: none (lane report)
 - Next: await BUG, SEC lane reports; then Phase 2 gate check
+
+## 2026-09-29 02:35 · Tech Lead · Phase 1 gate
+- Did: Received DOC lane report (completed). Claims audit: 30 TRUE / 31 FALSE / 25 PARTIAL / 5 UNVERIFIABLE across README/ARCHITECTURE/VERTICAL_SLICE_REPORT/pitch.md — FALSE/PARTIAL cluster is staleness (docs describe the 2026-09-28 slice-era app: tasks table, services.py, argparse CLI; code is the rewritten job-level Books 1-3). 24 findings DOC-001–024 (11 S2, 10 S3, 3 S4). P4 one-paragraph "what this app is" written to notes/claims-audit.md; Q-001 (owner confirm/correct) appended to QUESTIONS.md; IDEA-001–011 appended to IDEAS.md. DOC independently reproduced 191-pass suite.
+- Found: DOC-001–004 (S2, README setup/walkthrough/not-built/test-cmd) · DOC-005 (S3, env vars) · DOC-006–007 (S2, ARCHITECTURE queue/services) · DOC-008 (S3, budget fields) · DOC-009 (S2, render.json schema) · DOC-010 (S3, schema listings) · DOC-011–013 (S2, module list/docs promise/CLI ref) · DOC-014 (S2, ops claims) · DOC-015–021 (S3, gate/render/cache/schedule tables) · DOC-022–024 (S4)
+- Gate 1 check: COVERAGE 88/88 tiered (High 29/Med 14/Low 45, none unclassified) ✔ · BASELINE holds real outputs (191 pass, smoke runs, secret scan clean) ✔ · crown jewels + 6 corrected critical flows in B3 ✔ · all committed ✔ → GATE 1: PASS
+- Phase 1 finding totals: S0 0 · S1 2 · S2 24 · S3 22 · S4 6 = 54 NEW (MAP 5, TST 12, BLD 13, DOC 24). Known duplicate clusters for Phase 4 triage: README-staleness (MAP-002/DOC-001–004/BLD-002–005), jobs/-in-git (MAP-001/BLD-010), VSR status (MAP-003 vs DOC "accurate as historical" — reconcile as archival).
+- Notes updated: JOURNAL.md, STATUS.md (Phase 2)
+- Commands: none (lane report)
+- Next: Phase 2 critical-flow tracing — spawn BUG (flows 1,2,5), SEC (flow 4 + threat model + authz matrix), ARC (flows 3,6 + as-is assessment), DAT (data model + integrations), STR (media/ffmpeg paths). ID ranges: BUG-001–099, SEC-100–199, ARC-300–349, DAT-350–399, STR-450–499.
+
+## 2026-09-29 03:12 · Tech Lead · Phase 2
+- Did: Received BUG lane report (completed). Flows 1, 2, 5 traced hop-by-hop (flow1-bug.md 240 lines, flow2-bug.md, flow5-bug.md). 15 findings (BUG-001–015: 6x S1, 5x S2, 4x S3). Key: BUG-001 S1 — SystemExit from _die in worker handlers bypasses fail() and kills the worker; BUG-002 S1 — render hash-skip wedges job in rendering; BUG-003 S1 — CLI drive parks jobs in active states with NULL leases (SQL-only recovery); BUG-004 S1 — low-confidence to gate_failed routing is dead code; BUG-005 S1 — word-confidence maps normalized words onto original-line beats; BUG-006 S1 — claim double-claim race + fail() TOCTOU. TST-003 CONFIRMED (logged as BUG-007). Align two-path reconciliation done (both funnel through _do_align; three divergences documented).
+- Found: BUG-001–006 (S1) · BUG-007–011 (S2) · BUG-012–015 (S3)
+- Lead verification: BUG lane's two pre-compaction citations verified directly — charge() has zero production callers (only tests/test_foundation.py:357,359); digits test (tests/test_cli.py:239-258) runs audio only, never gates. Both confirmed.
+- Running totals: 107 findings — S0 0 · S1 10 · S2 40 · S3 47 · S4 10.
+- Notes updated: JOURNAL.md
+- Commands: grep charge callers; sed tests/test_cli.py:239-258
+- Next: await SEC lane report; then Phase 2 gate check
