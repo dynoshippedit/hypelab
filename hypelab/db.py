@@ -19,6 +19,7 @@ EXPECTED_MIGRATIONS = {
     1: "0001_book1_foundation",
     2: "0002_book2_clip_mine",
     3: "0003_book3_hype_layer",
+    4: "0004_failure_requeue",
 }
 
 MIGRATIONS_DIR = Path(__file__).resolve().parent.parent / "migrations"

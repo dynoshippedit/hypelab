@@ -137,7 +137,7 @@ DEFERRED · REJECTED.
 - Verify: `pip install -r requirements.txt --dry-run` resolves; import smoke.
 
 ### T-011 — Worker retry path absent; fail() docstring lies (BUG-007+TST-003 · S2/Confirmed)
-- Status: **DECIDED 2026-09-29** — failure-type requeue (transient only: timeouts/rate-limits/5xx, backoff, max 3, cost logged; rest to manual review pile; never auto-retry publish or Dino-waiting jobs). Spec: devteam/proposals/owner-decisions-2026-09-29.md (D1). Race-fix gate OPEN (T-007 verified). Queued.
+- Status: **IN PROGRESS** [hl-cycle-08] -- DECIDED 2026-09-29 — failure-type requeue (transient only: timeouts/rate-limits/5xx, backoff, max 3, cost logged; rest to manual review pile; never auto-retry publish or Dino-waiting jobs). Spec: devteam/proposals/owner-decisions-2026-09-29.md (D1). Race-fix gate OPEN (T-007 verified). Queued.
   or correct docstring + add CLI retry command.
 
 ### T-012 — CLI `gates` accepts worker-claimed `gating` (BUG-008 · S2/Confirmed)

@@ -18,6 +18,7 @@ from __future__ import annotations
 import sqlite3
 
 from .queue import log
+from . import retry as retry_mod
 from .state_migrations import STATE_MIGRATIONS, apply_state_migrations
 from .util import new_id, now
 
@@ -41,7 +42,7 @@ ALLOWED = {
     "gate_failed": ("awaiting_media", "queued_render", "archived", "failed"),
     "ready": ("archived",),
     "archived": (),
-    "failed": ("draft",),
+    "failed": ("draft", "archived"),  # archived: owner dismiss from review pile (T-011)
 }
 
 # ------------------------------------------------------------------ Book 2
@@ -182,6 +183,10 @@ def fail_drive(conn: sqlite3.Connection, job_id: str, err) -> bool:
         return False
     ts = now()
     err_s = str(err)
+    # T-011: classify so the failure lands in the review pile with a
+    # reason (direct drives never auto-requeue; the operator is present).
+    _kind, _detail = retry_mod.classify_failure(err)
+    _review_reason = "drive:%s:%s" % (_kind, _detail)
     # Atomic: fire only while the job is STILL unleased and STILL in the
     # observed drive-active state. A lease taken (or a state moved) between
     # our read and our write makes this a no-op instead of stealing the
@@ -193,10 +198,11 @@ def fail_drive(conn: sqlite3.Connection, job_id: str, err) -> bool:
     try:
         cur = conn.execute(
             "UPDATE jobs SET state='failed', error=?,"
-            " lease_owner=NULL, lease_expires=NULL, updated_at=?"
+            " lease_owner=NULL, lease_expires=NULL, updated_at=?,"
+            " review_reason=?"
             " WHERE id=? AND state=?"
             " AND lease_owner IS NULL AND lease_expires IS NULL",
-            (err_s, ts, job_id, frm),
+            (err_s, ts, _review_reason, job_id, frm),
         )
         if cur.rowcount != 1:
             if own:

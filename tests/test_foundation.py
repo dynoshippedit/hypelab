@@ -54,10 +54,11 @@ def test_migration_runner_applies_0001(tmp_path):
         "SELECT version, name FROM schema_migrations").fetchall()
     assert [(r["version"], r["name"]) for r in rows] == [
         (1, "0001_book1_foundation"), (2, "0002_book2_clip_mine"),
-            (3, "0003_book3_hype_layer")]
+            (3, "0003_book3_hype_layer"), (4, "0004_failure_requeue")]
     job_cols = {r[1] for r in cx.execute("PRAGMA table_info(jobs)")}
     assert {"lease_owner", "lease_expires", "attempts",
-            "max_attempts"} <= job_cols
+            "max_attempts", "requeue_not_before",
+            "review_reason"} <= job_cols
     ren_cols = {r[1] for r in cx.execute("PRAGMA table_info(renders)")}
     assert "manifest_json" in ren_cols
     mig_cols = {r[1] for r in cx.execute("PRAGMA table_info(schema_migrations)")}

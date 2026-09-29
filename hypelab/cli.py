@@ -44,6 +44,7 @@ from hypelab import kits as kits_mod
 from hypelab import manifests as manifests_mod
 from hypelab import queue as queue_mod
 from hypelab import render as render_mod
+from hypelab import retry as retry_mod
 
 
 # Book 2: versioned scoring weights live next to the package.
@@ -966,17 +967,73 @@ def work(once, owner):
                     raise RuntimeError(f"no handler for state {state!r}")
                 print(f"done {job_id}")
             except Exception as e:  # handler blew up (incl. CliError from _die):
-                # record it via fail(); the worker stays alive (T-003)
+                # T-011: classify the failure. Transient failures auto-requeue
+                # with backoff (max 3 attempts, cost logged); everything else
+                # goes to the review pile. The worker stays alive (T-003).
                 print(f"handler error on {job_id}: {e}")
                 try:
-                    queue_mod.fail(conn, job_id, owner, e)
+                    outcome = retry_mod.handle_failure(conn, job_id, owner, e)
+                    print(f"  (failure routed: {outcome})")
                 except ValueError as ve:
-                    print(f"  (fail() skipped: {ve})")
+                    print(f"  (failure routing skipped: {ve})")
 
             if once:
                 break
     except KeyboardInterrupt:
         print("worker stopping")
+
+
+@cli.group(name="review-pile")
+def review_pile():
+    """Inspect and clear the manual review pile (T-011).
+
+    Failures the worker will not auto-retry -- terminal failures, failures
+    at max attempts, and publish / owner-waiting exclusions -- land here
+    for the owner to clear by hand.
+    """
+
+
+@review_pile.command("list")
+def review_pile_list():
+    """List every job in the review pile, oldest failure first."""
+    conn = _conn()
+    rows = retry_mod.list_review(conn)
+    if not rows:
+        print("review pile is empty")
+        return
+    for r in rows:
+        reason = r["review_reason"] or "(unclassified)"
+        err = (r["error"] or "")[:80]
+        print(f"{r['id']}  {r['title']!r}  attempts {r['attempts']}/{r['max_attempts']}"
+              f"  failed_at {r['updated_at']}")
+        print(f"    reason: {reason}")
+        if err:
+            print(f"    error: {err}")
+    print(f"{len(rows)} job(s) in the review pile")
+
+
+@review_pile.command("retry")
+@click.argument("job_id")
+def review_pile_retry(job_id):
+    """Owner-cleared retry: move a failed job back to draft."""
+    conn = _conn()
+    try:
+        retry_mod.retry_review(conn, job_id)
+    except ValueError as e:
+        _die(str(e))
+    print(f"{job_id} -> draft (owner retry)")
+
+
+@review_pile.command("dismiss")
+@click.argument("job_id")
+def review_pile_dismiss(job_id):
+    """Owner-cleared dismiss: move a failed job to archived (no retry)."""
+    conn = _conn()
+    try:
+        retry_mod.dismiss_review(conn, job_id)
+    except ValueError as e:
+        _die(str(e))
+    print(f"{job_id} -> archived (owner dismiss)")
 
 
 @cli.command()

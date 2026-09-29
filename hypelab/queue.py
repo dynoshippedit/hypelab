@@ -111,12 +111,15 @@ def claim(conn: sqlite3.Connection, owner: str,
             cur = conn.execute(
                 """UPDATE jobs
                    SET state=?, lease_owner=?, lease_expires=?,
-                       attempts=attempts+1, updated_at=?
+                       attempts=attempts+1, updated_at=?,
+                       requeue_not_before=NULL
                    WHERE id=(SELECT id FROM jobs WHERE state=?
                              AND (lease_expires IS NULL OR lease_expires <= ?)
+                             AND (requeue_not_before IS NULL
+                                  OR requeue_not_before <= ?)
                              ORDER BY created_at LIMIT 1)
                    RETURNING *""",
-                (dst, owner, expires, ts, src, ts),
+                (dst, owner, expires, ts, src, ts, ts),
             )
             row = cur.fetchone()
             if row is not None:
@@ -129,13 +132,16 @@ def claim(conn: sqlite3.Connection, owner: str,
             cur = conn.execute(
                 """UPDATE jobs
                    SET lease_owner=?, lease_expires=?,
-                       attempts=attempts+1, updated_at=?
+                       attempts=attempts+1, updated_at=?,
+                       requeue_not_before=NULL
                    WHERE id=(SELECT id FROM jobs WHERE state=?
                              AND lease_expires IS NOT NULL
                              AND lease_expires <= ?
+                             AND (requeue_not_before IS NULL
+                                  OR requeue_not_before <= ?)
                              ORDER BY lease_expires LIMIT 1)
                    RETURNING *""",
-                (owner, expires, ts, dst, ts),
+                (owner, expires, ts, dst, ts, ts),
             )
             row = cur.fetchone()
             if row is not None:
@@ -220,7 +226,8 @@ def release(conn: sqlite3.Connection, job_id: str, owner: str) -> bool:
         raise
 
 
-def fail(conn: sqlite3.Connection, job_id: str, owner: str, err) -> sqlite3.Row:
+def fail(conn: sqlite3.Connection, job_id: str, owner: str, err,
+         review_reason=None) -> sqlite3.Row:
     """Fail a leased job: state -> ``failed``, error recorded, lease cleared.
 
     Only the lease owner may fail its job — enforced by ``AND
@@ -235,6 +242,8 @@ def fail(conn: sqlite3.Connection, job_id: str, owner: str, err) -> sqlite3.Row:
     it while attempts remain.
 
     The state change and its audit ``log()`` commit in one transaction.
+    ``review_reason`` (optional) stamps the row for the manual review
+    pile (T-011): the classification that routed the failure to review.
     Returns the updated job row. Raises ValueError for an unknown job.
     """
     own = not conn.in_transaction
@@ -257,10 +266,11 @@ def fail(conn: sqlite3.Connection, job_id: str, owner: str, err) -> sqlite3.Row:
             note = err_s
         cur = conn.execute(
             "UPDATE jobs SET state='failed', error=?,"
-            " lease_owner=NULL, lease_expires=NULL, updated_at=?"
+            " lease_owner=NULL, lease_expires=NULL, updated_at=?,"
+            " review_reason=?"
             " WHERE id=? AND lease_owner=?"
             " RETURNING *",
-            (err_s, ts, job_id, owner),
+            (err_s, ts, review_reason, job_id, owner),
         )
         updated = cur.fetchone()
         if updated is None:

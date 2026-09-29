@@ -134,7 +134,7 @@ def test_migration_0002_applies(conn):
     ).fetchall()
     assert [(r["version"], r["name"]) for r in rows] == [
         (1, "0001_book1_foundation"), (2, "0002_book2_clip_mine"),
-            (3, "0003_book3_hype_layer")]
+            (3, "0003_book3_hype_layer"), (4, "0004_failure_requeue")]
 
     def cols(table):
         return {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}
