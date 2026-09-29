@@ -1,0 +1,12 @@
+# REPORT — HypeLab review
+Owner: Tech Lead · Last updated: 2026-09-29 (initial — drafted through Phase 4, finalized in Phase 7)
+1. Executive summary — (pending)
+2. Scorecard (before → after) — (pending)
+3. Numbers — (pending)
+4. Fixed — (pending)
+5. Remaining (prioritized) — (pending)
+6. Owner decisions needed — (pending)
+7. Structure: target & migration status — (pending)
+8. Opportunities — (pending)
+9. How to verify — (pending)
+10. Limitations — (pending)

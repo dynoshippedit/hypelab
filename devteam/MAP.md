@@ -1,0 +1,13 @@
+# MAP — as-is codebase map
+Owner: Cartographer · Last updated: 2026-09-29 (initial — to be filled by Cartographer)
+1. Summary — (Cartographer: one paragraph)
+2. Stack & versions — (from B3)
+3. Directory tree (annotated) — (pending)
+4. Entry points & processes — (pending)
+5. Module map (Mermaid) + coupling — (pending)
+6. Data stores & models — (pending)
+7. External services — (pending)
+8. Inputs (sources) & outputs (sinks) — trust boundaries — (pending)
+9. Config & env (summary) — (pending)
+10. Critical flows (links to notes/flows/*) — (pending)
+11. Oddities — duplicates, orphans, missing refs — (pending)
