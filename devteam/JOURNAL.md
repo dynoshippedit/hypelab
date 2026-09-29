@@ -50,3 +50,10 @@
 - Notes updated: JOURNAL.md
 - Commands: none (delegation only)
 - Next: receive lane reports → Phase 2 gate (every critical flow traced hop-by-hop) → Phase 3 deep lanes (PRF, UIX + full file-by-file sweeps)
+
+## 2026-09-29 02:47 · Tech Lead · Phase 2
+- Did: Received STR lane report (completed). media-str.md + 7 findings (STR-450–456: 3x S2, 3x S3, 1x S4). Key verdicts: all 26 subprocess call sites are argv + shell=False with timeouts (no shell injection); determinism overclaimed (no bitexact, metadata varies — STR-452); unsandboxed ffmpeg/yt-dlp on third-party bytes (STR-450); unbounded RSS fetch + XML entity expansion (STR-451).
+- Found: STR-450/451/452 (S2) · STR-453/454/455 (S3) · STR-456 (S4)
+- Notes updated: JOURNAL.md
+- Commands: none (lane report)
+- Next: await BUG, SEC, ARC, DAT lane reports; then Phase 2 gate check
