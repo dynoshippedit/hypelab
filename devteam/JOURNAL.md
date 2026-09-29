@@ -27,3 +27,10 @@
 - Notes updated: PLAYBOOK.md B3 (corrected flows, entry points, auth model) + B17 changelog; JOURNAL.md
 - Commands: none (lane report + B3 edit)
 - Next: await DOC, BLD lane reports; then Phase 1 gate check
+
+## 2026-09-29 02:28 · Tech Lead · Phase 1
+- Did: Received BLD lane report (completed). BASELINE.md written with real outputs: 191 passed / 0 failed / exit 0 / 200.2s (pytest), README's unittest command runs ZERO tests,  command does not exist, publish dry-run verified zero live calls, secret scan clean. 13 findings (BLD-001–013): 2x S1 (no dependency manifest; HYPELAB_CHROMIUM undocumented), 2x S2, 7x S3, 2x S4. Install story: no manifest, unpinned split env, importable only from repo root.
+- Found: BLD-001 (S1) · BLD-008 (S1) · BLD-002 (S2) · BLD-003 (S2) · BLD-004/005/006/007/009/010/011 (S3) · BLD-012/013 (S4)
+- Notes updated: JOURNAL.md
+- Commands: none (lane report)
+- Next: await DOC lane report; then Phase 1 gate check (coverage tiers set, baseline real, flows confirmed, B3 current)
