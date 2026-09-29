@@ -20,3 +20,10 @@
 - Notes updated: JOURNAL.md
 - Commands: git status → only devteam/notes/testing.md + devteam/findings/tst.md new (source untouched, per lane)
 - Next: await DOC, MAP, BLD lane reports; then Phase 1 gate check
+
+## 2026-09-29 02:20 · Tech Lead · Phase 1
+- Did: Received Cartographer report (completed). MAP.md (6 confirmed critical flows) + COVERAGE.md (88 rows: High 29 / Medium 14 / Low 45, none unclassified) + 5 findings (MAP-001–005) in devteam/findings/map.md. Key corrections: B3's align/plan/show commands and asset_ready state DO NOT EXIST in this code generation — audio aligns inline, terminal state is ready. Operator = trusted local user, no auth anywhere (flagged for SEC). edge-tts never called by code (fixture labels only). Import graph acyclic; god-module candidates: cli.py (997), align.py (607), render.py (576).
+- Found: MAP-001 (S3, 39MB stale job outputs tracked in jobs/job_c656669a5147/) · MAP-002 (S2, README documents a CLI that does not exist) · MAP-003 (S3, VERTICAL_SLICE_REPORT.md stale) · MAP-004 (S3, duplicate import json in gates.py) · MAP-005 (S4, stale __init__ docstring)
+- Notes updated: PLAYBOOK.md B3 (corrected flows, entry points, auth model) + B17 changelog; JOURNAL.md
+- Commands: none (lane report + B3 edit)
+- Next: await DOC, BLD lane reports; then Phase 1 gate check

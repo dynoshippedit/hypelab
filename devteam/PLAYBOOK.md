@@ -76,7 +76,7 @@ Project:             HypeLab — CLI pipeline for AI-assisted short-form video p
 Stack:               Python 3, SQLite (hypelab.db), ffmpeg, faster_whisper (local), edge-tts; unittest/pytest
 Entry points:        python3 -m hypelab.cli (hypelab/cli.py)
 Install:             no manifest found (no pyproject.toml/setup.py/requirements*.txt) (unverified)
-Run:                 python3 -m hypelab.cli <cmd> — new, attach, align, plan, render, gates, publish, kit, shots, show, work, doctor; HYPELAB_HOME=/home/dino/hypelab  verified: no
+Run:                 python3 -m hypelab.cli <cmd> — book1: migrate, kit new, new, shots, attach, audio, render, gates, work [--once], costs; book2 (b2cli): campaign x5, source x3, watch, moments, cut, tray, posted, review resolve, measure, worked, propose/promote-weights; book3 (book3cli): authorize, carousel, publish, consent, pitch, invite, feedback, priors  verified: partial (Cartographer read registration code; smoke pending BLD)
 Test:                PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest tests/ — 191 passing reported 2026-09-28 (to reproduce); README also says: python3 -m unittest discover -s tests -v  verified: no
 Lint / typecheck:    none found (unverified)
 Config & env:        HYPELAB_HOME (default: repo dir); no .env template, no CI/CD, no Docker found (unverified)
@@ -84,7 +84,8 @@ Data stores:         SQLite via migrations/0001-0003 (+ state_migrations.py); jo
 External services:   edge-tts (VO fixture gen), faster_whisper (local align); publish adapters are stubs (dry-run only, NotImplementedError)
 Deployment:          local CLI on Threadripper; no CI/CD, no Docker, no deploy config found (unverified)
 Crown jewels:        consent/publish gate (never publish for real without consent); job queue integrity (leases, retries, crash recovery); render determinism + EDL validation; quality gates; SQLite data integrity
-Critical flows:      (1) new → attach → align → plan → render → gates → asset_ready; (2) publish <job> → consent gate → dry-run (REFUSED paths); (3) kit new → appearance lock; (4) queue worker: enqueue → lease → execute → retry
+Critical flows:      (1) book1 pipeline: kit new → new → attach → audio (inline forced-align) → render → work (lease-claim worker) → gates → ready|gate_failed; (2) worker loop: claim → handle → transition / fail+retry+poison; (3) book2 clip mine: campaign → rights-gated ingest → score → cut → compliance gate → tray → posted; (4) book3 consent/publish: authorize → pitch → consent grant/deny/expire → scheduled → publish → consent re-check at publish → dry-run only (--live hard-refuses); (5) kit new → immutable v1 seed (appearance lock); (6) carousel: gates-first then Chromium HTML→PNG
+Auth model:            none — operator is the trusted local user; no auth anywhere in the CLI (SEC lane to verify)
 Active specialists:  STR (ffmpeg transcoding/rendering of untrusted clips); AIX/GAM/W3B/MUS NOT activated — no LLM API SDKs, game engine, contracts, or music-rights code found (Cartographer to confirm)
 Known leads:         none (P4 profile: built from scratch in Phases 0-1; no pre-scan leads exist for this repo)
 Excluded paths:      hypelab/__pycache__/, tests/__pycache__/, .pytest_cache/, hypelab.db* (untracked local runtime state) — review whether they belong, not their contents
@@ -723,3 +724,4 @@ When finished, send the owner a short message: the headline results, and the pat
 | Date | Change | Reason |
 |---|---|---|
 | 2026-09-29 | Created from the master prompt | Boot |
+| 2026-09-29 | B3: corrected critical flows + entry points + auth model from Cartographer map (align/plan/show/asset_ready do not exist) | Phase 1 gate prep |
