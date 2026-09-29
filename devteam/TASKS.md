@@ -87,7 +87,7 @@ DEFERRED · REJECTED.
   feeds priors; full suite green.
 
 ### T-003 — SystemExit from _die kills the worker (BUG-001 · S1/Confirmed)
-- Status: **IN PROGRESS** (hl-cycle-03). Problem: `_die` raises SystemExit (BaseException); work-loop guard is
+- Status: **VERIFIED** (hl-cycle-03; controller: tests falsifiable vs old code, full suite 203/203 green). Problem: `_die` raises SystemExit (BaseException); work-loop guard is
   `except Exception` (`cli.py:928`) → deterministic failures kill the worker,
   lease orphaned, failure never recorded. Fix: dedicated `CliError(Exception)`
   from `_die`, or `except BaseException` minus KeyboardInterrupt. Test:
