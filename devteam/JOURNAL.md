@@ -114,3 +114,11 @@
 - Notes updated: JOURNAL.md
 - Commands: none (lane report)
 - Next: await UIX, PAT, ENV, SWEEP-A, SWEEP-B; then Phase 3 gate → Phase 4 triage
+
+## 2026-09-29 03:38 · Tech Lead · Phase 3
+- Did: Received SWEEP-B report (completed). 14 files N–Z read fully; sweep-b.md + 21 new findings (REV-750–771: 6x S3, 15x S4). Most surprising: REV-750 S3 — "twitch" source kind accepted by add_source but list_new_items has no twitch branch: sources register fine then silently never poll. Others: score.nms min_gap_s dead (REV-751), load_weights lexicographic version sort "v9" beats "v10" (REV-752), make_pitch hard-codes Instagram scope sentence for all platforms (REV-754), tray re-run zombies (REV-755). Confirmed existing BUG-003/007/009/015 without duplicating.
+- Found: REV-750–755 (S3) · REV-756–771 (S4)
+- Running totals: 147 findings — S0 0 · S1 11 · S2 44 · S3 59 · S4 33.
+- Notes updated: JOURNAL.md
+- Commands: none (lane report)
+- Next: await UIX, PAT, ENV, SWEEP-A; then Phase 3 gate → Phase 4 triage
