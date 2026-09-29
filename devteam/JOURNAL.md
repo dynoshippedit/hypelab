@@ -57,3 +57,10 @@
 - Notes updated: JOURNAL.md
 - Commands: none (lane report)
 - Next: await BUG, SEC, ARC, DAT lane reports; then Phase 2 gate check
+
+## 2026-09-29 02:55 · Tech Lead · Phase 2
+- Did: Received DAT lane report (completed). data-model.md + integrations.md (13 rows) + 15 findings (DAT-350–364: 1x S1, 5x S2, 6x S3, 3x S4). Key verdicts: (a) DAT-350 S1 — feed_back() ignores provenance, violating metrics.py's own calibration rule (uncalibrated numbers can become applied priors at n>=8); (b) dead money accounting — charge() has zero callers, payout_usd never written so usd_per_clip_hour always NULL; (c) claim step atomic but claim+job_events separate autocommit (audit-loss window); transition TOCTOU (legality checked before BEGIN); (d) source of truth: SQLite DB silently wins, work/<id>/manifest.json is append-only evidence with no cross-check; 28 tables (not 23); edge-tts never called by code; faster-whisper auto-downloads HF weights unguarded.
+- Found: DAT-350 (S1) · DAT-351/352/353/364 (S2) · DAT-354/355/356/358/360/362 (S3) · DAT-359/361/363 (S4)
+- Notes updated: JOURNAL.md
+- Commands: none (lane report)
+- Next: await BUG, SEC, ARC lane reports; then Phase 2 gate check
