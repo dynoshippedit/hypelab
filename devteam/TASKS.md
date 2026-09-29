@@ -148,7 +148,7 @@ DEFERRED · REJECTED.
   Test: claim a job, CLI `gates` → clean refusal. Effort XS.
 
 ### T-013 — charge() has zero production callers; costs always empty (BUG-009+DAT-352 · S2/Confirmed)
-- Status: **DECIDED 2026-09-29** — RIP OUT: remove charge/payout routes+code, park on archive branch, keep cost ledger, drop C4-only tasks (T-013/T-017/DAT-357). Spec: devteam/proposals/owner-decisions-2026-09-29.md (D2). Queued.
+- Status: **IMPLEMENTED** [hl-cycle-09] — D2 executed 2026-09-29: removed posts.payout_usd + metrics.usd_per_clip_hour + campaign money-model columns (rate_per_1k_usd/rate_basis/budget_total_usd/budget_seen_usd/budget_checked/budget_provenance) + campaigns.refresh_budget + b2cli refresh-budget command; renamed queue.charge() -> log_cost() (ledger writer kept; spend tracking, not money movement); new migration 0005_money_pipeline_removal. Removed code preserved on local archive branch archive/money-pipeline-2026-09-29 (no push). T-017/DAT-357 dropped with the removal. Awaiting controller verification.
 
 ### T-014 — `render --aspect` variant drives book pipeline; `ready` mis-certifies (BUG-010 · S2/Confirmed)
 - Status: READY (owner decision on intended --aspect semantics recorded in
@@ -163,8 +163,7 @@ DEFERRED · REJECTED.
   `invites.poll_invite_metrics`. Latent today (unwired). XS.
 
 ### T-017 — payout_usd never written; $/clip-hour always NULL (DAT-353 · S2/Confirmed)
-- Status: READY. Implement documented rate-basis payout fill
-  (`rate_per_1k_usd` × views at measure time), or drop column/metric. M.
+- Status: **DROPPED** 2026-09-29 per D2 (hl-cycle-09) — owner chose the drop path: payout_usd column and the $/clip-hour metric were removed outright instead of implementing the rate-basis fill. Money returns via a hosted processor later.
 
 ### T-018 — faster-whisper auto-download contradicts network policy (DAT-364 · S2/Confirmed)
 - Status: READY. Revision pin + checksum/size guard + offline fail-closed, or

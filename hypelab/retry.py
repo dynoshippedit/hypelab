@@ -136,7 +136,7 @@ def _to_review(conn, job_id, owner, err, reason):
         conn.execute("BEGIN IMMEDIATE")
     try:
         queue_mod.fail(conn, job_id, owner, err, review_reason=reason)
-        queue_mod.charge(
+        queue_mod.log_cost(
             conn, job_id, _provider_hint(err), "attempt", 1, 0.0,
             "ACTUAL|attempt routed to review pile: %s (cost unmetered)"
             % reason,
@@ -189,7 +189,7 @@ def _requeue(conn, job_id, owner, err, frm, attempt, detail):
             % (attempt, max_attempts)
             + ": %s; backoff %ds" % (detail, delay),
         )
-        queue_mod.charge(
+        queue_mod.log_cost(
             conn, job_id, _provider_hint(err), "attempt", 1, 0.0,
             "ACTUAL|requeue attempt %d/%d: %s (cost unmetered)"
             % (attempt, max_attempts, detail),

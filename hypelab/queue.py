@@ -296,9 +296,12 @@ def log(conn: sqlite3.Connection, job_id: str, frm, to: str, note) -> None:
     )
 
 
-def charge(conn: sqlite3.Connection, job_id: str, provider: str, unit: str,
-           qty: float, usd: float, note: str) -> None:
+def log_cost(conn: sqlite3.Connection, job_id: str, provider: str, unit: str,
+              qty: float, usd: float, note: str) -> None:
     """Record one cost line in cost_ledger with at=now().
+
+    Spend tracking only — not money movement. (D2 2026-09-29: the custom
+    charge/payout pipeline was removed; the cost ledger is kept.)
 
     CONVENTION (estimated-vs-actual accounting, within the mandated schema):
       - cost ESTIMATES use a note starting with "ESTIMATE|"

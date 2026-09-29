@@ -2,10 +2,10 @@
 
 Exercises the campaign commands end to end through CliRunner against an
 isolated SQLite database -- no service mocks. Covers:
-  * add -> list -> show -> bump-rules -> refresh-budget all exit 0
+  * add -> list -> show -> bump-rules all exit 0
   * bump-rules builds valid provenance ({who, source_url, captured_at})
-  * refresh-budget accepts a bare number or {"budget_seen_usd": ...} and
-    refuses garbage with a clean error (ARC-301)
+  (the budget-refresh command was removed 2026-09-29 with the money
+  pipeline, D2)
   * list prints the schema's `state` column (REV-700, was KeyError)
   * show on an unknown id exits 1 with a clean error (REV-701)
 """
@@ -113,59 +113,6 @@ def test_bump_rules_records_valid_provenance(env, tmp_path):
     assert prov["who"] == "dino"
     assert prov["source_url"]
     assert prov["captured_at"]
-
-
-def test_refresh_budget_dict_and_bare_number(env, tmp_path):
-    r = _add(env, tmp_path)
-    assert r.exit_code == 0, r.output
-
-    # ARC-301b: dict form -- whole object was passed as float(seen_usd).
-    r = env["runner"].invoke(
-        b2cli_mod.campaign_grp,
-        ["refresh-budget", "cmp_t001", _w(tmp_path, "budget.json", {"budget_seen_usd": 123.45}), "--by", "dino"],
-    )
-    assert r.exit_code == 0, r.output
-    assert "budget refreshed" in r.output
-
-    conn = sqlite3.connect(str(env["db"]))
-    try:
-        row = conn.execute(
-            "SELECT budget_seen_usd, budget_provenance FROM campaigns WHERE id='cmp_t001'"
-        ).fetchone()
-    finally:
-        conn.close()
-    assert row[0] == 123.45
-    prov = json.loads(row[1])  # stored value must round-trip through _parse
-    assert prov["who"] == "dino"
-
-    # bare-number form
-    r = env["runner"].invoke(
-        b2cli_mod.campaign_grp,
-        ["refresh-budget", "cmp_t001", _w(tmp_path, "budget2.json", 99.5), "--by", "dino"],
-    )
-    assert r.exit_code == 0, r.output
-
-    conn = sqlite3.connect(str(env["db"]))
-    try:
-        val = conn.execute(
-            "SELECT budget_seen_usd FROM campaigns WHERE id='cmp_t001'"
-        ).fetchone()[0]
-    finally:
-        conn.close()
-    assert val == 99.5
-
-
-def test_refresh_budget_bad_json_is_clean_error(env, tmp_path):
-    r = _add(env, tmp_path)
-    assert r.exit_code == 0, r.output
-
-    r = env["runner"].invoke(
-        b2cli_mod.campaign_grp,
-        ["refresh-budget", "cmp_t001", _w(tmp_path, "bad.json", {"nope": 1}), "--by", "dino"],
-    )
-    assert r.exit_code == 1
-    assert "error:" in r.output
-    assert "Traceback" not in r.output
 
 
 def test_bump_rules_unknown_id_is_clean_error(env, tmp_path):

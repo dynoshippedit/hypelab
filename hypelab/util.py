@@ -179,7 +179,7 @@ def work_dir(job_id, root="/home/dino/hypelab") -> Path:
 
     - Job artifacts: work/<job_id>/ — atomic writes only (temp → fsync →
       rename; never a partial file at its final name).
-    - State & ledger: hypelab.db — only via queue transitions / charge() /
+    - State & ledger: hypelab.db — only via queue transitions / log_cost() /
       gate-result inserts, inside explicit transactions.
     - Model caches: ~/.cache/, HF hub dir — read-mostly, content-
       addressed; never mutated by a job.

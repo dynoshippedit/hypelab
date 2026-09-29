@@ -69,28 +69,6 @@ def _read_json(path, what):
         _die(f"cannot read {what} {path}: {e}")
 
 
-def _extract_seen_usd(budget, budget_json):
-    """Pull a numeric observed-budget value out of the budget JSON.
-
-    Accepts a bare number or an object carrying ``budget_seen_usd``
-    (alias ``seen_usd``). Anything else is an operator error with a clean
-    message -- refresh_budget() needs a float, not a traceback (ARC-301).
-    """
-    if isinstance(budget, bool):
-        pass  # fall through to the clean error below
-    elif isinstance(budget, (int, float)):
-        return float(budget)
-    elif isinstance(budget, dict):
-        for key in ("budget_seen_usd", "seen_usd"):
-            val = budget.get(key)
-            if isinstance(val, bool):
-                continue
-            if isinstance(val, (int, float)):
-                return float(val)
-    _die(f"cannot read observed budget from {budget_json}: expected a number "
-         f"or an object with 'budget_seen_usd'")
-
-
 def _cmd(fn=None, **kw):
     """Register a click command in COMMANDS."""
     def deco(f):
@@ -159,30 +137,6 @@ def campaign_bump_rules(campaign_id, rules_json, operator):
     except campaigns_mod.CampaignError as e:
         _die(str(e))
     print(f"rules -> v{v}")
-
-
-@campaign_grp.command("refresh-budget")
-@click.argument("campaign_id")
-@click.argument("budget_json")
-@click.option("--by", "operator", required=True,
-              help="Operator name (recorded in provenance).")
-def campaign_refresh_budget(campaign_id, budget_json, operator):
-    """Deliberate budget refresh (a human re-read the campaign page)."""
-    budget = _read_json(budget_json, "budget json")
-    seen_usd = _extract_seen_usd(budget, budget_json)
-    conn = _conn()
-    # _parse() json.loads() budget_provenance on every load, so the stored
-    # value must be JSON -- use the same provenance shape as bump-rules.
-    provenance = json.dumps({
-        "who": operator,
-        "source_url": str(budget_json),
-        "captured_at": campaigns_mod.now(),
-    })
-    try:
-        campaigns_mod.refresh_budget(conn, campaign_id, seen_usd, provenance)
-    except campaigns_mod.CampaignError as e:
-        _die(str(e))
-    print("budget refreshed")
 
 
 COMMANDS.append(campaign_grp)

@@ -127,7 +127,6 @@ def camp(conn):
         "id": "allow-camp",
         "marketplace": "test-mart",
         "creator": "Allow Creator",
-        "rate_per_1k_usd": 4.0,
         "rate_basis": "observed",
         "platforms": ["tiktok"],
         "rules": {"source_allowlist": ["fixture.example"]},

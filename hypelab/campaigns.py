@@ -4,9 +4,6 @@ A campaign is a JSON file, never a code change. Rules are versioned:
 bumping rules_version is a deliberate operator action (never a background
 mutation); the old version stays queryable via rules_provenance history.
 
-rate_basis is observed | vendor_claim | unknown. A vendor's "average $/1k"
-enters here only as vendor_claim — never as a number the system acts on as
-fact, and NEVER hard-coded into scoring or tray prioritization.
 """
 from __future__ import annotations
 
@@ -14,8 +11,6 @@ import json
 import sqlite3
 
 from .util import new_id, now
-
-RATE_BASES = ("observed", "vendor_claim", "unknown")
 
 REQUIRED_TOP_KEYS = ("id", "platforms", "rules")
 
@@ -27,7 +22,7 @@ class CampaignError(Exception):
 def _parse(row: sqlite3.Row) -> dict:
     d = dict(row)
     for k in ("platforms", "rules_json", "rules_provenance",
-              "budget_provenance", "submission_json"):
+              "submission_json"):
         v = d.get(k)
         d[k] = json.loads(v) if v else None
     d["rules"] = d.pop("rules_json") or {}
@@ -49,9 +44,6 @@ def validate(data: dict) -> list[str]:
         problems.append("platforms must be a non-empty list")
     if not isinstance(data.get("rules"), dict):
         problems.append("rules must be an object")
-    rb = data.get("rate_basis", "observed")
-    if rb not in RATE_BASES:
-        problems.append(f"rate_basis must be one of {RATE_BASES}, got {rb!r}")
     return problems
 
 
@@ -70,23 +62,14 @@ def add(conn: sqlite3.Connection, data: dict) -> str:
         raise CampaignError(f"campaign {cid!r} already exists")
     prov = data.get("rules_provenance")
     conn.execute(
-        """INSERT INTO campaigns(id, marketplace, creator, rate_per_1k_usd,
-                                 rate_basis, budget_total_usd, budget_seen_usd,
-                                 budget_checked, budget_provenance, platforms,
+        """INSERT INTO campaigns(id, marketplace, creator, platforms,
                                  rules_json, rules_version, rules_provenance,
                                  submission_json, state, created_at)
-           VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+           VALUES(?,?,?,?,?,?,?,?,?,?)""",
         (
             cid,
             data.get("marketplace"),
             data.get("creator"),
-            data.get("rate_per_1k_usd"),
-            data.get("rate_basis", "observed"),
-            data.get("budget_total_usd"),
-            data.get("budget_seen_usd"),
-            data.get("budget_checked"),
-            json.dumps(data["budget_provenance"])
-            if data.get("budget_provenance") else None,
             json.dumps(data["platforms"]),
             json.dumps(data["rules"]),
             1,
@@ -138,21 +121,6 @@ def bump_rules(conn: sqlite3.Connection, campaign_id: str, rules: dict,
         (json.dumps(rules), new_version, json.dumps(provenance), campaign_id),
     )
     return new_version
-
-
-def refresh_budget(conn: sqlite3.Connection, campaign_id: str,
-                   seen_usd: float, provenance: str) -> None:
-    """Record an OBSERVED remaining-budget snapshot with timestamp.
-
-    A budget number without a timestamp is a rumor; budget_seen_usd is
-    never assumed, only observed.
-    """
-    load(conn, campaign_id)  # raises if unknown
-    conn.execute(
-        "UPDATE campaigns SET budget_seen_usd=?, budget_checked=?,"
-        " budget_provenance=? WHERE id=?",
-        (float(seen_usd), now(), provenance, campaign_id),
-    )
 
 
 def compliance_is_stale(conn: sqlite3.Connection, clip_id: str) -> bool:
