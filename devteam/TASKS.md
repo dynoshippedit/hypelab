@@ -68,7 +68,17 @@ DEFERRED · REJECTED.
   /home/dino/.local/bin/pytest tests/ -q` before/after.
 
 ### T-002 — feed_back() provenance filter (DAT-350 · S1/Confirmed)
-- Status: READY. Problem: `_best_views` consumes metrics with no provenance
+- Status: IMPLEMENTED (hl-cycle-02; awaiting controller acceptance).
+- Evidence: 2 new regression tests FAILED on unfixed code (reproduced DAT-350:
+  user_entered MAX 99999 consumed instead of official 100; uncalibrated-only
+  post consumed), PASS after fix; full suite 199 passed / 0 failed / 3 warnings
+  (exit 0, 174s). Fix: `AND provenance IN ('official_api','provider_api')`
+  in `_best_views`, reusing `CALIBRATION_PROVENANCES` exactly as
+  attribution.py:57. Only caller is feed_back(); priors()/best_value() read
+  what_worked only. Note for controller: metrics.best_views() (latest,
+  provenance-ranked) vs feedback._best_views (MAX) differ in aggregation
+  semantics — minimal predicate fix applied per task; no behavior change
+  beyond excluding uncalibrated rows. Problem: `_best_views` consumes metrics with no provenance
   predicate, violating the calibration rule (`metrics.py:12`); uncalibrated
   rows (user_entered, fixtures) can become applied production priors.
 - Fix: `AND provenance IN ('official_api','provider_api')` in
