@@ -260,7 +260,7 @@ DEFERRED · REJECTED.
 - Status: **APPROVED 2026-09-29 with constraints** — git rm --cached, move to outputs/ under new root, gitignore it; keep small test samples only; DO NOT touch character store (reference.png/voice.wav); send Dino the moved list; NO history rewrite. Spec: devteam/proposals/owner-decisions-2026-09-29.md (D4). Queued.
 
 ### T-041 — S3/S4 backlog (grouped; evidence in findings/*.md)
-- Status: **IN PROGRESS** (hl-cycle-07: A2/C5 - ARC-310 + REV-714 + SEC-103 URL allowlist verdicts).
+- Status: **VERIFIED** (hl-cycle-07; commit 8b1c9f6; controller acceptance 2026-09-29 — inspected allowlist.py + watcher/compliance integration, new tests 24/24, full suite 250/250 green on final HEAD).
 - BUG-012/013/014/015 (kit float, attach orphan, run_all KeyError, EDL
   schema validation); ARC-305/306/308/309/310/311/312/313/314/315;
   DAT-354/355/356/357/358/359/360/363; ENV-654/655/656/657; PAT-600/601/602/603;
