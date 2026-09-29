@@ -66,7 +66,7 @@
 - Next: await BUG, SEC, ARC lane reports; then Phase 2 gate check
 
 ## 2026-09-29 03:02 · Tech Lead · Phase 2
-- Did: Received ARC lane report (completed). flows 3+6 traced; ARCHITECTURE.md sections 1-2 drafted (as-is + assessment; 3-5 deferred). 16 findings (ARC-300–315: 1x S1, 3x S2, 12x S3). Key: ARC-301 S1 — implicit CLI↔service contracts;  and  broken on EVERY invocation. ARC-302 S2 — clip lifecycle transition logic split across cut.py/compliance.py/tray.py, no single owner. ARC-300 S2 — two align paths with divergent failure semantics.
+- Did: Received ARC lane report (completed). flows 3+6 traced; ARCHITECTURE.md sections 1-2 drafted (as-is + assessment; 3-5 deferred). 16 findings (ARC-300–315: 1x S1, 3x S2, 12x S3). Key: ARC-301 S1 — implicit CLI<->service contracts; campaign bump-rules and campaign refresh-budget broken on EVERY invocation. ARC-302 S2 — clip lifecycle transition logic split across cut.py/compliance.py/tray.py, no single owner. ARC-300 S2 — two align paths with divergent failure semantics.
 - Found: ARC-301 (S1) · ARC-300/302/303/304 (S2) · ARC-305–315 (S3)
 - Running totals: 92 findings — S0 0 · S1 4 (BLD-001, BLD-008, DAT-350, ARC-301) · S2 38 · S3 42 · S4 8. No S0 anywhere so far.
 - Notes updated: JOURNAL.md
