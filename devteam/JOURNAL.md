@@ -13,3 +13,10 @@
 - Notes updated: JOURNAL.md
 - Commands: none (delegation only)
 - Next: receive lane reports → verify Phase 1 gate → launch Phase 2 critical-flow tracing (BUG, SEC, ARC, DAT, STR)
+
+## 2026-09-29 02:12 · Tech Lead · Phase 1
+- Did: Received TST lane report (completed). 12 findings logged to devteam/findings/tst.md (TST-001–012; 10× S2, 2× S3), notes/testing.md written (154 lines). Notable: TST-003 — queue.fail() docstring promises re-queue but cli.py work loop never re-queues (doc/code mismatch); TST-005/006 — align model tests unguarded (network + slow). No S0/S1 from TST.
+- Found: TST-001…TST-012 (see findings/tst.md)
+- Notes updated: JOURNAL.md
+- Commands: git status → only devteam/notes/testing.md + devteam/findings/tst.md new (source untouched, per lane)
+- Next: await DOC, MAP, BLD lane reports; then Phase 1 gate check
