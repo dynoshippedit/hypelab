@@ -1,1 +1,51 @@
-{"blockers":[],"changed_files":["hypelab/retry.py (classify_failure(): TERMINAL hints checked before TRANSIENT hints in the text path + T-041b comment; OWNER_WAITING_STATES gains 'compliance_unknown' with defense-in-depth comment)","tests/test_failure_requeue.py (new: test_classifier_terminal_hints_take_precedence_over_transient; test_mixed_signal_failure_goes_to_review_not_requeue; test_owner_waiting_jobs_never_autorequeue parametrized with 'compliance_unknown')","devteam/TASKS.md (T-041b -> IMPLEMENTED, awaiting controller verification)","devteam/cycles/hl-cycle-12.json (new)"],"checks":[{"command":"PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_failure_requeue.py -q","result":"23 passed (20 existing + 3 new)"},{"command":"git stash push hypelab/retry.py + pytest tests/test_failure_requeue.py -q -k 'terminal_hints_take_precedence or mixed_signal or owner_waiting'; git stash pop","result":"3 failed, 1 passed (pre-existing awaiting_media case) with fix stashed -- falsified: new tests genuinely test the fix; tree restored after"},{"command":"PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/ -q (full suite)","result":"293 passed, 3 warnings in 200.09s (290 base + 3 new)"}],"cycle_id":"hl-cycle-12","lessons":["Hint-order bugs are invisible to tests that only exercise pure signals: add mixed-signal cases (terminal+transient words in one message) whenever a classifier has a precedence rule.","Falsification via stash is cheap and decisive for precedence swaps: the two mixed-signal classifier cases plus the compliance_unknown param all fail without the fix, proving coverage."],"next_action":"Controller verification of hl-cycle-12. Then owner queue: G1 cost-labeling decision (awaiting the owner); T-041 hardening follow-up complete.","project_id":"hypelab","project_root":"/home/dino/hypelab","proposed_status":"IMPLEMENTED","root_cause":"Two residual gaps from the T-011 controller review: (G2) the text-hint path in classify_failure() checked transient hints first, so an error mentioning 'timeout' while carrying a terminal signal ('invalid ...') classified transient and would auto-retry up to 3 times; (G3) compliance_unknown (a human-review pause state from compliance.py) was absent from OWNER_WAITING_STATES, so a job in that state with a transient failure would have been requeue-eligible.","schema_version":"1.0","source_identity":{"after":"<this commit>","before":"5da03ae","method":"git rev-parse + git status (clean tree, branch devteam/review-2026-09-29, HEAD 5da03ae before editing)"},"summary":"T-041b requeue hardening (follow-up to T-011): (a) classify_failure() text path now checks TERMINAL hints before TRANSIENT hints, so mixed-signal bad config like \"invalid timeout value: must be positive\" or \"connection timeout: invalid API key\" routes terminal to the review pile and can never auto-retry; the status-code path is untouched and still takes precedence. (b) \"compliance_unknown\" added to OWNER_WAITING_STATES (defense-in-depth; currently unreachable via the work loop). T-041b marked IMPLEMENTED, awaiting controller verification. Cost-labeling/G1 decision untouched per owner. Nothing pushed.","task_id":"HL-012"}
+{
+  "blockers": [],
+  "changed_files": [
+    "hypelab/retry.py (classify_failure(): TERMINAL hints checked before TRANSIENT hints in the text path + T-041b comment; OWNER_WAITING_STATES gains 'compliance_unknown' with defense-in-depth comment)",
+    "tests/test_failure_requeue.py (new: test_classifier_terminal_hints_take_precedence_over_transient; test_mixed_signal_failure_goes_to_review_not_requeue; test_owner_waiting_jobs_never_autorequeue parametrized with 'compliance_unknown')",
+    "devteam/TASKS.md (T-041b -> IMPLEMENTED, awaiting controller verification)",
+    "devteam/cycles/hl-cycle-12.json (new)"
+  ],
+  "checks": [
+    {
+      "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_failure_requeue.py -q",
+      "result": "23 passed (20 existing + 3 new)"
+    },
+    {
+      "command": "git stash push hypelab/retry.py + pytest tests/test_failure_requeue.py -q -k 'terminal_hints_take_precedence or mixed_signal or owner_waiting'; git stash pop",
+      "result": "3 failed, 1 passed (pre-existing awaiting_media case) with fix stashed -- falsified: new tests genuinely test the fix; tree restored after"
+    },
+    {
+      "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/ -q (full suite)",
+      "result": "293 passed, 3 warnings in 200.09s (290 base + 3 new)"
+    }
+  ],
+  "cycle_id": "hl-cycle-12",
+  "lessons": [
+    "Hint-order bugs are invisible to tests that only exercise pure signals: add mixed-signal cases (terminal+transient words in one message) whenever a classifier has a precedence rule.",
+    "Falsification via stash is cheap and decisive for precedence swaps: the two mixed-signal classifier cases plus the compliance_unknown param all fail without the fix, proving coverage."
+  ],
+  "next_action": "Controller verification of hl-cycle-12. Then owner queue: G1 cost-labeling decision (awaiting the owner); T-041 hardening follow-up complete.",
+  "project_id": "hypelab",
+  "project_root": "/home/dino/hypelab",
+  "proposed_status": "VERIFIED",
+  "root_cause": "Two residual gaps from the T-011 controller review: (G2) the text-hint path in classify_failure() checked transient hints first, so an error mentioning 'timeout' while carrying a terminal signal ('invalid ...') classified transient and would auto-retry up to 3 times; (G3) compliance_unknown (a human-review pause state from compliance.py) was absent from OWNER_WAITING_STATES, so a job in that state with a transient failure would have been requeue-eligible.",
+  "schema_version": "1.0",
+  "source_identity": {
+    "after": "<this commit>",
+    "before": "5da03ae",
+    "method": "git rev-parse + git status (clean tree, branch devteam/review-2026-09-29, HEAD 5da03ae before editing)"
+  },
+  "summary": "T-041b requeue hardening (follow-up to T-011): (a) classify_failure() text path now checks TERMINAL hints before TRANSIENT hints, so mixed-signal bad config like \"invalid timeout value: must be positive\" or \"connection timeout: invalid API key\" routes terminal to the review pile and can never auto-retry; the status-code path is untouched and still takes precedence. (b) \"compliance_unknown\" added to OWNER_WAITING_STATES (defense-in-depth; currently unreachable via the work loop). T-041b marked IMPLEMENTED, awaiting controller verification. Cost-labeling/G1 decision untouched per owner. Nothing pushed.",
+  "task_id": "HL-012",
+  "controller_verification": {
+    "date": "2026-09-29",
+    "source_identity": "2794893 on devteam/review-2026-09-29, tree clean, nothing pushed",
+    "checks": [
+      "diff inspected: terminal-before-transient reorder + compliance_unknown in OWNER_WAITING_STATES, status-code path untouched",
+      "tests/test_failure_requeue.py: 23/23 pass (independently re-run)",
+      "full suite: 293/293 pass (independently re-run)"
+    ],
+    "result": "VERIFIED"
+  }
+}
