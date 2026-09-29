@@ -35,6 +35,7 @@ from pathlib import Path
 import click
 
 from hypelab import align as align_mod
+from hypelab.cli_errors import CliError, CliGroup
 from hypelab import db as db_mod
 from hypelab import edl as edl_mod
 from hypelab import gates as gates_mod
@@ -78,9 +79,14 @@ BOOK7_GATES = [
 # ---------------------------------------------------------------------------
 
 def _die(msg, code=1):
-    """Print an error to stderr and exit nonzero (Click-friendly)."""
+    """Print an error to stderr, then raise a catchable CliError.
+
+    The Click entrypoint (CliGroup) turns this into a nonzero process
+    exit; worker loops catch it as a normal Exception and record the
+    failure instead of dying (T-003: BUG-001).
+    """
     print(f"error: {msg}", file=sys.stderr)
-    raise SystemExit(code)
+    raise CliError(msg, code)
 
 
 def _repo_root():
@@ -340,7 +346,7 @@ def _do_align(conn, job_id, kit, work, edl):
 # CLI
 # ---------------------------------------------------------------------------
 
-@click.group()
+@click.group(cls=CliGroup)
 def cli():
     """HypeLab — the only front door (Book 1)."""
 
@@ -925,7 +931,8 @@ def work(once, owner):
                 else:
                     raise RuntimeError(f"no handler for state {state!r}")
                 print(f"done {job_id}")
-            except Exception as e:  # handler blew up: record, don't lose the job
+            except Exception as e:  # handler blew up (incl. CliError from _die):
+                # record it via fail(); the worker stays alive (T-003)
                 print(f"handler error on {job_id}: {e}")
                 try:
                     queue_mod.fail(conn, job_id, owner, e)

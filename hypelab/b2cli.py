@@ -20,6 +20,7 @@ import click
 import hypelab
 from hypelab import attribution as attribution_mod
 from hypelab import campaigns as campaigns_mod
+from hypelab.cli_errors import CliError, CliGroup
 from hypelab import compliance as compliance_mod
 from hypelab import cut as cut_mod
 from hypelab import ingest as ingest_mod
@@ -39,8 +40,14 @@ COMMANDS: list[click.BaseCommand] = []
 
 
 def _die(msg, code=1):
+    """Print an error to stderr, then raise a catchable CliError.
+
+    The Click entrypoint (CliGroup) turns this into a nonzero process
+    exit; worker loops catch it as a normal Exception and record the
+    failure instead of dying (T-003: BUG-001).
+    """
     print(f"error: {msg}", file=sys.stderr)
-    raise SystemExit(code)
+    raise CliError(msg, code)
 
 
 def _root():
@@ -95,7 +102,7 @@ def _cmd(fn=None, **kw):
 
 # ------------------------------------------------------------------ campaign
 
-@click.group("campaign")
+@click.group("campaign", cls=CliGroup)
 def campaign_grp():
     """Campaign lifecycle: add, list, show, deliberate rule/budget ops."""
 
@@ -183,7 +190,7 @@ COMMANDS.append(campaign_grp)
 
 # ------------------------------------------------------------------ source
 
-@click.group("source")
+@click.group("source", cls=CliGroup)
 def source_grp():
     """Source lifecycle: add (rights manifest required), clearance, list."""
 
@@ -368,7 +375,7 @@ def posted(clip_id, post_url, platform, operator):
 
 # ------------------------------------------------------------------ review
 
-@click.group("review", invoke_without_command=True)
+@click.group("review", invoke_without_command=True, cls=CliGroup)
 @click.option("--job", "job_id", default=None)
 @click.pass_context
 def review_grp(ctx, job_id):

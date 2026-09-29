@@ -19,6 +19,7 @@ import click
 
 from hypelab import authorize as authorize_mod
 from hypelab import carousel as carousel_mod
+from hypelab.cli_errors import CliError
 from hypelab import consent as consent_mod
 from hypelab import feedback as feedback_mod
 from hypelab import invites as invites_mod
@@ -35,8 +36,14 @@ COMMANDS: list[click.BaseCommand] = []
 
 
 def _die(msg, code=1):
+    """Print an error to stderr, then raise a catchable CliError.
+
+    The Click entrypoint (CliGroup) turns this into a nonzero process
+    exit; worker loops catch it as a normal Exception and record the
+    failure instead of dying (T-003: BUG-001).
+    """
     print(f"error: {msg}", file=sys.stderr)
-    raise SystemExit(code)
+    raise CliError(msg, code)
 
 
 def _root():
