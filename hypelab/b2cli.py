@@ -3,7 +3,8 @@
 Registered onto the main ``hypelab`` click group by cli.py (Book 2's
 commands live here so Book 1's cli.py diff stays a two-line registration).
 
-Conventions mirror cli.py: HYPELAB_DB / HYPELAB_ROOT env overrides, errors
+Conventions mirror cli.py: paths resolve from the single-root config
+(hypelab/config.py; HYPELAB_HOME with per-path overrides), errors
 via _die to stderr with a nonzero exit.
 """
 from __future__ import annotations
@@ -20,6 +21,8 @@ import click
 import hypelab
 from hypelab import attribution as attribution_mod
 from hypelab import campaigns as campaigns_mod
+from hypelab import config as config_mod
+from hypelab.cli_errors import CliError, CliGroup
 from hypelab import compliance as compliance_mod
 from hypelab import cut as cut_mod
 from hypelab import ingest as ingest_mod
@@ -39,16 +42,22 @@ COMMANDS: list[click.BaseCommand] = []
 
 
 def _die(msg, code=1):
+    """Print an error to stderr, then raise a catchable CliError.
+
+    The Click entrypoint (CliGroup) turns this into a nonzero process
+    exit; worker loops catch it as a normal Exception and record the
+    failure instead of dying (T-003: BUG-001).
+    """
     print(f"error: {msg}", file=sys.stderr)
-    raise SystemExit(code)
+    raise CliError(msg, code)
 
 
 def _root():
-    return os.environ.get("HYPELAB_ROOT", DEFAULT_ROOT)
+    return config_mod.resolve_config().home
 
 
 def _conn():
-    return db_mod.connect(os.environ.get("HYPELAB_DB") or None)
+    return db_mod.connect()
 
 
 def _work(job_id):
@@ -73,7 +82,7 @@ def _cmd(fn=None, **kw):
 
 # ------------------------------------------------------------------ campaign
 
-@click.group("campaign")
+@click.group("campaign", cls=CliGroup)
 def campaign_grp():
     """Campaign lifecycle: add, list, show, deliberate rule/budget ops."""
 
@@ -95,7 +104,7 @@ def campaign_add(json_path):
 def campaign_list():
     for c in campaigns_mod.list_all(_conn()):
         print(f"{c['id']}  {c['creator']}  {c['marketplace']}  "
-              f"rules_v{c['rules_version']}  {c['status']}")
+              f"rules_v{c['rules_version']}  {c['state']}")
 
 
 @campaign_grp.command("show")
@@ -104,7 +113,7 @@ def campaign_show(campaign_id):
     conn = _conn()
     try:
         c = campaigns_mod.load(conn, campaign_id)
-    except KeyError:
+    except campaigns_mod.CampaignError:
         _die(f"campaign {campaign_id!r} not found")
     print(json.dumps(c, indent=2))
 
@@ -118,27 +127,18 @@ def campaign_bump_rules(campaign_id, rules_json, operator):
     """Deliberate rules bump (a human changed the rules)."""
     rules = _read_json(rules_json, "rules json")
     conn = _conn()
+    # bump_rules() requires provenance = {who, source_url, captured_at};
+    # the operator string alone can never satisfy it (ARC-301).
+    provenance = {
+        "who": operator,
+        "source_url": str(rules_json),
+        "captured_at": campaigns_mod.now(),
+    }
     try:
-        v = campaigns_mod.bump_rules(conn, campaign_id, rules, operator)
+        v = campaigns_mod.bump_rules(conn, campaign_id, rules, provenance)
     except campaigns_mod.CampaignError as e:
         _die(str(e))
     print(f"rules -> v{v}")
-
-
-@campaign_grp.command("refresh-budget")
-@click.argument("campaign_id")
-@click.argument("budget_json")
-@click.option("--by", "operator", required=True,
-              help="Operator name (recorded in provenance).")
-def campaign_refresh_budget(campaign_id, budget_json, operator):
-    """Deliberate budget refresh (a human re-read the campaign page)."""
-    budget = _read_json(budget_json, "budget json")
-    conn = _conn()
-    try:
-        campaigns_mod.refresh_budget(conn, campaign_id, budget, operator)
-    except campaigns_mod.CampaignError as e:
-        _die(str(e))
-    print("budget refreshed")
 
 
 COMMANDS.append(campaign_grp)
@@ -146,7 +146,7 @@ COMMANDS.append(campaign_grp)
 
 # ------------------------------------------------------------------ source
 
-@click.group("source")
+@click.group("source", cls=CliGroup)
 def source_grp():
     """Source lifecycle: add (rights manifest required), clearance, list."""
 
@@ -277,7 +277,11 @@ def cut(job_id, numbers, reframe_mode, work_minutes):
         res = cut_mod.cut(conn, job_id, ids, root=_root(),
                           reframe_mode=reframe_mode,
                           work_minutes=work_minutes)
-    except (cut_mod.CutError, ValueError) as e:
+    except Exception as e:
+        # T-004 (BUG-003): cut() moves the job to `cutting` (lease cleared);
+        # a failure must fail the job, not strand it in an active state with
+        # a NULL lease. _die preserves the CLI error contract.
+        jobs_mod.fail_drive(conn, job_id, e)
         _die(str(e))
     for c in res["clips"]:
         print(f"{c['id']}  {c['state']}  reframe={c['reframe_mode']}  "
@@ -331,7 +335,7 @@ def posted(clip_id, post_url, platform, operator):
 
 # ------------------------------------------------------------------ review
 
-@click.group("review", invoke_without_command=True)
+@click.group("review", invoke_without_command=True, cls=CliGroup)
 @click.option("--job", "job_id", default=None)
 @click.pass_context
 def review_grp(ctx, job_id):

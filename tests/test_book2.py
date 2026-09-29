@@ -47,8 +47,6 @@ def _campaign_dict(**over):
         "id": "test-camp-1",
         "marketplace": "test-mart",
         "creator": "Test Creator",
-        "rate_per_1k_usd": 4.0,
-        "rate_basis": "observed",
         "platforms": ["tiktok"],
         "rules": {
             "min_s": 6,
@@ -60,7 +58,7 @@ def _campaign_dict(**over):
             "banned_words": ["bannedword"],
             "watermark_required": False,
             "platforms": ["tiktok"],
-            "source_allowlist": ["fixture"],
+            "source_allowlist": ["fixture.example"],
             "music_policy": "original_audio_only",
         },
         "rules_provenance": {
@@ -134,18 +132,21 @@ def test_migration_0002_applies(conn):
     ).fetchall()
     assert [(r["version"], r["name"]) for r in rows] == [
         (1, "0001_book1_foundation"), (2, "0002_book2_clip_mine"),
-            (3, "0003_book3_hype_layer")]
+            (3, "0003_book3_hype_layer"), (4, "0004_failure_requeue"),
+            (5, "0005_money_pipeline_removal")]
 
     def cols(table):
         return {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}
 
-    assert {"rate_basis", "budget_provenance",
-            "rules_provenance"} <= cols("campaigns")
+    assert {"rules_provenance"} <= cols("campaigns")
+    assert not ({"rate_basis", "budget_provenance", "rate_per_1k_usd",
+                 "budget_total_usd", "budget_seen_usd",
+                 "budget_checked"} & cols("campaigns"))
     assert "authorization" in cols("sources")
     assert "content_sha256" in cols("source_items")
     assert "weight_version" in cols("moments")
     assert "work_minutes" in cols("clips")
-    assert "payout_usd" in cols("posts")
+    assert "payout_usd" not in cols("posts")
     assert "provenance" in cols("metrics")
     tables = {r[0] for r in conn.execute(
         "SELECT name FROM sqlite_master WHERE type='table'")}
@@ -165,29 +166,13 @@ def test_campaign_add_and_validation(conn):
     assert c["rules_provenance"]["source"] == "campaign_page"
     with pytest.raises(campaigns_mod.CampaignError):
         campaigns_mod.add(conn, {"id": "bad"})  # missing platforms/rules
-    with pytest.raises(campaigns_mod.CampaignError):
-        campaigns_mod.add(conn, _campaign_dict(id="c3", rate_basis="vibes"))
 
 
 def test_campaign_provenance_dicts_round_trip(conn):
-    d = _campaign_dict(
-        id="c4",
-        budget_provenance={"source": "campaign_page",
-                           "url": "https://example.com/budget",
-                           "captured_at": "2026-09-28T00:00:00+00:00",
-                           "captured_by": "test"},
-    )
+    d = _campaign_dict(id="c4")
     campaigns_mod.add(conn, d)
     c = campaigns_mod.load(conn, "c4")
-    assert c["budget_provenance"]["source"] == "campaign_page"
     assert c["rules_provenance"]["source"] == "campaign_page"
-
-
-def test_payout_rate_never_scores(conn, camp):
-    # The payout rate exists on the campaign; scoring reads only weights.
-    assert camp["rate_per_1k_usd"] == 4.0
-    w = score_mod.load_weights(WEIGHTS_DIR)
-    assert "rate" not in json.dumps(w["sets"])
 
 
 # ------------------------------------------------------------------ rights

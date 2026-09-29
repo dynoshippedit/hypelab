@@ -35,6 +35,8 @@ import statistics
 import subprocess
 from pathlib import Path
 
+from hypelab import config as config_mod
+
 #: Minimum hold between crop switches in track mode.
 TRACK_MIN_SPAN_S = 1.2
 
@@ -135,7 +137,8 @@ def has_onscreen_text(src, t0: float, t1: float) -> tuple[bool | None, str]:
     if shutil.which("tesseract") is None:
         return None, "unavailable:no-ocr-binary"
     mid = (float(t0) + float(t1)) / 2.0
-    frame = Path(f"/tmp/hypelab_textcheck_{abs(hash(str(src))) % 10**8}.png")
+    # Single-root config (D3): scratch frame lives under HYPELAB_HOME/tmp.
+    frame = config_mod.resolve_config().tmp_dir / f"hypelab_textcheck_{abs(hash(str(src))) % 10**8}.png"
     try:
         proc = subprocess.run(
             ["ffmpeg", "-y", "-v", "error", "-ss", f"{mid:.2f}",

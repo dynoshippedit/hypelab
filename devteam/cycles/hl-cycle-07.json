@@ -1,0 +1,83 @@
+{
+  "blockers": [],
+  "changed_files": [
+    "hypelab/allowlist.py",
+    "hypelab/watcher.py",
+    "hypelab/compliance.py",
+    "tests/test_allowlist.py",
+    "tests/test_book2.py",
+    "devteam/TASKS.md",
+    "devteam/cycles/hl-cycle-07.json"
+  ],
+  "checks": [
+    {
+      "artifacts": [],
+      "command": [
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 /home/dino/.local/bin/pytest tests/test_allowlist.py -q"
+      ],
+      "cwd": "/home/dino/hypelab",
+      "exit_code": 0,
+      "id": "new-allowlist-tests",
+      "notes": "24/24 pass on fixed code: 14 parametrized host-matching verdicts (evilyoutube.com / youtube.com.evil.com / notyoutube.com rejected; youtube.com / www.youtube.com / m.youtube.com accepted; case, port, path-only-URL, empty-URL, file-path cases), entry normalization (full-URL entry, subdomain entry, blank entries), watcher delegation, compliance money-gate (FAIL/UNKNOWN/PASS shape), add_source accept/reject/manual cases.",
+      "status": "PASS",
+      "tested_source_identity": "98d64c9 + uncommitted fix"
+    },
+    {
+      "artifacts": [],
+      "command": [
+        "git stash push -- hypelab/watcher.py hypelab/compliance.py; PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 /home/dino/.local/bin/pytest tests/test_allowlist.py -q; git stash pop"
+      ],
+      "cwd": "/home/dino/hypelab",
+      "exit_code": 0,
+      "id": "falsification-pre-fix",
+      "notes": "With the fix stashed (pre-fix substring matching), exactly 4 tests FAIL: test_watcher_source_allowed_delegates_to_shared_verdict, test_compliance_gate_money_path, test_add_source_rejects_off_allowlist_feed, test_add_source_rejects_non_http_feed. The 20 pure verdict-unit tests pass on both versions (they exercise the new module, unstashed). Stash popped; fix restored; git status confirms all changes back.",
+      "status": "PASS",
+      "tested_source_identity": "98d64c9 (pre-fix)"
+    },
+    {
+      "artifacts": [],
+      "command": [
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 /home/dino/.local/bin/pytest tests/test_book2.py -q"
+      ],
+      "cwd": "/home/dino/hypelab",
+      "exit_code": 0,
+      "id": "book2-fixture",
+      "notes": "34/34 pass after updating the fixture allowlist entry from substring-shaped 'fixture' to host-shaped 'fixture.example' (fixture clip/item URLs live at fixture.example).",
+      "status": "PASS",
+      "tested_source_identity": "98d64c9 + uncommitted fix"
+    },
+    {
+      "artifacts": [],
+      "command": [
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 /home/dino/.local/bin/pytest tests/ -q"
+      ],
+      "cwd": "/home/dino/hypelab",
+      "exit_code": 0,
+      "id": "full-suite",
+      "notes": "250 passed, 3 warnings (226 baseline + 24 new). First full run showed 1 flaky failure in test_worker_crash_recovery_sha256 (kill -9 + 8s lease-expiry timing test); it passes in isolation with AND without the fix, and its kit campaign carries no source_allowlist so the changed code path is not exercised. Clean re-run: 250/250 green. No regressions.",
+      "status": "PASS",
+      "tested_source_identity": "98d64c9 + uncommitted fix"
+    }
+  ],
+  "cycle_id": "hl-cycle-07",
+  "lessons": [
+    "Substring allowlist entries are a latent bypass: any entry that is not a bare host ('fixture') silently encodes substring semantics; when tightening matching, audit fixture entries for the same shape.",
+    "Remote-shell quoting: pipe Python scripts via stdin (python3 reading stdin) rather than inline -c with quotes; the Threadripper shell has history expansion enabled (set +H). Falsification via 'git stash push -- <paths>' keeps new untracked files (module + tests) in place while reverting the fix."
+  ],
+  "next_action": {
+    "disposition": "CONTINUE",
+    "reason": "A2 (C5) implemented and self-verified: one shared host-based allowlist verdict, enforced at add_source and in both gates. Per the dedupe proposal the next item is B1 (C1 align beat<->word mapping, S1, M, READY). Controller decides dispatch after independent acceptance.",
+    "task_id": "ARC-310"
+  },
+  "project_id": "hypelab",
+  "project_root": "/home/dino/hypelab",
+  "proposed_status": "IMPLEMENTED",
+  "root_cause": "watcher.source_allowed and compliance.chk_source_allowed each re-implemented 'is this URL allowed' as substring matching (entry in url), neither parsed hosts, and the two could give divergent verdicts on the same URL. 'youtube.com' in 'https://evilyoutube.com/...' is True, so evilyoutube.com passed the compliance (money) gate (REV-714). The campaign allowlist was never applied to feed/source URLs at add time, so an off-allowlist feed could be registered (ARC-310).",
+  "schema_version": "1.0",
+  "source_identity": {
+    "after": "<commit hash in handoff>",
+    "before": "98d64c92f19fffa192dd032157bed7bca41c8521 (devteam/review-2026-09-29, tree clean)",
+    "method": "git rev-parse HEAD + git status --porcelain before edits; full diff inspected after"
+  },
+  "summary": "A2 (C5: ARC-310 + REV-714 + SEC-103): one shared allowlist verdict. New hypelab/allowlist.py: allowlist_verdict(url, allow) matches on the parsed host with label-boundary suffix semantics (host == entry or host endswith '.'+entry); empty allowlist allows everything (unchanged); URLs with no parseable host are rejected when an allowlist exists (fail closed). watcher.source_allowed now delegates to it; compliance.chk_source_allowed uses it for the primary verdict and keeps the deliberate UNKNOWN escape hatch for ambiguous tokens (youtu.be/embeds/short links -> human review). watcher.add_source now rejects non-http(s) feed URLs and feed URLs whose host fails the campaign allowlist (manual listings exempt: local files, item URLs checked at poll). New tests/test_allowlist.py: 24 tests, all green; 4 integration tests proven to fail on pre-fix code via stash falsification. Fixture: test_book2.py allowlist entry 'fixture' -> 'fixture.example' (was substring-shaped)."
+}

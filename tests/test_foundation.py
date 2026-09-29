@@ -54,10 +54,12 @@ def test_migration_runner_applies_0001(tmp_path):
         "SELECT version, name FROM schema_migrations").fetchall()
     assert [(r["version"], r["name"]) for r in rows] == [
         (1, "0001_book1_foundation"), (2, "0002_book2_clip_mine"),
-            (3, "0003_book3_hype_layer")]
+            (3, "0003_book3_hype_layer"), (4, "0004_failure_requeue"),
+            (5, "0005_money_pipeline_removal")]
     job_cols = {r[1] for r in cx.execute("PRAGMA table_info(jobs)")}
     assert {"lease_owner", "lease_expires", "attempts",
-            "max_attempts"} <= job_cols
+            "max_attempts", "requeue_not_before",
+            "review_reason"} <= job_cols
     ren_cols = {r[1] for r in cx.execute("PRAGMA table_info(renders)")}
     assert "manifest_json" in ren_cols
     mig_cols = {r[1] for r in cx.execute("PRAGMA table_info(schema_migrations)")}
@@ -352,11 +354,11 @@ def test_transition_clears_lease_fields(conn):
 
 # -- cost ledger --------------------------------------------------------------
 
-def test_charge_estimate_vs_actual(conn):
+def test_log_cost_estimate_vs_actual(conn):
     jid = jobs.new(conn, mode="A", title="cost")
-    queue.charge(conn, jid, "whisper", "audio_min", 2.0, 0.012,
+    queue.log_cost(conn, jid, "whisper", "audio_min", 2.0, 0.012,
                  "ESTIMATE|stt draft, 2 audio_min @ $0.006/min")
-    queue.charge(conn, jid, "whisper", "audio_min", 2.0, 0.011,
+    queue.log_cost(conn, jid, "whisper", "audio_min", 2.0, 0.011,
                  "ACTUAL|stt billed 2026-09-28")
     rows = conn.execute(
         "SELECT provider, unit, qty, usd, note, at FROM cost_ledger"

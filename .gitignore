@@ -25,3 +25,6 @@ __pycache__/
 *~
 .vscode/
 .idea/
+
+# Build outputs (D4/T-040): relocated under HYPELAB_OUTPUTS_DIR, never committed.
+/outputs/

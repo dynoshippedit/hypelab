@@ -612,6 +612,46 @@ def test_feed_back_consumes_measured_posts(conn, tmp_path):
         "SELECT COUNT(*) c FROM feedback_runs").fetchone()["c"] == 1
 
 
+# ------------------------------------------------------------------ DAT-350
+# feed_back() provenance filter: uncalibrated rows (user_entered, fixtures)
+# must never become applied production priors (metrics.py calibration rule).
+
+def _seed_post(conn, post_id, platform="instagram"):
+    conn.execute(
+        "INSERT INTO posts(id, platform, post_url) VALUES(?,?,?)",
+        (post_id, platform, "https://example.invalid/" + post_id),
+    )
+    conn.commit()
+
+
+def _seed_metric(conn, post_id, views, provenance, at):
+    conn.execute(
+        "INSERT INTO metrics(post_id, at, views, provenance) "
+        "VALUES(?,?,?,?)",
+        (post_id, at, views, provenance),
+    )
+    conn.commit()
+
+
+def test_best_views_ignores_uncalibrated_provenance(conn):
+    _seed_post(conn, "pv1")
+    _seed_metric(conn, "pv1", 99999, "user_entered",
+                 "2026-09-28T00:00:00+00:00")
+    _seed_metric(conn, "pv1", 100, "official_api",
+                 "2026-09-28T01:00:00+00:00")
+    assert feedback_mod._best_views(conn, "pv1") == 100
+
+
+def test_feed_back_skips_uncalibrated_only_posts(conn):
+    _seed_post(conn, "pv2", platform="tiktok")
+    _seed_metric(conn, "pv2", 5000, "user_entered",
+                 "2026-09-28T00:00:00+00:00")
+    out = feedback_mod.feed_back(conn)
+    assert out["rows_consumed"] == 0
+    assert conn.execute(
+        "SELECT COUNT(*) c FROM what_worked").fetchone()["c"] == 0
+
+
 # ------------------------------------------------------------------ export ledger
 
 def test_export_ledger_has_hashes_and_revocation(conn, tmp_path):

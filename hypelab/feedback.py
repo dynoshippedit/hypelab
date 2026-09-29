@@ -22,6 +22,7 @@ import sqlite3
 from collections import defaultdict
 from pathlib import Path
 
+from .metrics import CALIBRATION_PROVENANCES
 from .util import now
 
 #: Production-prior guard: below this n, the loop falls back to kit
@@ -36,9 +37,14 @@ class FeedbackError(Exception):
 
 
 def _best_views(conn: sqlite3.Connection, post_id: str):
+    # Calibration rule (metrics.py): official_api + provider_api rows ONLY.
+    # user_entered rows are evidence, never production priors. Mirrors
+    # attribution.py's provenance predicate.
+    prov_list = ",".join(f"'{p}'" for p in CALIBRATION_PROVENANCES)
     row = conn.execute(
-        """SELECT MAX(views) v FROM metrics
-           WHERE post_id=? AND views IS NOT NULL""",
+        f"""SELECT MAX(views) v FROM metrics
+           WHERE post_id=? AND views IS NOT NULL
+             AND provenance IN ({prov_list})""",
         (post_id,),
     ).fetchone()
     return row["v"] if row else None

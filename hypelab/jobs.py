@@ -18,6 +18,7 @@ from __future__ import annotations
 import sqlite3
 
 from .queue import log
+from . import retry as retry_mod
 from .state_migrations import STATE_MIGRATIONS, apply_state_migrations
 from .util import new_id, now
 
@@ -41,7 +42,7 @@ ALLOWED = {
     "gate_failed": ("awaiting_media", "queued_render", "archived", "failed"),
     "ready": ("archived",),
     "archived": (),
-    "failed": ("draft",),
+    "failed": ("draft", "archived"),  # archived: owner dismiss from review pile (T-011)
 }
 
 # ------------------------------------------------------------------ Book 2
@@ -103,7 +104,10 @@ def transition(conn: sqlite3.Connection, job_id: str, to: str, note=None) -> str
     not in ALLOWED (or the job is unknown). On success the state change and
     its job_events entry are committed atomically. The lease fields are
     cleared on every move: a transition always ends the previous lease.
-    Returns `to`.
+    The observed from-state is re-checked ON the UPDATE (``AND state=?``):
+    a concurrent move between our legality check and our write turns into
+    a lost-race ValueError instead of an illegal transition applied to the
+    wrong state. Returns `to`.
     """
     row = conn.execute("SELECT state FROM jobs WHERE id=?", (job_id,)).fetchone()
     if row is None:
@@ -120,11 +124,19 @@ def transition(conn: sqlite3.Connection, job_id: str, to: str, note=None) -> str
     if own:
         conn.execute("BEGIN IMMEDIATE")
     try:
-        conn.execute(
+        cur = conn.execute(
             "UPDATE jobs SET state=?, updated_at=?,"
-            " lease_owner=NULL, lease_expires=NULL WHERE id=?",
-            (to, ts, job_id),
+            " lease_owner=NULL, lease_expires=NULL WHERE id=? AND state=?",
+            (to, ts, job_id, frm),
         )
+        if cur.rowcount != 1:
+            # Lost race: another writer moved the job out of `frm` after
+            # our legality check. Fail closed instead of applying a
+            # transition that is no longer legal from the current state.
+            raise ValueError(
+                f"lost race: job {job_id} left state {frm}"
+                f" before transition to {to}"
+            )
         log(conn, job_id, frm, to, note)
         if own:
             conn.execute("COMMIT")
@@ -133,6 +145,78 @@ def transition(conn: sqlite3.Connection, job_id: str, to: str, note=None) -> str
             conn.execute("ROLLBACK")
         raise
     return to
+
+
+#: Drive-active states: a direct CLI drive (audio/render/gates/cut) moves
+#: the job here via transition(), which clears the lease. If the drive then
+#: fails, the job would sit in the active state with a NULL lease —
+#: unclaimable (claim() only reclaims active jobs with a non-NULL expired
+#: lease) and unrecoverable without SQL. T-004 (BUG-003).
+DRIVE_ACTIVE_STATES = frozenset({"aligning", "rendering", "gating", "cutting"})
+
+
+def fail_drive(conn: sqlite3.Connection, job_id: str, err) -> bool:
+    """Fail-equivalent for a direct CLI drive failure (T-004 / BUG-003).
+
+    When the job sits in a drive-active state with NO lease held, move it to
+    ``failed`` with the error recorded on the row and in job_events — the
+    same terminal state queue.fail() produces, minus attempts accounting (a
+    direct drive never claims the job, so no attempt was consumed; the
+    operator sees the failure immediately).
+
+    Returns True when the job was moved to failed. Returns False without
+    touching anything when a lease is held (the lease holder's fail() path
+    owns the failure — e.g. the work loop), when the job is unknown, when
+    it is not in a drive-active state, or when the lease/state changed
+    under us between our read and our write (lost race).
+    """
+    row = conn.execute(
+        "SELECT state, lease_owner, lease_expires FROM jobs WHERE id=?",
+        (job_id,),
+    ).fetchone()
+    if row is None:
+        return False
+    frm = row["state"]
+    if row["lease_owner"] is not None or row["lease_expires"] is not None:
+        return False
+    if frm not in DRIVE_ACTIVE_STATES or "failed" not in ALLOWED.get(frm, ()):
+        return False
+    ts = now()
+    err_s = str(err)
+    # T-011: classify so the failure lands in the review pile with a
+    # reason (direct drives never auto-requeue; the operator is present).
+    _kind, _detail = retry_mod.classify_failure(err)
+    _review_reason = "drive:%s:%s" % (_kind, _detail)
+    # Atomic: fire only while the job is STILL unleased and STILL in the
+    # observed drive-active state. A lease taken (or a state moved) between
+    # our read and our write makes this a no-op instead of stealing the
+    # lease holder's failure path. The UPDATE and its audit log() commit
+    # in one transaction.
+    own = not conn.in_transaction
+    if own:
+        conn.execute("BEGIN IMMEDIATE")
+    try:
+        cur = conn.execute(
+            "UPDATE jobs SET state='failed', error=?,"
+            " lease_owner=NULL, lease_expires=NULL, updated_at=?,"
+            " review_reason=?"
+            " WHERE id=? AND state=?"
+            " AND lease_owner IS NULL AND lease_expires IS NULL",
+            (err_s, ts, _review_reason, job_id, frm),
+        )
+        if cur.rowcount != 1:
+            if own:
+                conn.execute("ROLLBACK")
+            return False
+        log(conn, job_id, frm, "failed",
+            f"drive failure, no lease held -> failed: {err_s}")
+        if own:
+            conn.execute("COMMIT")
+        return True
+    except Exception:
+        if own:
+            conn.execute("ROLLBACK")
+        raise
 
 
 def get(conn: sqlite3.Connection, job_id: str):

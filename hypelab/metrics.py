@@ -114,23 +114,3 @@ def best_views(conn: sqlite3.Connection, post_id: str,
                     at DESC LIMIT 1""",
         (post_id,)).fetchone()
     return row["views"] if row else None
-
-
-def usd_per_clip_hour(conn: sqlite3.Connection) -> list[dict]:
-    """Realized $/clip-hour by campaign (§11) — the number that decides
-    whether clipping is worth doing. Operator-logged work_minutes, including
-    manual upload, from the first clip."""
-    rows = conn.execute(
-        """SELECT c.id AS campaign_id, c.creator,
-                  SUM(p.payout_usd) AS earned,
-                  COUNT(DISTINCT cl.id) AS clips,
-                  SUM(cl.work_minutes) / 60.0 AS hours,
-                  CASE WHEN SUM(cl.work_minutes) > 0
-                       THEN SUM(p.payout_usd) / (SUM(cl.work_minutes) / 60.0)
-                       END AS usd_per_hour
-           FROM campaigns c
-           JOIN clips cl ON cl.campaign_id = c.id
-           JOIN posts p ON p.clip_id = cl.id
-           GROUP BY c.id ORDER BY usd_per_hour DESC"""
-    ).fetchall()
-    return [dict(r) for r in rows]

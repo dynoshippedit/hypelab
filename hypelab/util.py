@@ -12,6 +12,8 @@ import secrets
 import shutil
 import subprocess
 from datetime import datetime, timezone
+
+from hypelab import config as config_mod
 from pathlib import Path
 
 
@@ -170,7 +172,7 @@ def intake_asset(src, dst_dir, name) -> dict:
             pass
 
 
-def work_dir(job_id, root="/home/dino/hypelab") -> Path:
+def work_dir(job_id, root=None) -> Path:
     """Per-job working directory: <root>/work/<job_id>. Created on demand.
 
     Write domains (improved Book 1, section 1) — the old "nothing outside
@@ -179,7 +181,7 @@ def work_dir(job_id, root="/home/dino/hypelab") -> Path:
 
     - Job artifacts: work/<job_id>/ — atomic writes only (temp → fsync →
       rename; never a partial file at its final name).
-    - State & ledger: hypelab.db — only via queue transitions / charge() /
+    - State & ledger: hypelab.db — only via queue transitions / log_cost() /
       gate-result inserts, inside explicit transactions.
     - Model caches: ~/.cache/, HF hub dir — read-mostly, content-
       addressed; never mutated by a job.
@@ -190,7 +192,9 @@ def work_dir(job_id, root="/home/dino/hypelab") -> Path:
     - Everything else: forbidden. A job that writes outside these domains
       is a bug.
     """
-    d = Path(root) / "work" / job_id
+    # Single-root config (D3): root defaults to HYPELAB_HOME.
+    base = Path(root) if root else config_mod.resolve_config().home
+    d = base / "work" / job_id
     d.mkdir(parents=True, exist_ok=True)
     return d
 

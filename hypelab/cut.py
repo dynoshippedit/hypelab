@@ -256,8 +256,9 @@ def record_posted(conn: sqlite3.Connection, clip_id: str, post_url: str,
 
     Sets posted_at (the additive-schema limitation means the DB cannot
     enforce NOT NULL; the CLI enforces it here: post_url is required and
-    posted_at is always written). payout_usd is filled in later from the
-    campaign's rate basis (see posted CLI).
+    posted_at is always written). Payout tracking was removed 2026-09-29
+    (D2): the custom money pipeline was ripped out; the cost ledger is the
+    only money-adjacent surface left.
     """
     clip = conn.execute("SELECT * FROM clips WHERE id=?",
                         (clip_id,)).fetchone()
@@ -284,9 +285,9 @@ def record_posted(conn: sqlite3.Connection, clip_id: str, post_url: str,
     conn.execute("UPDATE clips SET state='posted' WHERE id=?", (clip_id,))
     post_id = new_id()
     conn.execute(
-        "INSERT INTO posts(id, clip_id, platform, post_url, posted_at,"
-        " payout_usd) VALUES(?,?,?,?,?,?)",
-        (post_id, clip_id, platform, post_url, at, None),
+        "INSERT INTO posts(id, clip_id, platform, post_url, posted_at)"
+        " VALUES(?,?,?,?,?)",
+        (post_id, clip_id, platform, post_url, at),
     )
     # The job stays in tray until every tray clip is posted or failed.
     remaining = conn.execute(

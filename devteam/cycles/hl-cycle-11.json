@@ -1,0 +1,155 @@
+{
+  "schema_version": "1.0",
+  "project_id": "hypelab",
+  "project_root": "/home/dino/hypelab",
+  "cycle_id": "hl-cycle-11",
+  "task_id": "HL-011",
+  "source_identity": {
+    "before": "d34407c",
+    "after": "<this commit>",
+    "method": "git rev-parse + git status (clean tree, branch devteam/review-2026-09-29, HEAD d34407c before editing)"
+  },
+  "summary": "D4 / T-040 outputs extraction: all 17 tracked files under jobs/job_c656669a5147/ were git rm --cached (history intact, no rewrite) and physically moved to <HYPELAB_HOME>/outputs/job_c656669a5147/ (the HYPELAB_OUTPUTS_DIR default from hl-cycle-10). /outputs/ added to .gitignore. Only two small test fixtures stay tracked (tests/fixtures/vo.mp3 131K, tests/fixtures/music.mp3 961K); tests/test_align.py and tests/test_cli.py rewired to the new fixture paths. New regression tests tests/test_outputs_dir.py (5 tests). T-040 marked IMPLEMENTED, awaiting controller verification. Character store, reference.png, voice.wav untouched (not present in repo). Nothing pushed.",
+  "root_cause": "N/A \u2014 owner-ordered cleanup (D4). ~40 MB of generated pipeline outputs (master renders, beat clips, caption proof, render records) were committed under jobs/; the new single-root config defines <home>/outputs as their canonical home.",
+  "changed_files": [
+    ".gitignore (/outputs/ added)",
+    "jobs/job_c656669a5147/ (17 files: untracked via git rm --cached, moved to outputs/)",
+    "outputs/job_c656669a5147/ (new location, gitignored)",
+    "tests/fixtures/vo.mp3 (new tracked fixture, 131K, was jobs/job_c656669a5147/assets/vo.mp3)",
+    "tests/fixtures/music.mp3 (new tracked fixture, 961K, was jobs/job_c656669a5147/assets/music.mp3)",
+    "tests/test_align.py (VO path -> tests/fixtures/vo.mp3)",
+    "tests/test_cli.py (FIXTURE_VO/FIXTURE_MUSIC -> tests/fixtures/)",
+    "tests/test_outputs_dir.py (new: 5 regression tests)",
+    "devteam/TASKS.md (T-040 -> IMPLEMENTED, awaiting controller verification)",
+    "devteam/cycles/hl-cycle-11.json (new)"
+  ],
+  "checks": [
+    {
+      "command": "git rm --cached -r jobs/ && mv jobs/job_c656669a5147 outputs/ && git status",
+      "result": "17 files D (index only); working files moved to outputs/, intact; outputs/ ignored after .gitignore update"
+    },
+    {
+      "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_outputs_dir.py tests/test_config.py -q",
+      "result": "18 passed (5 new + 13 config)"
+    },
+    {
+      "command": "git stash push tests/test_align.py tests/test_cli.py + pytest tests/test_align.py -q; git stash pop",
+      "result": "3 failed with FileNotFoundError on jobs/.../vo.mp3 \u2014 falsified: tests genuinely wired to new locations; tree restored after"
+    },
+    {
+      "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/ -q (full suite)",
+      "result": "290 passed, 3 warnings in 198.91s (285 base + 5 new)"
+    },
+    {
+      "command": "git ls-files | grep -E '^(outputs|jobs)/'",
+      "result": "no output \u2014 no tracked files under outputs/ or legacy jobs/"
+    }
+  ],
+  "proposed_status": "VERIFIED",
+  "next_action": "Controller verification of hl-cycle-11. Then owner queue: T-041b hardening (failure-requeue caveats), G1 cost-labeling decision.",
+  "blockers": [],
+  "lessons": [
+    "git rm --cached + physical move keeps working files while purging version control; verify with git status that deletions are index-only (D, not D on disk) before committing.",
+    "Fixture binaries needed by tests (vo.mp3, music.mp3) must be extracted to a tracked tests/fixtures/ dir BEFORE untracking their old location, with test paths rewired in the same commit \u2014 otherwise the suite breaks mid-flight.",
+    "The fixtures_book2/ acceptance set (incl. 5.6M source.mp4) was deliberately left tracked: it is an input fixture for a documented acceptance run, not a generated output; no test reads its bytes but test_book2.py documents it as the 10-minute acceptance fixture."
+  ],
+  "moved_files": [
+    {
+      "old": "jobs/job_c656669a5147/assets/beat:b1.mp4",
+      "new": "outputs/job_c656669a5147/assets/beat:b1.mp4"
+    },
+    {
+      "old": "jobs/job_c656669a5147/assets/beat:b2.mp4",
+      "new": "outputs/job_c656669a5147/assets/beat:b2.mp4"
+    },
+    {
+      "old": "jobs/job_c656669a5147/assets/beat:b3.mp4",
+      "new": "outputs/job_c656669a5147/assets/beat:b3.mp4"
+    },
+    {
+      "old": "jobs/job_c656669a5147/assets/beat:b4.mp4",
+      "new": "outputs/job_c656669a5147/assets/beat:b4.mp4"
+    },
+    {
+      "old": "jobs/job_c656669a5147/assets/beat:b5.mp4",
+      "new": "outputs/job_c656669a5147/assets/beat:b5.mp4"
+    },
+    {
+      "old": "jobs/job_c656669a5147/assets/beat:b6.mp4",
+      "new": "outputs/job_c656669a5147/assets/beat:b6.mp4"
+    },
+    {
+      "old": "jobs/job_c656669a5147/assets/music.mp3",
+      "new": "outputs/job_c656669a5147/assets/music.mp3"
+    },
+    {
+      "old": "jobs/job_c656669a5147/assets/vo.mp3",
+      "new": "outputs/job_c656669a5147/assets/vo.mp3"
+    },
+    {
+      "old": "jobs/job_c656669a5147/assets/vo_words.json",
+      "new": "outputs/job_c656669a5147/assets/vo_words.json"
+    },
+    {
+      "old": "jobs/job_c656669a5147/caption_proof.png",
+      "new": "outputs/job_c656669a5147/caption_proof.png"
+    },
+    {
+      "old": "jobs/job_c656669a5147/master.mp4",
+      "new": "outputs/job_c656669a5147/master.mp4"
+    },
+    {
+      "old": "jobs/job_c656669a5147/master_1x1.mp4",
+      "new": "outputs/job_c656669a5147/master_1x1.mp4"
+    },
+    {
+      "old": "jobs/job_c656669a5147/quality_report.json",
+      "new": "outputs/job_c656669a5147/quality_report.json"
+    },
+    {
+      "old": "jobs/job_c656669a5147/render/captions.ass",
+      "new": "outputs/job_c656669a5147/render/captions.ass"
+    },
+    {
+      "old": "jobs/job_c656669a5147/render/render_record.json",
+      "new": "outputs/job_c656669a5147/render/render_record.json"
+    },
+    {
+      "old": "jobs/job_c656669a5147/script.txt",
+      "new": "outputs/job_c656669a5147/script.txt"
+    },
+    {
+      "old": "jobs/job_c656669a5147/vo.words.json",
+      "new": "outputs/job_c656669a5147/vo.words.json"
+    }
+  ],
+  "fixture_copies": [
+    {
+      "old": "jobs/job_c656669a5147/assets/vo.mp3",
+      "new": "tests/fixtures/vo.mp3",
+      "size": "131K",
+      "used_by": [
+        "tests/test_align.py",
+        "tests/test_cli.py"
+      ]
+    },
+    {
+      "old": "jobs/job_c656669a5147/assets/music.mp3",
+      "new": "tests/fixtures/music.mp3",
+      "size": "961K",
+      "used_by": [
+        "tests/test_cli.py"
+      ]
+    }
+  ],
+  "controller_verification": {
+    "date": "2026-09-29",
+    "source_identity": "5f01169 on devteam/review-2026-09-29, tree clean, nothing pushed, history linear",
+    "checks": [
+      "git ls-files outputs|jobs = 0 tracked; 39M intact at outputs/job_c656669a5147/",
+      "tests/test_outputs_dir.py + tests/test_config.py: 18/18 pass (independently re-run)",
+      "full suite: 290/290 pass on independent re-run (first run 289/290: test_worker_crash_recovery_sha256 flaked under load, passes alone and on re-run \u2014 timing-sensitive, not a regression)"
+    ],
+    "result": "VERIFIED"
+  }
+}

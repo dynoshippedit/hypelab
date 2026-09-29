@@ -25,6 +25,19 @@ from . import manifests as manifests_mod
 RENDERER_VERSION = "1.0.0"
 FFMPEG_TIMEOUT = 600
 
+# ffmpeg version pin (T-044 ducking determinism, 2026-09-29):
+# ffmpeg's sidechaincompress filter (VO ducking in audio_chain) is
+# nondeterministic in ffmpeg 8.1.2 on the Threadripper: 450 renders of the
+# audio chain -> 6 distinct PCM hashes both WITH and WITHOUT
+# "-filter_threads 1 -filter_complex_threads 1" (identical variant set), so
+# single-threading is NOT the fix and the flags were not shipped. The
+# nondeterminism is a per-render audio-tail perturbation (~25 ms, max |Δ|
+# ≈ -48 dBFS); T-044's assertion tolerates it instead (see
+# tests/test_t044_deterministic.py). _require_ffmpeg_version() enforces this
+# pin at render startup so a new ffmpeg version can never silently change
+# render behavior: mismatched version -> loud RenderError, not silent drift.
+FFMPEG_PINNED_VERSION = "8.1.2"
+
 
 class RenderError(Exception):
     """Anything that stops a render: missing slots, ffmpeg failure, bad DB."""
@@ -310,6 +323,29 @@ def _resolve_provenance(provenance: dict | None) -> dict:
     return manifests_mod.provenance()
 
 
+def _require_ffmpeg_version() -> None:
+    """Fail loudly unless the installed ffmpeg matches FFMPEG_PINNED_VERSION.
+
+    Render determinism was validated against the pinned version (8.1.2);
+    a different ffmpeg build may behave differently (e.g. sidechaincompress
+    threading), so we fail closed at startup instead of silently diverging.
+    """
+    try:
+        proc = subprocess.run(
+            ["ffmpeg", "-version"], capture_output=True, text=True, timeout=30
+        )
+    except (OSError, subprocess.SubprocessError) as e:
+        raise RenderError(f"ffmpeg version check failed: {e}") from e
+    first = (proc.stdout.splitlines() or [""])[0].split()
+    installed = first[2] if len(first) >= 3 and first[:2] == ["ffmpeg", "version"] else None
+    if installed != FFMPEG_PINNED_VERSION:
+        raise RenderError(
+            f"ffmpeg version {installed!r} != pinned {FFMPEG_PINNED_VERSION!r}: "
+            "render determinism is pinned to the validated version; re-validate "
+            "before running against a different ffmpeg."
+        )
+
+
 def build_command(
     edl: dict, work: str | Path, out: str | Path, provenance: dict | None = None
 ) -> tuple[list[str], str]:
@@ -456,6 +492,13 @@ def render(
         _ensure_render_tables(conn)
         if _latest_render_hash(conn, job_id) == rhash and out.is_file():
             return {"path": str(out), "render_hash": rhash, "skipped": True}
+
+    # 3b. ffmpeg version pin — after the skip path (a skipped render
+    # invokes nothing, so no pin is needed), before any ffmpeg invocation.
+    # Placed here so the slots gate and the render-hash skip path never
+    # invoke a subprocess (test_render_missing_clip_gate /
+    # test_render_and_skip assert exactly that).
+    _require_ffmpeg_version()
 
     # 4. run ffmpeg.
     try:

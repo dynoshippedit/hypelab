@@ -16,8 +16,10 @@ Write domains (improved Book 1, section 1):
     kits/, user media  READ ONLY (never written by this CLI)
 
 Test isolation (no landed-module changes needed):
-    HYPELAB_DB             sqlite path (default: the repo hypelab.db)
-    HYPELAB_ROOT           repo root used for work/ dirs (default: /home/dino/hypelab)
+    HYPELAB_HOME           single root; every path derives from it by default
+                           (default: /home/dino/hypelab). See hypelab/config.py
+                           for the full variable list and per-path overrides.
+                           Legacy HYPELAB_ROOT / HYPELAB_DB are still honored.
     HYPELAB_LEASE_SECONDS  worker lease seconds (default 1800; tests use a short one)
 """
 
@@ -35,6 +37,8 @@ from pathlib import Path
 import click
 
 from hypelab import align as align_mod
+from hypelab.cli_errors import CliError, CliGroup
+from hypelab import config as config_mod
 from hypelab import db as db_mod
 from hypelab import edl as edl_mod
 from hypelab import gates as gates_mod
@@ -43,6 +47,7 @@ from hypelab import kits as kits_mod
 from hypelab import manifests as manifests_mod
 from hypelab import queue as queue_mod
 from hypelab import render as render_mod
+from hypelab import retry as retry_mod
 
 
 # Book 2: versioned scoring weights live next to the package.
@@ -78,17 +83,26 @@ BOOK7_GATES = [
 # ---------------------------------------------------------------------------
 
 def _die(msg, code=1):
-    """Print an error to stderr and exit nonzero (Click-friendly)."""
+    """Print an error to stderr, then raise a catchable CliError.
+
+    The Click entrypoint (CliGroup) turns this into a nonzero process
+    exit; worker loops catch it as a normal Exception and record the
+    failure instead of dying (T-003: BUG-001).
+    """
     print(f"error: {msg}", file=sys.stderr)
-    raise SystemExit(code)
+    raise CliError(msg, code)
 
 
 def _repo_root():
-    return os.environ.get("HYPELAB_ROOT", DEFAULT_ROOT)
+    # Single-root config (D3): HYPELAB_HOME owns the root; HYPELAB_ROOT is a
+    # legacy alias honored inside config.resolve_config().
+    return config_mod.resolve_config().home
 
 
 def _conn():
-    return db_mod.connect(os.environ.get("HYPELAB_DB") or None)
+    # db.connect() resolves its default path from the config (D3);
+    # HYPELAB_DB is honored as a legacy alias for HYPELAB_DB_PATH.
+    return db_mod.connect()
 
 
 def _lease_seconds():
@@ -340,7 +354,7 @@ def _do_align(conn, job_id, kit, work, edl):
 # CLI
 # ---------------------------------------------------------------------------
 
-@click.group()
+@click.group(cls=CliGroup)
 def cli():
     """HypeLab — the only front door (Book 1)."""
 
@@ -610,30 +624,41 @@ def audio(job_id, vo_src, music_src):
     _transition(conn, job_id, "queued_align", "VO present")
     _transition(conn, job_id, "aligning", "forced alignment running")
 
-    # 3. Local wav2vec2 forced alignment (words are the normalized tokens).
     try:
-        doc, flagged = _do_align(conn, job_id, kit, work, edl)
-    except align_mod.AlignError as e:
-        # Genuine alignment failure (no speech, script/VO mismatch): this is a
-        # processing error, surfaced loudly — not a silent gate pass.
-        _die(f"alignment failed: {e}")
-    print(f"aligned {doc['n_words']} words "
-          f"(timing={doc['timing']}, model={doc['model']}, "
-          f"mean_p={doc['mean_confidence']:.3f}, "
-          f"min_p={min((w.get('p', 0.0) for w in doc['words']), default=0.0):.3f})")
+        # 3. Local wav2vec2 forced alignment (words are the normalized tokens).
+        try:
+            doc, flagged = _do_align(conn, job_id, kit, work, edl)
+        except align_mod.AlignError as e:
+            # Genuine alignment failure (no speech, script/VO mismatch): this is a
+            # processing error, surfaced loudly — not a silent gate pass.
+            _die(f"alignment failed: {e}")
+        print(f"aligned {doc['n_words']} words "
+              f"(timing={doc['timing']}, model={doc['model']}, "
+              f"mean_p={doc['mean_confidence']:.3f}, "
+              f"min_p={min((w.get('p', 0.0) for w in doc['words']), default=0.0):.3f})")
 
-    # 4. Book section 10: low confidence is a GATE outcome, never a crash.
-    if flagged:
-        reasons = "; ".join(
-            f"{f['beat_id']} mean_p={f['mean_word_p']}" for f in flagged
-        )
-        _transition(conn, job_id, "gate_failed",
-                    f"low word confidence: {reasons}")
-        print(f"gate_failed: low-confidence beats: {reasons}")
-        return
+        # 4. Book section 10: low confidence is a GATE outcome, never a crash.
+        if flagged:
+            reasons = "; ".join(
+                f"{f['beat_id']} mean_p={f['mean_word_p']}" for f in flagged
+            )
+            _transition(conn, job_id, "gate_failed",
+                        f"low word confidence: {reasons}")
+            print(f"gate_failed: low-confidence beats: {reasons}")
+            return
 
-    _transition(conn, job_id, "aligned", f"{doc['n_words']} words retimed")
-    _transition(conn, job_id, "queued_render", "ready to render")
+        _transition(conn, job_id, "aligned", f"{doc['n_words']} words retimed")
+        _transition(conn, job_id, "queued_render", "ready to render")
+    except Exception as e:
+        # T-004 (BUG-003): a drive failure must not strand the job in an
+        # active state with a NULL lease (unclaimable, unrecoverable without
+        # SQL). Fail it (fail-equivalent) when no lease is held; re-raise so
+        # the CLI error contract (stderr + nonzero exit) is unchanged. The
+        # work loop is unaffected: a held lease makes fail_drive() a no-op
+        # and queue.fail() still owns that path.
+        jobs_mod.fail_drive(conn, job_id, e)
+        raise
+
 
 
 def _retarget_edl(edl, aspect):
@@ -700,42 +725,54 @@ def _render_job(conn, job_id, aspect=None, heartbeat_owner=None):
         beat_thread.start()
 
     try:
-        rec = render_mod.render(
-            edl, work, out, conn=conn, job_id=job_id,
-            provenance=manifests_mod.provenance(kit),
-        )
-    except (render_mod.RenderError, manifests_mod.ManifestError) as e:
-        _die(f"render failed: {e}")
-    finally:
-        if beat_thread is not None:
-            stop.set()
-            beat_thread.join()
+        try:
+            rec = render_mod.render(
+                edl, work, out, conn=conn, job_id=job_id,
+                provenance=manifests_mod.provenance(kit),
+            )
+        except (render_mod.RenderError, manifests_mod.ManifestError) as e:
+            _die(f"render failed: {e}")
+        finally:
+            if beat_thread is not None:
+                stop.set()
+                beat_thread.join()
 
-    if rec["skipped"]:
-        # Exact message the book's acceptance greps for.  A skip means the
-        # output is already current, so the state is left untouched.
-        print("hash unchanged, skipping")
+        if rec["skipped"]:
+            # Exact message the book's acceptance greps for.
+            print("hash unchanged, skipping")
+        else:
+            print(f"rendered {out}")
+            print(f"sha256: {rec['render_hash']}")
+
+        # The output is current either way. The job must leave the drive's
+        # active state (T-005 / BUG-002): a skip is a valid, current render,
+        # so it progresses exactly like a fresh one — rendering -> rendered
+        # -> queued_gates. Never wedged in `rendering` with no lease.
+        state = jobs_mod.get(conn, job_id)["state"]
+        if state == "rendering":
+            _transition(conn, job_id, "rendered", out.name)
+            state = "rendered"
+        if state == "rendered":
+            _transition(conn, job_id, "queued_gates", "ready for gates")
+        elif state == "queued_gates":
+            pass  # already where a fresh render belongs
+        else:
+            # Unreachable via this CLI (attach/audio are blocked in ready and
+            # gate_failed, so the hash cannot change there); fail open with a
+            # warning rather than a bogus transition.
+            print(f"warning: re-rendered from {entry}; state left as {state} — "
+                  f"re-run 'hypelab gates {job_id}' after re-driving the pipeline")
         return rec
+    except Exception as e:
+        # T-004 (BUG-003): a drive failure must not strand the job in an
+        # active state with a NULL lease (unclaimable, unrecoverable without
+        # SQL). Fail it (fail-equivalent) when no lease is held; re-raise so
+        # the CLI error contract (stderr + nonzero exit) is unchanged. The
+        # work loop is unaffected: a held lease makes fail_drive() a no-op
+        # and queue.fail() still owns that path.
+        jobs_mod.fail_drive(conn, job_id, e)
+        raise
 
-    print(f"rendered {out}")
-    print(f"sha256: {rec['render_hash']}")
-
-    # Hash changed: the output is new, so it must be re-gated.
-    state = jobs_mod.get(conn, job_id)["state"]
-    if state == "rendering":
-        _transition(conn, job_id, "rendered", out.name)
-        state = "rendered"
-    if state == "rendered":
-        _transition(conn, job_id, "queued_gates", "ready for gates")
-    elif state == "queued_gates":
-        pass  # already where a fresh render belongs
-    else:
-        # Unreachable via this CLI (attach/audio are blocked in ready and
-        # gate_failed, so the hash cannot change there); fail open with a
-        # warning rather than a bogus transition.
-        print(f"warning: re-rendered from {entry}; state left as {state} — "
-              f"re-run 'hypelab gates {job_id}' after re-driving the pipeline")
-    return rec
 
 
 @cli.command("render")
@@ -806,11 +843,22 @@ def gates_cmd(job_id):
     if state == "queued_gates":
         _transition(conn, job_id, "gating", "gates running")
 
-    ok = _run_gates(conn, job_id)
-    if ok:
-        _transition(conn, job_id, "ready", "all gates passed")
-    else:
-        _transition(conn, job_id, "gate_failed", "one or more gates failed")
+    try:
+        ok = _run_gates(conn, job_id)
+        if ok:
+            _transition(conn, job_id, "ready", "all gates passed")
+        else:
+            _transition(conn, job_id, "gate_failed", "one or more gates failed")
+    except Exception as e:
+        # T-004 (BUG-003): a drive failure must not strand the job in an
+        # active state with a NULL lease (unclaimable, unrecoverable without
+        # SQL). Fail it (fail-equivalent) when no lease is held; re-raise so
+        # the CLI error contract (stderr + nonzero exit) is unchanged. The
+        # work loop is unaffected: a held lease makes fail_drive() a no-op
+        # and queue.fail() still owns that path.
+        jobs_mod.fail_drive(conn, job_id, e)
+        raise
+
 
 
 # ---------------------------------------------------------------------------
@@ -925,17 +973,74 @@ def work(once, owner):
                 else:
                     raise RuntimeError(f"no handler for state {state!r}")
                 print(f"done {job_id}")
-            except Exception as e:  # handler blew up: record, don't lose the job
+            except Exception as e:  # handler blew up (incl. CliError from _die):
+                # T-011: classify the failure. Transient failures auto-requeue
+                # with backoff (max 3 attempts, cost logged); everything else
+                # goes to the review pile. The worker stays alive (T-003).
                 print(f"handler error on {job_id}: {e}")
                 try:
-                    queue_mod.fail(conn, job_id, owner, e)
+                    outcome = retry_mod.handle_failure(conn, job_id, owner, e)
+                    print(f"  (failure routed: {outcome})")
                 except ValueError as ve:
-                    print(f"  (fail() skipped: {ve})")
+                    print(f"  (failure routing skipped: {ve})")
 
             if once:
                 break
     except KeyboardInterrupt:
         print("worker stopping")
+
+
+@cli.group(name="review-pile")
+def review_pile():
+    """Inspect and clear the manual review pile (T-011).
+
+    Failures the worker will not auto-retry -- terminal failures, failures
+    at max attempts, and publish / owner-waiting exclusions -- land here
+    for the owner to clear by hand.
+    """
+
+
+@review_pile.command("list")
+def review_pile_list():
+    """List every job in the review pile, oldest failure first."""
+    conn = _conn()
+    rows = retry_mod.list_review(conn)
+    if not rows:
+        print("review pile is empty")
+        return
+    for r in rows:
+        reason = r["review_reason"] or "(unclassified)"
+        err = (r["error"] or "")[:80]
+        print(f"{r['id']}  {r['title']!r}  attempts {r['attempts']}/{r['max_attempts']}"
+              f"  failed_at {r['updated_at']}")
+        print(f"    reason: {reason}")
+        if err:
+            print(f"    error: {err}")
+    print(f"{len(rows)} job(s) in the review pile")
+
+
+@review_pile.command("retry")
+@click.argument("job_id")
+def review_pile_retry(job_id):
+    """Owner-cleared retry: move a failed job back to draft."""
+    conn = _conn()
+    try:
+        retry_mod.retry_review(conn, job_id)
+    except ValueError as e:
+        _die(str(e))
+    print(f"{job_id} -> draft (owner retry)")
+
+
+@review_pile.command("dismiss")
+@click.argument("job_id")
+def review_pile_dismiss(job_id):
+    """Owner-cleared dismiss: move a failed job to archived (no retry)."""
+    conn = _conn()
+    try:
+        retry_mod.dismiss_review(conn, job_id)
+    except ValueError as e:
+        _die(str(e))
+    print(f"{job_id} -> archived (owner dismiss)")
 
 
 @cli.command()
@@ -967,10 +1072,10 @@ def costs(job_id):
         print(f"{pre}{r['at']:<22}{r['provider']:<12}{r['unit']:<14}"
               f"{r['qty']:>8.2f}  {r['usd']:>8.2f}  {r['note'] or ''}")
 
-    total = sum(r["usd"] for r in rows)
-    est = sum(r["usd"] for r in rows if (r["note"] or "").startswith("ESTIMATE|"))
     act = sum(r["usd"] for r in rows if (r["note"] or "").startswith("ACTUAL|"))
-    print(f"total: ${total:.2f}  (estimate ${est:.2f} / actual ${act:.2f})")
+    unmetered = sum(1 for r in rows
+                    if (r["note"] or "").startswith("UNMETERED|"))
+    print(f"actual: ${act:.2f}  ({unmetered} unmetered rows)")
 
 
 # ---------------------------------------------------------------------------
@@ -990,6 +1095,8 @@ _b3cli.register(cli)
 
 
 def main():
+    # Startup (D3): validate paths and print the resolved configuration.
+    config_mod.startup()
     cli()
 
 

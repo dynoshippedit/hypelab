@@ -24,6 +24,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from urllib.parse import urlparse
 
+from . import allowlist as allowlist_mod
 from . import jobs as jobs_mod
 from .util import now
 
@@ -136,14 +137,13 @@ def list_new_items(source) -> list[dict]:
 # ------------------------------------------------------------------ allowlist
 
 def source_allowed(url: str, campaign: dict) -> bool:
-    """Allowlist check (Fact-2 logic): when the campaign names a
-    source_allowlist, the item URL must contain one of its entries. An empty
-    or absent allowlist allows everything (no restriction recorded)."""
+    """Allowlist check: one shared verdict (C5/A2). When the campaign names a
+    source_allowlist, the item URL's host must equal or sit under one of its
+    entries (label-boundary match, never substring). An empty or absent
+    allowlist allows everything (no restriction recorded)."""
     allow = (campaign.get("rules") or {}).get("source_allowlist") or []
-    if not allow:
-        return True
-    u = (url or "").lower()
-    return any(a.lower() in u for a in allow if a)
+    ok, _reason = allowlist_mod.allowlist_verdict(url, allow)
+    return ok
 
 
 # ------------------------------------------------------------------ poll
@@ -166,7 +166,7 @@ def add_source(conn: sqlite3.Connection, *, campaign_id: str, kind: str,
     fail closed: no basis, no source row."""
     from . import campaigns as campaigns_mod
 
-    campaigns_mod.load(conn, campaign_id)  # raises if unknown
+    camp = campaigns_mod.load(conn, campaign_id)  # raises if unknown
     if kind not in ("yt_channel", "rss", "twitch", "manual"):
         raise WatcherError(f"unknown source kind {kind!r}")
     if not isinstance(authorization, dict) or not authorization.get("basis"):
@@ -182,6 +182,25 @@ def add_source(conn: sqlite3.Connection, *, campaign_id: str, kind: str,
         raise WatcherError(
             f"unknown rights basis {authorization['basis']!r}"
         )
+    if kind in ("yt_channel", "rss", "twitch"):
+        # C5/A2: the feed URL itself must be a real http(s) URL, and when the
+        # campaign records a source_allowlist the feed's host must satisfy it.
+        # (manual listings are local files; their item URLs are checked at
+        # poll time instead.)
+        if allowlist_mod.scheme_of_url(url) not in ("http", "https") or not (
+            allowlist_mod.host_of_url(url)
+        ):
+            raise WatcherError(
+                f"source url must be an http(s) URL with a host for kind "
+                f"{kind!r}: {url!r}"
+            )
+        ok, reason = allowlist_mod.allowlist_verdict(
+            url, (camp.get("rules") or {}).get("source_allowlist") or []
+        )
+        if not ok:
+            raise WatcherError(
+                f"source url rejected by campaign allowlist: {reason}"
+            )
     poll_every_s = max(int(poll_every_s), MIN_POLL_EVERY_S)
     sid = campaigns_mod.new_source_id()
     conn.execute(
