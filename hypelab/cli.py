@@ -730,15 +730,16 @@ def _render_job(conn, job_id, aspect=None, heartbeat_owner=None):
                 beat_thread.join()
 
         if rec["skipped"]:
-            # Exact message the book's acceptance greps for.  A skip means the
-            # output is already current, so the state is left untouched.
+            # Exact message the book's acceptance greps for.
             print("hash unchanged, skipping")
-            return rec
+        else:
+            print(f"rendered {out}")
+            print(f"sha256: {rec['render_hash']}")
 
-        print(f"rendered {out}")
-        print(f"sha256: {rec['render_hash']}")
-
-        # Hash changed: the output is new, so it must be re-gated.
+        # The output is current either way. The job must leave the drive's
+        # active state (T-005 / BUG-002): a skip is a valid, current render,
+        # so it progresses exactly like a fresh one — rendering -> rendered
+        # -> queued_gates. Never wedged in `rendering` with no lease.
         state = jobs_mod.get(conn, job_id)["state"]
         if state == "rendering":
             _transition(conn, job_id, "rendered", out.name)
