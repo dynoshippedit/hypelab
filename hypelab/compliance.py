@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import sqlite3
 
+from . import allowlist as allowlist_mod
 from . import jobs as jobs_mod
 from .util import now
 
@@ -150,18 +151,21 @@ def chk_platform_limits(clip, rules):
 
 
 def chk_source_allowed(clip, rules):
+    # Money gate: one shared verdict with the watcher poll path (C5/A2).
+    # Host-based matching only — evilyoutube.com can no longer ride on a
+    # youtube.com entry (REV-714).
     allow = rules.get("source_allowlist") or []
-    url = (clip.get("source_url") or "")
+    url = clip.get("source_url") or ""
     if not allow:
         return PASS, "n/a: no allowlist recorded"
-    u = url.lower()
-    if any(a.lower() in u for a in allow if a):
-        return PASS, "source on allowlist"
+    ok, reason = allowlist_mod.allowlist_verdict(url, allow)
+    if ok:
+        return PASS, reason
     # Not on the allowlist and not clearly off it (redirects, embeds,
     # re-uploads, short links): a human verifies against rules_provenance.
-    if any(tok in u for tok in ("embed", "youtu.be", "list=", "/shorts/")):
+    if allowlist_mod.looks_ambiguous(url):
         return UNKNOWN, f"source {url!r}: ambiguous vs allowlist"
-    return FAIL, f"source {url!r} not on allowlist"
+    return FAIL, reason
 
 
 def chk_music_policy(clip, rules):

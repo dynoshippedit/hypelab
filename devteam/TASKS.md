@@ -137,8 +137,7 @@ DEFERRED · REJECTED.
 - Verify: `pip install -r requirements.txt --dry-run` resolves; import smoke.
 
 ### T-011 — Worker retry path absent; fail() docstring lies (BUG-007+TST-003 · S2/Confirmed)
-- Status: **BLOCKED** — owner policy decision in QUESTIONS.md (auto-requeue
-  vs operator review). After decision: implement re-queue below MAX_ATTEMPTS
+- Status: **DECIDED 2026-09-29** — failure-type requeue (transient only: timeouts/rate-limits/5xx, backoff, max 3, cost logged; rest to manual review pile; never auto-retry publish or Dino-waiting jobs). Spec: devteam/proposals/owner-decisions-2026-09-29.md (D1). Race-fix gate OPEN (T-007 verified). Queued.
   or correct docstring + add CLI retry command.
 
 ### T-012 — CLI `gates` accepts worker-claimed `gating` (BUG-008 · S2/Confirmed)
@@ -146,8 +145,7 @@ DEFERRED · REJECTED.
   Test: claim a job, CLI `gates` → clean refusal. Effort XS.
 
 ### T-013 — charge() has zero production callers; costs always empty (BUG-009+DAT-352 · S2/Confirmed)
-- Status: **BLOCKED** — owner product decision (wire charge() into
-  align/render/publish vs remove `costs` command). In QUESTIONS.md.
+- Status: **DECIDED 2026-09-29** — RIP OUT: remove charge/payout routes+code, park on archive branch, keep cost ledger, drop C4-only tasks (T-013/T-017/DAT-357). Spec: devteam/proposals/owner-decisions-2026-09-29.md (D2). Queued.
 
 ### T-014 — `render --aspect` variant drives book pipeline; `ready` mis-certifies (BUG-010 · S2/Confirmed)
 - Status: READY (owner decision on intended --aspect semantics recorded in
@@ -170,8 +168,7 @@ DEFERRED · REJECTED.
   document the egress; align with module docstring. S.
 
 ### T-019 — HYPELAB_ROOT/DB/model-cache split-brain (ENV-651 · S2/Confirmed)
-- Status: **BLOCKED** — owner decision (single-root semantics vs documented
-  split). In QUESTIONS.md.
+- Status: **DECIDED 2026-09-29** — HYPELAB_HOME single root, per-path vars as optional overrides, validate+print at startup, secrets separate. Spec: devteam/proposals/owner-decisions-2026-09-29.md (D3). Queued.
 
 ### T-020 — Lazy imports / missing ffmpeg fail with raw tracebacks (ENV-652 · S2/Confirmed)
 - Status: READY. Wrap lazy imports with helper raising domain error naming
@@ -260,11 +257,10 @@ DEFERRED · REJECTED.
   gates; sub-quadratic score_windows; single-decode audio features. M.
 
 ### T-040 — Tracked job outputs (~34–39 MB) in jobs/ (BLD-010 S3 + MAP-001 S3 · Confirmed)
-- Status: **BLOCKED** — owner approval to `git rm -r jobs/` + `.gitignore`
-  (deleting files needs approval). In QUESTIONS.md.
+- Status: **APPROVED 2026-09-29 with constraints** — git rm --cached, move to outputs/ under new root, gitignore it; keep small test samples only; DO NOT touch character store (reference.png/voice.wav); send Dino the moved list; NO history rewrite. Spec: devteam/proposals/owner-decisions-2026-09-29.md (D4). Queued.
 
 ### T-041 — S3/S4 backlog (grouped; evidence in findings/*.md)
-- Status: READY (pick by value when higher tiers drain).
+- Status: **IN PROGRESS** (hl-cycle-07: A2/C5 - ARC-310 + REV-714 + SEC-103 URL allowlist verdicts).
 - BUG-012/013/014/015 (kit float, attach orphan, run_all KeyError, EDL
   schema validation); ARC-305/306/308/309/310/311/312/313/314/315;
   DAT-354/355/356/357/358/359/360/363; ENV-654/655/656/657; PAT-600/601/602/603;

@@ -60,7 +60,7 @@ def _campaign_dict(**over):
             "banned_words": ["bannedword"],
             "watermark_required": False,
             "platforms": ["tiktok"],
-            "source_allowlist": ["fixture"],
+            "source_allowlist": ["fixture.example"],
             "music_policy": "original_audio_only",
         },
         "rules_provenance": {
