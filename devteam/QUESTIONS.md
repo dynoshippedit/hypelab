@@ -83,10 +83,63 @@ render determinism/cost profile; your call. **Default assumption meanwhile:** (b
 
 **Answers (owner):**
 
----
-
 ## Q-002 — UIX (2026-09-29): failed-job recovery policy — CLI retry command vs auto-requeue
 
 **Status:** OPEN
 
-**Context:** BUG-007 / UIX-552. `queue.fail()`s docstring promises a re-queue
+**Context:** BUG-007 / UIX-552. queue.fail()'s docstring promises a re-queue
+the work loop never performs; failed jobs are SQL-only today. work prints
+a poison list (cli.py:820-830) with no remediation, and failed -> draft
+(jobs.py:44) has no CLI path. The operator's only recovery is raw SQL.
+
+**Options:** (a) add hypelab retry <job> (operator-driven failed -> draft
+or re-queue, attempts preserved); (b) auto-requeue below MAX_ATTEMPTS in the
+work loop and correct the docstring; (c) both (auto-requeue for transient,
+manual retry as backstop).
+
+**Recommendation:** (a) — operator-driven retry keeps the human in the loop
+for a pipeline where failures can be expensive (renders) and matches the
+deliberate-operator pattern used elsewhere (bump-rules, resolve).
+
+**Default assumption meanwhile:** (a); Phase 5 adds the retry command and a
+poison-list remediation hint.
+
+**Answer (owner):**
+
+## Q-003 — UIX (2026-09-29): consent check negative answer — exit code and message
+
+**Status:** OPEN
+
+**Context:** UIX-557. hypelab consent check with no valid consent exits 1
+via _die ("error: NO valid consent..."), indistinguishable from a DB failure.
+A negative answer is a valid query result, not a command failure.
+
+**Options:** (a) keep exit 1 but drop the error: prefix (grep-like
+convention: 1 = "not found"); (b) exit 0 with NO on stdout and reserve
+exit 1 for real failures.
+
+**Recommendation:** (a) — minimal change, scripts can already branch on it,
+and the message stops crying wolf.
+
+**Default assumption meanwhile:** (a).
+
+**Answer (owner):**
+
+## Q-004 — UIX (2026-09-29): canonical env var — HYPELAB_ROOT (code) vs HYPELAB_HOME (README)
+
+**Status:** OPEN
+
+**Context:** UIX-568 / DOC-005. README.md:16 documents HYPELAB_HOME; code
+reads HYPELAB_ROOT/HYPELAB_DB (cli.py:87) and ignores HYPELAB_HOME
+silently. This matches the ARC lane's open drift question.
+
+**Options:** (a) canonicalize on HYPELAB_ROOT (code wins), fix README in
+Phase 5; (b) support both, HYPELAB_HOME as deprecated alias.
+
+**Recommendation:** (a) — one name, no alias debt; the README is already
+slated for rewrite (DOC-001–004).
+
+**Default assumption meanwhile:** (a); operators should export
+HYPELAB_ROOT/HYPELAB_DB today.
+
+**Answer (owner):**

@@ -130,3 +130,11 @@
 - Notes updated: JOURNAL.md
 - Commands: none (lane report)
 - Next: await UIX, PAT, SWEEP-A; then Phase 3 gate → Phase 4 triage
+
+## 2026-09-29 03:52 · Tech Lead · Phase 3
+- Did: Received UIX lane report (completed). ux.md + 21 findings (UIX-550–570: 1x S2, 9x S3, 11x S4) + Q-002/Q-003/Q-004 in QUESTIONS.md. Key: UIX-552 S2 — failed-job recovery is SQL-only (no retry command); UIX-551 S3 — no top-level job status/show/list command, the job object is invisible to the CLI. UIX-566/569 S3 — help text and "hash unchanged, skipping" describe behavior the code cannot deliver (masks BUG-002/004). UIX-563 S3 — destructive promote-weights replaces production weights in place, no backup/confirmation. Confirmed: 36+ leaf paths inventoried; subcommand style split three ways; README documents HYPELAB_HOME, code reads HYPELAB_ROOT (zero code hits) — code wins; no progress reporting on long ops.
+- Found: UIX-552 (S2) · UIX-550/551/553/558/559/560/563/566/569 (S3) · UIX-554–557/561/562/564/565/567/568/570 (S4)
+- Running totals: 176 findings — S0 0 · S1 11 · S2 49 · S3 71 · S4 45.
+- Notes updated: JOURNAL.md
+- Commands: none (lane report)
+- Next: await PAT, SWEEP-A; then Phase 3 gate → Phase 4 triage
