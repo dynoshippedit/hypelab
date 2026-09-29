@@ -167,7 +167,7 @@ def test_transient_failure_requeues_with_backoff(env):
     # One cost row for the spent attempt.
     costs = _cost_rows(dbp, jid)
     assert len(costs) == 1
-    assert costs[0]["note"].startswith("ACTUAL|requeue attempt 1/3")
+    assert costs[0]["note"].startswith("UNMETERED|requeue attempt 1/3")
 
 
 def test_claim_skips_job_until_backoff_elapses(env):
@@ -239,7 +239,7 @@ def test_three_attempts_then_review_pile(env):
     # Exactly one cost row per attempt.
     costs = _cost_rows(dbp, jid)
     assert len(costs) == 3, [c["note"] for c in costs]
-    assert costs[2]["note"].startswith("ACTUAL|attempt routed to review")
+    assert costs[2]["note"].startswith("UNMETERED|attempt routed to review")
 
 
 @pytest.mark.parametrize("err", [

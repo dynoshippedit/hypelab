@@ -296,6 +296,14 @@ def log(conn: sqlite3.Connection, job_id: str, frm, to: str, note) -> None:
     )
 
 
+#: Fixed honest label for cost-ledger rows that are not metered.
+#: Owner decision 2026-09-29 (T-043): unmetered rows keep this label;
+#: real cost is logged only on paid API calls, from the usage numbers
+#: the provider API returns. No estimated cost model, no invented
+#: per-unit prices.
+COST_UNMETERED_LABEL = "unmetered - subscription"
+
+
 def log_cost(conn: sqlite3.Connection, job_id: str, provider: str, unit: str,
               qty: float, usd: float, note: str) -> None:
     """Record one cost line in cost_ledger with at=now().
@@ -303,17 +311,38 @@ def log_cost(conn: sqlite3.Connection, job_id: str, provider: str, unit: str,
     Spend tracking only — not money movement. (D2 2026-09-29: the custom
     charge/payout pipeline was removed; the cost ledger is kept.)
 
-    CONVENTION (estimated-vs-actual accounting, within the mandated schema):
-      - cost ESTIMATES use a note starting with "ESTIMATE|"
-        e.g. "ESTIMATE|whisper stt, 2 audio_min @ $0.006/min"
-      - realized/ACTUAL costs use a note starting with "ACTUAL|"
-        e.g. "ACTUAL|whisper stt billed 2026-09-28"
-
-    The convention is documentary, not enforced: aggregate SUM(usd) over
-    notes LIKE 'ESTIMATE|%' vs 'ACTUAL|%' to compare forecast against spend.
+    NOTE-PREFIX CONVENTION (documentary, not enforced — aggregate with
+    notes LIKE '<PREFIX>|%'):
+      - "ACTUAL|" — real cost on a PAID API call, computed ONLY from the
+        usage numbers the provider's API response returned (tokens,
+        minutes, billed amount, ...). Never estimated, never derived from
+        an invented per-unit price. Write these rows via log_metered_cost().
+      - "UNMETERED|" — subscription/covered work with no metering: usd
+        MUST be 0.0 and the note MUST carry the fixed honest label
+        COST_UNMETERED_LABEL ("unmetered - subscription").
+      - "ESTIMATE|" — RESERVED, unused. Owner decision 2026-09-29 (T-043):
+        there is no estimated cost model; nothing in the codebase writes
+        ESTIMATE rows or invents per-unit prices.
     """
     conn.execute(
         "INSERT INTO cost_ledger(job_id, at, provider, unit, qty, usd, note)"
         " VALUES(?,?,?,?,?,?,?)",
         (job_id, now(), provider, unit, qty, usd, note),
     )
+
+
+def log_metered_cost(conn: sqlite3.Connection, job_id: str, provider: str,
+                     unit: str, qty: float, usd: float, note: str) -> None:
+    """Log a REAL cost from a paid API call (an "ACTUAL|" ledger row).
+
+    The ONLY sanctioned path for cost rows that claim real spend.
+    ``unit``/``qty``/``usd`` must come straight from the provider API
+    response's usage numbers — never estimated, never derived from an
+    invented per-unit price.
+
+    Currently no paid API calls exist in the codebase (local
+    faster-whisper ASR; one-time free model fetch), so this helper has no
+    production callers yet. It exists so the first paid integration has
+    exactly one honest place to log.
+    """
+    log_cost(conn, job_id, provider, unit, qty, usd, "ACTUAL|" + note)

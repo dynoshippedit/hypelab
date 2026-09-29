@@ -1,0 +1,51 @@
+{
+  "blockers": [],
+  "changed_files": [
+    "hypelab/queue.py (new COST_UNMETERED_LABEL constant; log_cost() docstring convention rewritten: ACTUAL/UNMETERED/ESTIMATE-reserved; new log_metered_cost() sanctioned path for real API-billed costs)",
+    "hypelab/retry.py (the two ledger writes now emit UNMETERED|<detail> (unmetered - subscription) instead of ACTUAL|... (cost unmetered))",
+    "hypelab/cli.py (`costs` totals line now prints actual + unmetered-row count instead of the estimate/actual split)",
+    "tests/test_cost_labels.py (new, 6 tests: fixed label pinned; requeue/review rows carry honest UNMETERED label with usd 0.0 and no ACTUAL| prefix; no ACTUAL|/ESTIMATE| rows on unmetered paths; log_metered_cost records API-returned numbers verbatim with ACTUAL|; static guard: no ESTIMATE| writes/aggregations anywhere in hypelab/)",
+    "tests/test_failure_requeue.py (two assertions updated to the UNMETERED| prefix)",
+    "tests/conftest.py (new: --run-quarantined flag; quarantine-marked tests skipped in the default gate)",
+    "tests/test_cli.py (test_worker_crash_recovery_sha256 marked @pytest.mark.quarantine, T-044)",
+    "devteam/TASKS.md (T-043 + T-044 appended as IMPLEMENTED, awaiting controller verification)",
+    "devteam/cycles/hl-cycle-13.json (new)"
+  ],
+  "checks": [
+    {
+      "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_cost_labels.py tests/test_failure_requeue.py tests/test_cli.py -q",
+      "result": "42 passed, 1 skipped (the quarantined crash-recovery test)"
+    },
+    {
+      "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_cli.py::test_worker_crash_recovery_sha256 -q --run-quarantined",
+      "result": "1 passed in 53.90s \u2014 quarantined test still runnable explicitly"
+    },
+    {
+      "command": "git stash push -- hypelab/queue.py hypelab/retry.py hypelab/cli.py; pytest tests/test_cost_labels.py -q; git stash pop",
+      "result": "6 failed with the fix stashed \u2014 falsified: new tests genuinely test the change; tree restored after"
+    },
+    {
+      "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/ -q (full suite)",
+      "result": "298 passed, 1 skipped (quarantined crash-recovery test), 3 warnings in 150.21s (293 base + 6 new cost-label tests, 1 quarantined out of the default gate)"
+    }
+  ],
+  "cycle_id": "hl-cycle-13",
+  "lessons": [
+    "A static guard test over the whole package (rglob) beats a hardcoded module list: it caught a live ESTIMATE| aggregation in cli.py that the module list missed.",
+    "For kill -9 / lease-expiry tests, wall-clock sleeps are the flake vector; quarantining with an explicit opt-in flag plus a tracked un-quarantine spec is the honest gate discipline when the exact failing assert can't be reproduced on demand.",
+    "The honest-label fix touched three layers (writer, docstring convention, CLI presentation) \u2014 the presentation layer (costs CLI) still spoke the old estimate/actual language and would have kept the confusion alive."
+  ],
+  "next_action": "Controller verification of hl-cycle-13 (T-043 + T-044). After verification, the HypeLab queue has no owner-blocked items left except future paid-API integrations (which must use log_metered_cost).",
+  "project_id": "hypelab",
+  "project_root": "/home/dino/hypelab",
+  "proposed_status": "IMPLEMENTED",
+  "root_cause": "T-043: the T-011 controller review found cost-ledger rows written usd=0.0 'cost unmetered' labeled ACTUAL| \u2014 no metering exists, so the label was dishonest. Owner chose honest unmetered rows with a fixed label over a real cost model. T-044: test_worker_crash_recovery_sha256 synchronizes a kill -9 crash test with wall-clock sleeps and fixed poll budgets; under full-suite load the timing assumptions break intermittently.",
+  "schema_version": "1.0",
+  "source_identity": {
+    "after": "<this commit>",
+    "before": "6160aa2",
+    "method": "git rev-parse + git status (clean tree, branch devteam/review-2026-09-29, HEAD 6160aa2 before editing)"
+  },
+  "summary": "Two owner-ordered tasks. T-043 (cost labels, owner decision 2026-09-29): the misleading ACTUAL| label on $0.00 unmetered cost-ledger rows is fixed \u2014 queue.COST_UNMETERED_LABEL = 'unmetered - subscription', and the two requeue/review ledger writes in retry.py now emit 'UNMETERED|<detail> (unmetered - subscription)'. log_cost() docstring convention rewritten: ACTUAL| = real cost on a paid API call computed ONLY from API-returned usage numbers; UNMETERED| = subscription-covered, usd 0.0, fixed label; ESTIMATE| = RESERVED/unused (no estimated cost model, no invented per-unit prices). New queue.log_metered_cost() is the single sanctioned path for real costs (no paid API callers exist yet: local faster-whisper ASR, one-time free model fetch). The `costs` CLI totals line now prints 'actual: $X (N unmetered rows)' instead of the estimate/actual split. T-044 (flaky crash-recovery test): tests/test_cli.py::test_worker_crash_recovery_sha256 is quarantined via @pytest.mark.quarantine + tests/conftest.py (--run-quarantined to run explicitly; skipped in the default gate). The test does kill -9 mid-render plus a blind 12s sleep for an 8s lease expiry; it flaked 1/3 full-suite controller runs (AssertionError) while passing alone and under CPU load. Prime race candidates: (1) the 60s wall-clock budget for worker A to reach 'rendering' under load, or the test process being descheduled so the worker finishes before the kill is observed; (2) orphaned ffmpeg child timing vs the blind sleep. Un-quarantining requires replacing the blind sleep with a poll-until-lease-expired loop AND a deterministic kill point (worker-side sync marker or lease-expiry injection hook), then 5 consecutive green full-suite runs. Nothing pushed.",
+  "task_id": "HL-013"
+}

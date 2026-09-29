@@ -1072,10 +1072,10 @@ def costs(job_id):
         print(f"{pre}{r['at']:<22}{r['provider']:<12}{r['unit']:<14}"
               f"{r['qty']:>8.2f}  {r['usd']:>8.2f}  {r['note'] or ''}")
 
-    total = sum(r["usd"] for r in rows)
-    est = sum(r["usd"] for r in rows if (r["note"] or "").startswith("ESTIMATE|"))
     act = sum(r["usd"] for r in rows if (r["note"] or "").startswith("ACTUAL|"))
-    print(f"total: ${total:.2f}  (estimate ${est:.2f} / actual ${act:.2f})")
+    unmetered = sum(1 for r in rows
+                    if (r["note"] or "").startswith("UNMETERED|"))
+    print(f"actual: ${act:.2f}  ({unmetered} unmetered rows)")
 
 
 # ---------------------------------------------------------------------------

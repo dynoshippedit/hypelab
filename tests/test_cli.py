@@ -315,6 +315,10 @@ def test_work_once_claims_single_job(env, media):
     assert _db_state(env["db"], job_id)[0] == "queued_gates"
 
 
+@pytest.mark.quarantine(
+    reason="T-044: kill -9 + wall-clock lease expiry flakes under full-suite "
+    "load (observed 1/3 controller runs: AssertionError). Quarantined "
+    "2026-09-29; run explicitly with --run-quarantined.")
 def test_worker_crash_recovery_sha256(tmp_path):
     """kill -9 mid-render -> lease expiry -> fresh worker reclaims and the
     output SHA-256 matches an equivalent completed deterministic render."""
