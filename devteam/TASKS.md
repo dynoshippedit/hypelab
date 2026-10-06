@@ -131,6 +131,7 @@ DEFERRED · REJECTED.
   cache-hit unit test that doesn't need the model.
 
 ### T-010 — No dependency manifest (BLD-001 S1 + ENV-650 S2 · Confirmed)
+- Status: **IMPLEMENTED 2026-10-06** (M1 night run) — pyproject.toml + requirements.txt + requirements-lock.txt; av pinned <19 (PyAV 19 breaks faster-whisper 1.2.1); fresh .venv + `pip install -e .` → full suite green. Editable install only (migrations/ not packaged — structural, owner call). Commits f6083be, e7a4747.
 - Status: READY. Pin the ten recorded third-party deps from
   `devteam/notes/dependencies.md` into `requirements.txt` (no upgrades);
   document native minimums (ffmpeg, Chromium, tesseract, yt-dlp).
@@ -155,6 +156,7 @@ DEFERRED · REJECTED.
   QUESTIONS.md; safe default: variants don't advance book states). Effort M.
 
 ### T-015 — Degenerate script downloads faster-whisper model before failing (BUG-011 · S2/Confirmed)
+- Status: **IMPLEMENTED 2026-10-06** (M1 night run) — `_do_align` raises AlignError on zero normalized tokens before align_words; tests/test_align_empty_script.py (network + transcribe trapped, falsified without fix). Commits 103d1ed, e7a4747.
 - Status: READY. Fail fast with AlignError on empty normalized tokens in
   `_do_align` before `align_words`. Test with socket bombed → no network. XS.
 
@@ -220,6 +222,7 @@ DEFERRED · REJECTED.
   Test: `--expires never` → clean refusal. S.
 
 ### T-031 — Consent ledger CSV export is formula-injection prone (SEC-104 · S3/Confirmed)
+- Status: **IMPLEMENTED 2026-10-06** (M1 night run) — `_csv_safe` quote-prefixes = + - @ TAB CR data cells in export_ledger; tests/test_consent_csv_safe.py. Commit 21f6d92.
 - Status: READY. Prefix leading-`'` on formula-shaped cells in
   `export_ledger`. XS.
 
@@ -249,6 +252,7 @@ DEFERRED · REJECTED.
   re-queue). M.
 
 ### T-038 — README + ARCHITECTURE rewrite group (MAP-002 S2, DOC-001–011 S2/S3 ex. merged, DOC-012/013/014 S2, DOC-015–021 S3, DOC-022/023/024 S4, BLD-004 S3, MAP-003 S3 · all Confirmed)
+- Status: **PARTIAL 2026-10-06** (M1 night run) — README install/config/tests/Mode A walkthrough refreshed and verified on real inputs (commits 4ca9f54, e7a4747). ARCHITECTURE.md + full rewrite still wait on owner answer to Q-001.
 - Status: READY. Rewrite README setup/walkthrough/test/env sections
   against the real CLI; correct ARCHITECTURE §§1.x, 2, 3.3, 4.6/4.7, 5, 6.3,
   7, 8; write promised docs/WALKTHROUGH.md + docs/OPERATIONS.md or remove
