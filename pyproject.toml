@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hypelab"
+version = "2.0.0"
+requires-python = ">=3.12"
+description = "Local-first short-form video engine: EDL -> deterministic FFmpeg render -> quality gates"
+dependencies = [
+    "click>=8.5",
+    "jsonschema>=4.26",
+    "pysubs2>=1.9",
+    "numpy>=2.4",
+    "opencv-python-headless>=4.13",
+    "librosa>=0.11",
+    "soundfile>=0.14",
+    "faster-whisper>=1.2.1",
+    "av>=18,<19",
+    "transformers>=5.12",
+    "torch>=2.12",
+    "torchaudio>=2.11",
+    "yt-dlp>=2026.8",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=9.0"]
+
+[project.scripts]
+hypelab = "hypelab.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["hypelab*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

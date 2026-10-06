@@ -1,0 +1,26 @@
+# HypeLab runtime + test dependencies.
+# Install torch/torchaudio from the CPU wheel index first:
+#   pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+
+# core CLI
+click>=8.5
+jsonschema>=4.26
+
+# media / alignment
+pysubs2>=1.9
+numpy>=2.4
+opencv-python-headless>=4.13
+librosa>=0.11
+soundfile>=0.14
+faster-whisper>=1.2.1
+# PyAV 19 removed av.open(metadata_errors=...), which faster-whisper 1.2.1 still passes
+av>=18,<19
+transformers>=5.12
+torch>=2.12
+torchaudio>=2.11
+
+# Mode B ingest
+yt-dlp>=2026.8
+
+# tests
+pytest>=9.0

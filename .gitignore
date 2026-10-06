@@ -28,3 +28,7 @@ __pycache__/
 
 # Build outputs (D4/T-040): relocated under HYPELAB_OUTPUTS_DIR, never committed.
 /outputs/
+
+# Local virtualenv + editable-install metadata
+/.venv/
+*.egg-info/
