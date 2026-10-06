@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.0",
+  "review_id": "checkup-hlflag-2026-09-29",
+  "project_root": "/home/dino/hypelab",
+  "source_paths": [
+    "hypelab/retry.py",
+    "tests/test_failure_requeue.py",
+    "hypelab/cli.py"
+  ],
+  "exclusions": [
+    {
+      "pattern": ".git",
+      "reason": "Version control internals; inspect Git status separately"
+    },
+    {
+      "pattern": "__pycache__",
+      "reason": "Generated Python bytecode"
+    },
+    {
+      "pattern": "**/__pycache__",
+      "reason": "Generated Python bytecode"
+    },
+    {
+      "pattern": "devteam/checkups",
+      "reason": "Changing checkup output, not application source"
+    }
+  ],
+  "review_units": [
+    {
+      "id": "kill-switch-impl",
+      "paths": [
+        "hypelab/retry.py"
+      ],
+      "lenses": [
+        "COR",
+        "ARC",
+        "TST",
+        "DOC",
+        "REL",
+        "DAT"
+      ]
+    },
+    {
+      "id": "kill-switch-tests",
+      "paths": [
+        "tests/test_failure_requeue.py"
+      ],
+      "lenses": [
+        "COR",
+        "ARC",
+        "TST",
+        "DOC"
+      ]
+    },
+    {
+      "id": "work-loop-caller",
+      "paths": [
+        "hypelab/cli.py"
+      ],
+      "lenses": [
+        "COR",
+        "ARC",
+        "TST",
+        "DOC"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "check-requeue-tests",
+      "purpose": "Kill-switch regression tests: 36/36 incl. disabled routing, spellings, default-on, plus pre-existing requeue behavior",
+      "argv": [
+        "env",
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1",
+        "python3",
+        "-m",
+        "pytest",
+        "tests/test_failure_requeue.py",
+        "-q"
+      ],
+      "cwd": "/home/dino/hypelab",
+      "timeout_seconds": 120,
+      "baseline_required": true,
+      "final_required": true
+    },
+    {
+      "id": "check-drive-atomicity",
+      "purpose": "Adjacent failure-path tests: drive-failure CLI + queue atomicity, 21/21 expected",
+      "argv": [
+        "env",
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1",
+        "python3",
+        "-m",
+        "pytest",
+        "tests/test_cli_drive_fail.py",
+        "tests/test_queue_atomicity.py",
+        "-q"
+      ],
+      "cwd": "/home/dino/hypelab",
+      "timeout_seconds": 120,
+      "baseline_required": true,
+      "final_required": true
+    },
+    {
+      "id": "check-live-behavior",
+      "purpose": "Real DB + real implementation live verification: live env flip mid-process, disabled routing reason, UNMETERED cost row, publish exclusion under disabled flag, empty=on, backoff curve",
+      "argv": [
+        "python3",
+        "/home/dino/hypelab/devteam/checkups/checkup-hlflag-2026-09-29/evidence/live_behavior_verify.py"
+      ],
+      "cwd": "/home/dino/hypelab",
+      "timeout_seconds": 120,
+      "baseline_required": true,
+      "final_required": true
+    }
+  ]
+}

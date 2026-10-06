@@ -1,0 +1,14 @@
+{
+  "review_id": "checkup-hypemedia1-2026-09-29",
+  "spec_digest": "13ac1d66710696085f417db1f98a3c8215787640a5fda26ca4cfd0714cec0175",
+  "source_digest": "da4e6abb48487a9119c67e4c4d8116c8550fd7d87c9eb65e7793495301537c41",
+  "files": {
+    "hypelab/watcher.py": "a786759c8c6444c51b0b695405f45007c0bbcbfca4702b14edc73879bd1974aa",
+    "hypelab/b2cli.py": "9f6422228667be8419b5081e9ef37394e73ad602d7242ed2c6bc2cad15a6d9fb",
+    "tests/test_source_kinds.py": "3760b7d66939f5f749f0fa00030e1a5ca6b3273a0f6e2b7f9fb6ea36b701ea0b"
+  },
+  "unit_digests": {
+    "source-intake-validation": "113c8e720a868be882d04d39ad6374890c58211f812c366ed0b5290692b53697",
+    "regression-tests": "aee7905ca78c9c08c594ede8f730d03ca800feedf2308d3d93bcc1136982c91c"
+  }
+}

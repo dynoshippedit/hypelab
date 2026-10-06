@@ -1,0 +1,18 @@
+{
+  "review_id": "checkup-t044-final-2026-09-29",
+  "spec_digest": "75a25ba1b00a724a0194cea5605e12dff9300f82155b2b5d0b49d5b0afcbefc3",
+  "source_digest": "73928e12ff258163cdae687b5bbdc23f2d7bd39fc55908c2c0127e186205df2a",
+  "files": {
+    "hypelab/render.py": "a08579764a94bd04859090eeecb00ac4f9fad2d5a93b494e0cf758150c259e4d",
+    "tests/test_t044_deterministic.py": "1d69e5e5c877ec23be4068cd84648d7c34e5e6bf65adcf03b49140d39bbe81bd",
+    "tests/conftest.py": "6ffab5f83f71e0f50a3a8a1520b96954d891bf018fe918e1a70b9e17ee13f2df",
+    "ARCHITECTURE.md": "c22eb77e3ad79c9fcc9bb61183512876f63549b026648228d78f3e638eb76c63",
+    "devteam/TASKS.md": "51cb81ed5043224d7d93fffe78000c8dcf23c0f672727bd300a0c8393b0bd995"
+  },
+  "unit_digests": {
+    "ffmpeg-version-pin": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+    "t044-relaxed-assertion": "18f9a3021e8a21338b5403041a4a2436fe6e99e3ad212a50d2cc64eb7f0af7ab",
+    "crash-recovery-unquarantine": "e6cee6fbc54a7207925f6c983aea52608769b38dc0af0c7100be811bdb5d11c7",
+    "t044-documentation": "bde117b743e3b7239810b9424153a94210c4c1fda32defc8011a245f473a1c90"
+  }
+}

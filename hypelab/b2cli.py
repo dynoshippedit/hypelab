@@ -154,7 +154,7 @@ def source_grp():
 @source_grp.command("add")
 @click.option("--campaign", required=True, help="Campaign id.")
 @click.option("--kind", required=True,
-              type=click.Choice(["yt_channel", "rss", "twitch", "manual"]))
+              type=click.Choice(["yt_channel", "rss", "manual"]))
 @click.option("--url", required=True,
               help="Channel/playlist URL, feed URL, or (kind=manual) the "
                    "local JSON listing file.")

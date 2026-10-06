@@ -1,0 +1,15 @@
+{
+  "review_id": "checkup-hlflag-2026-09-29",
+  "spec_digest": "45d33d0c956614d2bde9bf10f24b7e104a4a6af675a05753494d4aa53bb50e41",
+  "source_digest": "9ac0288959dafff5ab96a7279808c4afa558629fdec2f5841ae7e8b4c6857bbf",
+  "files": {
+    "hypelab/retry.py": "7d891545d62584cd30e7829fde2de8135691d62585c740722579cd153852b175",
+    "tests/test_failure_requeue.py": "b0ce8ffa5756722f26c567ca47f7660c10f50ac5285225d5ebaa9ce33e09fd06",
+    "hypelab/cli.py": "5b608a4cf1351b7bdd449c16e7011bbe41039843b8b73448735d47223cc9420e"
+  },
+  "unit_digests": {
+    "kill-switch-impl": "a8e509ffb3b36c8babf2cb7e7904d1b9898cd220b1261f606a84e41d5f073bcf",
+    "kill-switch-tests": "4ca18a6f21b0d690ce73ff3574982e7562f49b0d7854997cafd5555fcab3a751",
+    "work-loop-caller": "aaddd65159f835fd09c9d496275d48a0c2f714aedd37728a4d48aa9deaba7a25"
+  }
+}

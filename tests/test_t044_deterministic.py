@@ -47,11 +47,10 @@ from test_cli import (
 # without single-threading flags (identical variant set), so single-threading
 # is NOT the fix and the flags were not shipped. Measured peak max |d| approx
 # -48.6 dBFS. NOTE: this EXCEEDS Dino's approx -50 dBFS user-facing-bug rule
-# of thumb by ~1.4 dB -- flagged for his call; the transient is ~14 dB below
-# local program RMS (very likely inaudible) but the rule is his, not ours
-# to waive. Tolerance = 0.01 amplitude (-40 dBFS), ~8.6 dB margin over the
-# measured peak. Video frames stay bit-identical across renders, so video
-# keeps the exact assertion.
+# of thumb by ~1.4 dB -- Dino WAIVED this 2026-09-29 (accepted as inaudible);
+# the transient is ~14 dB below local program RMS. Tolerance = 0.01 amplitude
+# (-40 dBFS), ~8.6 dB margin over the measured peak. Video frames stay
+# bit-identical across renders, so video keeps the exact assertion.
 T044_AUDIO_TOL_AMP = 0.01  # ~8.6 dB margin over measured peak -48.6 dBFS
 T044_AUDIO_TOL_DBFS = -40.0  # 20*log10(0.01)
 

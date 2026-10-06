@@ -1,0 +1,9 @@
+CHECK check-live-behavior
+check1 live read (flag=0 after import): False
+check2 disabled transient -> outcome=review state=failed reason=auto-requeue-disabled:timeout
+check2 cost rows: 1 | UNMETERED|attempt routed to review pile: auto-requeue-disabled:timeout (
+check3 re-enabled transient -> outcome=requeued state=queued_render
+check4 disabled flag + publish job -> outcome=review reason=publish-excluded:timeout
+check5 empty string -> on: OK
+check6 backoffs attempt 1,2,3,4,10: [60, 120, 240, 480, 900]
+ALL LIVE BEHAVIOR CHECKS PASSED

@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/tmp/repro.py", line 15, in <module>
+    sid = watcher_mod.add_source(conn, campaign_id="c1", kind="twitch",
+        url="https://www.twitch.tv/somechannel",
+        authorization={"basis": "campaign_supplied", "granted_by": "campaign"})
+  File "/home/dino/hypelab/hypelab/watcher.py", line 171, in add_source
+    raise WatcherError(
+hypelab.watcher.WatcherError: unsupported source kind 'twitch': supported kinds are 'yt_channel', 'rss', 'manual' (twitch polling is not implemented)

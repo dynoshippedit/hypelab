@@ -1,0 +1,374 @@
+{
+  "review_id": "checkup-t044-relax-2026-09-29",
+  "spec_digest": "757f405267b6f2c76e749741472807616da1d0f8bcca93e99958088ab3e9402a",
+  "stages": [
+    {
+      "id": "S0",
+      "status": "PASS",
+      "summary": "Scope: T-044-RELAX final state after chief conflict resolution; three files in scope.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s0-scope.md",
+          "sha256": "6781fa344fac1c251c875f847256ed7be74c9ae64223f1cd3b8a958e074e5e2e"
+        }
+      ]
+    },
+    {
+      "id": "S1",
+      "status": "PASS",
+      "summary": "Baseline: HEAD 8effd32; worker/chief change history documented; prior evidence cited.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "e6bbbe08102121e42a7724d369009558e6691a457732c952cc576a60b2398b05"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "status": "PASS",
+      "summary": "Architecture: worker deletion + chief pin/tolerance decisions; no product logic touched.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "2c1cb44e8c8db0801bf1bbc51008fc8416dd19b260c0ee2787544a9d225befd3"
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "status": "PASS",
+      "summary": "Test matrix: baseline + 3 final checks + 5x gate defined.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "60d91783262ba38c7a9c3bce1890806d2a6c03c405e8c7750a1a77edae2ce6c0"
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "status": "PASS",
+      "summary": "Two informational findings (brief superseded, deletion rationale); 0 blocking.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s4-findings.md",
+          "sha256": "409e4f27caf36cba0804e4eb84f31102968794247abd9077149534e868a91e49"
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "status": "PASS",
+      "summary": "Fix: quarantined test deleted (89 lines); chief pin/tolerance recorded.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s5-fix.md",
+          "sha256": "6eeae168a24ee508eeb910f5913400254e76bc032b3f796ffdd36105eacdee63"
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "status": "PASS",
+      "summary": "Verify: 5/5 full-suite green (312 passed each); all checkup receipts pass.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s6-verify.md",
+          "sha256": "89895bfdf71bea1ea24bc08aaebd395c1fb8548ef8a9d7fbf0804459818fdd0e"
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "status": "PASS",
+      "summary": "Diff review: deletion verified; docs-vs-tree check done.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "c65dde8d188eaf3cd43121880c88e11934280cd00abf9a1f76e9c30373070b8d"
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "status": "PASS",
+      "summary": "Verdict: ACCEPT (SELF_REVIEW, honestly flagged); T-044 un-quarantined.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s8-verdict.md",
+          "sha256": "ef32e6c020de23a8892f48cc82f00ec62c5d55952f915e84b21146bbbe57b608"
+        }
+      ]
+    }
+  ],
+  "initial_snapshot": {
+    "path": "devteam/checkups/checkup-t044-relax-2026-09-29/initial.json",
+    "sha256": "81919e6cfad2230f771d80efcc9fd8dc98dd6aa093aea788656efa8842ffcc0f"
+  },
+  "coverage": [
+    {
+      "unit_id": "render-revert",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Correctness: change matches the specified behavior.",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "2c1cb44e8c8db0801bf1bbc51008fc8416dd19b260c0ee2787544a9d225befd3"
+        },
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "c65dde8d188eaf3cd43121880c88e11934280cd00abf9a1f76e9c30373070b8d"
+        }
+      ]
+    },
+    {
+      "unit_id": "render-revert",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Architecture: no unintended structural impact.",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "2c1cb44e8c8db0801bf1bbc51008fc8416dd19b260c0ee2787544a9d225befd3"
+        },
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "c65dde8d188eaf3cd43121880c88e11934280cd00abf9a1f76e9c30373070b8d"
+        }
+      ]
+    },
+    {
+      "unit_id": "render-revert",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "Testing: covered by the 5x gate and checkup checks.",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "2c1cb44e8c8db0801bf1bbc51008fc8416dd19b260c0ee2787544a9d225befd3"
+        },
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "c65dde8d188eaf3cd43121880c88e11934280cd00abf9a1f76e9c30373070b8d"
+        }
+      ]
+    },
+    {
+      "unit_id": "render-revert",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Documentation: evidence and comments cite measurements.",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "2c1cb44e8c8db0801bf1bbc51008fc8416dd19b260c0ee2787544a9d225befd3"
+        },
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "c65dde8d188eaf3cd43121880c88e11934280cd00abf9a1f76e9c30373070b8d"
+        }
+      ]
+    },
+    {
+      "unit_id": "t044-tolerance-0005",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Correctness: change matches the specified behavior.",
+      "unit_digest": "18f9a3021e8a21338b5403041a4a2436fe6e99e3ad212a50d2cc64eb7f0af7ab",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "2c1cb44e8c8db0801bf1bbc51008fc8416dd19b260c0ee2787544a9d225befd3"
+        },
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "c65dde8d188eaf3cd43121880c88e11934280cd00abf9a1f76e9c30373070b8d"
+        }
+      ]
+    },
+    {
+      "unit_id": "t044-tolerance-0005",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Architecture: no unintended structural impact.",
+      "unit_digest": "18f9a3021e8a21338b5403041a4a2436fe6e99e3ad212a50d2cc64eb7f0af7ab",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "2c1cb44e8c8db0801bf1bbc51008fc8416dd19b260c0ee2787544a9d225befd3"
+        },
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "c65dde8d188eaf3cd43121880c88e11934280cd00abf9a1f76e9c30373070b8d"
+        }
+      ]
+    },
+    {
+      "unit_id": "t044-tolerance-0005",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "Testing: covered by the 5x gate and checkup checks.",
+      "unit_digest": "18f9a3021e8a21338b5403041a4a2436fe6e99e3ad212a50d2cc64eb7f0af7ab",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "2c1cb44e8c8db0801bf1bbc51008fc8416dd19b260c0ee2787544a9d225befd3"
+        },
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "c65dde8d188eaf3cd43121880c88e11934280cd00abf9a1f76e9c30373070b8d"
+        }
+      ]
+    },
+    {
+      "unit_id": "t044-tolerance-0005",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Documentation: evidence and comments cite measurements.",
+      "unit_digest": "18f9a3021e8a21338b5403041a4a2436fe6e99e3ad212a50d2cc64eb7f0af7ab",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "2c1cb44e8c8db0801bf1bbc51008fc8416dd19b260c0ee2787544a9d225befd3"
+        },
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "c65dde8d188eaf3cd43121880c88e11934280cd00abf9a1f76e9c30373070b8d"
+        }
+      ]
+    },
+    {
+      "unit_id": "quarantine-removal",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Correctness: change matches the specified behavior.",
+      "unit_digest": "407f1adb6028329630fcc91e3105e042870b94ec9705eb78e55d911365c15ead",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "2c1cb44e8c8db0801bf1bbc51008fc8416dd19b260c0ee2787544a9d225befd3"
+        },
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "c65dde8d188eaf3cd43121880c88e11934280cd00abf9a1f76e9c30373070b8d"
+        }
+      ]
+    },
+    {
+      "unit_id": "quarantine-removal",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Architecture: no unintended structural impact.",
+      "unit_digest": "407f1adb6028329630fcc91e3105e042870b94ec9705eb78e55d911365c15ead",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "2c1cb44e8c8db0801bf1bbc51008fc8416dd19b260c0ee2787544a9d225befd3"
+        },
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "c65dde8d188eaf3cd43121880c88e11934280cd00abf9a1f76e9c30373070b8d"
+        }
+      ]
+    },
+    {
+      "unit_id": "quarantine-removal",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "Testing: covered by the 5x gate and checkup checks.",
+      "unit_digest": "407f1adb6028329630fcc91e3105e042870b94ec9705eb78e55d911365c15ead",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "2c1cb44e8c8db0801bf1bbc51008fc8416dd19b260c0ee2787544a9d225befd3"
+        },
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "c65dde8d188eaf3cd43121880c88e11934280cd00abf9a1f76e9c30373070b8d"
+        }
+      ]
+    },
+    {
+      "unit_id": "quarantine-removal",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Documentation: evidence and comments cite measurements.",
+      "unit_digest": "407f1adb6028329630fcc91e3105e042870b94ec9705eb78e55d911365c15ead",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "2c1cb44e8c8db0801bf1bbc51008fc8416dd19b260c0ee2787544a9d225befd3"
+        },
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "c65dde8d188eaf3cd43121880c88e11934280cd00abf9a1f76e9c30373070b8d"
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "path": "devteam/checkups/checkup-t044-relax-2026-09-29/checks/baseline/check-pipeline-baseline.json",
+      "sha256": "60ea30e6308cfcdc81751f28df2e9454a9788018ea5a5b4d383cb111cdcbd2a0"
+    },
+    {
+      "path": "devteam/checkups/checkup-t044-relax-2026-09-29/checks/final/check-t044.json",
+      "sha256": "bb6c7d5a44b5f7cbacbd6999dc7e9fc477fa9c824a351b7b65a6648b7a4d342c"
+    },
+    {
+      "path": "devteam/checkups/checkup-t044-relax-2026-09-29/checks/final/check-full-suite.json",
+      "sha256": "b76080b082a002fe9f0e9163604c1d358df8132bb8be011bafb5e37c1d835edb"
+    },
+    {
+      "path": "devteam/checkups/checkup-t044-relax-2026-09-29/checks/final/check-render-revert.json",
+      "sha256": "24247721ace5385c5ec29625cea6080e82bf62d85055af0914e026c09d7f029d"
+    }
+  ],
+  "findings": [
+    {
+      "id": "FIND-01",
+      "classification": "REJECTED_LEAD",
+      "claim": "Worker brief values (0.005, full revert) were superseded by chief conflict resolution.",
+      "challenge": "Verified via file mtimes (17:02:35 override), memory record, and current on-disk state matching chief's values.",
+      "location": "tests/test_t044_deterministic.py:55; hypelab/render.py (pin)",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s4-findings.md",
+          "sha256": "409e4f27caf36cba0804e4eb84f31102968794247abd9077149534e868a91e49"
+        }
+      ],
+      "resolution": "REJECTED"
+    },
+    {
+      "id": "FIND-02",
+      "classification": "SUPPORTED_IMPROVEMENT",
+      "claim": "Deleting (not un-marking) the superseded quarantined test is the correct un-quarantine.",
+      "challenge": "Un-marking would run the known-flaky harness in the gate; TASKS.md already calls it superseded.",
+      "location": "tests/test_cli.py (lines 318-406 removed)",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s4-findings.md",
+          "sha256": "409e4f27caf36cba0804e4eb84f31102968794247abd9077149534e868a91e49"
+        },
+        {
+          "path": "devteam/checkups/checkup-t044-relax-2026-09-29/evidence/s5-fix.md",
+          "sha256": "6eeae168a24ee508eeb910f5913400254e76bc032b3f796ffdd36105eacdee63"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-t044",
+        "check-full-suite"
+      ]
+    }
+  ],
+  "reviewer_mode": "SELF_REVIEW",
+  "reviewer_identity": "T-044-RELAX worker (Media Pipeline Engineer), session e4d0172d-a08f-4e66-81dd-2bc19ea81caa",
+  "next_action": "Chief review: accept the un-quarantine (5x gate green, checkup PASS) and commit at chief's discretion. No worker commits per task."
+}

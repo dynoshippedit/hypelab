@@ -1,0 +1,15 @@
+{
+  "review_id": "repair-fhl1-2026-09-29",
+  "spec_digest": "5d27f6e82c577af9e94267384ddcec4fa4357bf73eacd7c8532c934ddac77a7d",
+  "source_digest": "116539548545a784ca7d12266a35449205c47ccc04bb5c93a86efce0fcb60166",
+  "files": {
+    "hypelab/render.py": "a08579764a94bd04859090eeecb00ac4f9fad2d5a93b494e0cf758150c259e4d",
+    "hypelab/cli.py": "5b608a4cf1351b7bdd449c16e7011bbe41039843b8b73448735d47223cc9420e",
+    "tests/test_fhl1_lease_loss.py": "5da471f8c3217d54710ff74d956a831c578af5f0fddaedc57aec17a7544359ca"
+  },
+  "unit_digests": {
+    "render-output-atomicity": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+    "heartbeat-lease-policy": "aaddd65159f835fd09c9d496275d48a0c2f714aedd37728a4d48aa9deaba7a25",
+    "regression-tests": "4f4b2779d16faf2863377265595ff2bf72acb1aa3fa09a83ca7d0aecffd13fb9"
+  }
+}

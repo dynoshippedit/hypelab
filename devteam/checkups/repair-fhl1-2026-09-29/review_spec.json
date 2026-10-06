@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "review_id": "repair-fhl1-2026-09-29",
+  "project_root": "/home/dino/hypelab",
+  "source_paths": [
+    "hypelab/render.py",
+    "hypelab/cli.py",
+    "tests/test_fhl1_lease_loss.py"
+  ],
+  "exclusions": [
+    {"pattern": ".git", "reason": "Version control internals; inspect Git status separately"},
+    {"pattern": "__pycache__", "reason": "Generated Python bytecode"},
+    {"pattern": "**/__pycache__", "reason": "Generated Python bytecode"},
+    {"pattern": ".pytest_cache", "reason": "Pytest cache; regenerated on every run"},
+    {"pattern": "devteam/checkups", "reason": "Changing checkup output, not application source"}
+  ],
+  "review_units": [
+    {
+      "id": "render-output-atomicity",
+      "paths": ["hypelab/render.py"],
+      "lenses": ["COR", "ARC", "TST", "DOC", "REL"]
+    },
+    {
+      "id": "heartbeat-lease-policy",
+      "paths": ["hypelab/cli.py"],
+      "lenses": ["COR", "ARC", "TST", "DOC", "REL"]
+    },
+    {
+      "id": "regression-tests",
+      "paths": ["tests/test_fhl1_lease_loss.py"],
+      "lenses": ["COR", "ARC", "TST", "DOC"]
+    }
+  ],
+  "checks": [
+    {
+      "id": "check-baseline-suite",
+      "purpose": "Pre-repair baseline: full HypeLab suite green without the new F-HL-1 regression tests (312 passed, 0 skipped expected, matching the 2026-09-29 principal-review baseline)",
+      "argv": ["python3", "-m", "pytest", "tests/", "-q", "--ignore=tests/test_fhl1_lease_loss.py"],
+      "cwd": "/home/dino/hypelab",
+      "timeout_seconds": 1200,
+      "baseline_required": true,
+      "final_required": false
+    },
+    {
+      "id": "check-final-suite",
+      "purpose": "Post-repair acceptance: full HypeLab suite including the 3 new F-HL-1 lease-loss/concurrency regression tests (315 passed, 0 skipped expected); proves the temp-file + atomic-rename invariant and no regressions",
+      "argv": ["python3", "-m", "pytest", "tests/", "-q"],
+      "cwd": "/home/dino/hypelab",
+      "timeout_seconds": 1200,
+      "baseline_required": false,
+      "final_required": true
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "review_id": "repair-fhl1-2026-09-29",
+  "spec_digest": "5d27f6e82c577af9e94267384ddcec4fa4357bf73eacd7c8532c934ddac77a7d",
+  "check_id": "check-final-suite",
+  "phase": "final",
+  "argv": [
+    "python3",
+    "-m",
+    "pytest",
+    "tests/",
+    "-q"
+  ],
+  "cwd": "/home/dino/hypelab",
+  "started_at": "2026-09-29T22:03:51.475673+00:00",
+  "finished_at": "2026-09-29T22:07:33.754696+00:00",
+  "source_before": "116539548545a784ca7d12266a35449205c47ccc04bb5c93a86efce0fcb60166",
+  "source_after": "116539548545a784ca7d12266a35449205c47ccc04bb5c93a86efce0fcb60166",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/repair-fhl1-2026-09-29/checks/final/check-final-suite.json.log",
+    "sha256": "d43c1360e5264d503834b11f783fd056288680d825e8aabb706d416abc9c2713"
+  }
+}

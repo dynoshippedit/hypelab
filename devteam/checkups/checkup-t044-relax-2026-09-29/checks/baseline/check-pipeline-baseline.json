@@ -1,0 +1,28 @@
+{
+  "review_id": "checkup-t044-relax-2026-09-29",
+  "spec_digest": "757f405267b6f2c76e749741472807616da1d0f8bcca93e99958088ab3e9402a",
+  "check_id": "check-pipeline-baseline",
+  "phase": "baseline",
+  "argv": [
+    "env",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1",
+    "python3",
+    "-m",
+    "pytest",
+    "tests/test_pipeline.py",
+    "-q",
+    "-p",
+    "no:cacheprovider"
+  ],
+  "cwd": "/home/dino/hypelab",
+  "started_at": "2026-09-29T21:31:17.004659+00:00",
+  "finished_at": "2026-09-29T21:31:19.626056+00:00",
+  "source_before": "effa95cfbfc380cd347728695351c3d31da0f75bacb2f040601e7aabed85054e",
+  "source_after": "effa95cfbfc380cd347728695351c3d31da0f75bacb2f040601e7aabed85054e",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-t044-relax-2026-09-29/checks/baseline/check-pipeline-baseline.json.log",
+    "sha256": "67aee9df1976cdf8477b401371b14b75b9a91c6ecd7cf1db802a54439a5c6d7b"
+  }
+}

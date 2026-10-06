@@ -1,0 +1,15 @@
+{
+  "review_id": "checkup-t044-duck-2026-09-29",
+  "spec_digest": "e1d3c181ca36c2ce650dadfb7e725f47f8be3cc0c3ffcf5f45d4c551e0cc53e7",
+  "source_digest": "b737e12060698811b965636c808f7a51058ce8b1286647e8dbf3146afedf2d02",
+  "files": {
+    "hypelab/render.py": "a08579764a94bd04859090eeecb00ac4f9fad2d5a93b494e0cf758150c259e4d",
+    "tests/test_t044_deterministic.py": "671be6817c1b9a2406cd4ea207d49c24cea57092cf5e7ecb2c09777643f485ff",
+    "ARCHITECTURE.md": "c22eb77e3ad79c9fcc9bb61183512876f63549b026648228d78f3e638eb76c63"
+  },
+  "unit_digests": {
+    "ffmpeg-version-pin": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+    "t044-assertion-relax": "b3f03909946796a809bb7dc4b2872da916ab61bbfc83d77debeb0091b4e1fa4e",
+    "pin-documentation": "9bc0cae514f622d250a3116afa816e4c246dc45ef9478e842bab16a06138e74f"
+  }
+}

@@ -1,0 +1,430 @@
+{
+  "schema_version": "1.0",
+  "review_id": "checkup-hlflag-2026-09-29",
+  "spec_digest": "45d33d0c956614d2bde9bf10f24b7e104a4a6af675a05753494d4aa53bb50e41",
+  "initial_snapshot": {
+    "path": "devteam/checkups/checkup-hlflag-2026-09-29/initial.json",
+    "sha256": "59d9c6fce2fd2714d39f56e14ed26f20fdab90ecd802046c6042d5083033b96b"
+  },
+  "stages": [
+    {
+      "id": "S0",
+      "status": "PASS",
+      "summary": "scope frozen: change checkup, 3 units, 3 gate checks; source identity devteam/review-2026-09-29 @ 8effd32 with 2 modified files",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s0-scope.md",
+          "sha256": "cf72d0a060170de6df83830338a44763cfa1cb1beedb6f53e1af09d9c44b48a7"
+        }
+      ]
+    },
+    {
+      "id": "S1",
+      "status": "PASS",
+      "summary": "baseline receipts: 36/36 requeue tests, 21/21 drive+atomicity, live behavior script ALL PASSED; env fault pydantic/langsmith plugin documented",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "e0b9ea5baa44a5d56114e0f9ffd1b2306c7485ec59a5d92972eccc4b691623d8"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "status": "PASS",
+      "summary": "flow map: cli.py work loop -> handle_failure -> exclusions -> kill-switch gate -> _requeue/_to_review; invariants listed; no discrepancies",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "14a6aed1e553085c13aae7fd25d9afc38808ac1a2033df20cd254c2f0c16c346"
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "status": "PASS",
+      "summary": "14 unit/lens cells REVIEWED with source-bound observations; no NOT_APPLICABLE cells",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "21e18fc28637b7287e15591636d9df31381b098fffb911865288ffd14741711a"
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "status": "PASS",
+      "summary": "0 CONFIRMED_DEFECT; 1 SUPPORTED_IMPROVEMENT (FIND-01 docs, QUEUED); 3 REJECTED_LEADs with counter-evidence",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s4-findings.md",
+          "sha256": "27df22221966f184d70e8993c99117be0196c43c89bdbe1916f9570673a05f23"
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "status": "PASS",
+      "summary": "VERIFY mode: no product changes; 0 confirmed defects to repair; docs follow-up routed to chief",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s5-fix.md",
+          "sha256": "7380bbd0c0ca2ccad6b673e33c54e719475e7bf8c8155c630ecb31264347be33"
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "status": "PASS",
+      "summary": "final checks all exit 0: 36/36, 21/21, live behavior ALL PASSED; match baseline; source unchanged",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s6-verify.md",
+          "sha256": "e0758d706334f7ef6c9c6e16a13312a15fc8f5b628235cb23ddd886d5babae44"
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "status": "PASS",
+      "summary": "SELF_REVIEW diff challenge: minimal additive change, no semantic drift, no weakened checks; docs-vs-tree checked (FIND-01 recorded)",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "a6aad85dadfa062cff331cc6a938e1b1d1538c0a2b6eec614ac7fd59fd0bde4b"
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "status": "PASS",
+      "summary": "gate PASS through S8; verdict ACCEPT; evidence complete; handback to chief",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s8-verdict.md",
+          "sha256": "b403512493509118343980970c6f4345387ade4e19ee604bebf7ac8b8874bad2"
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "unit_id": "kill-switch-impl",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "auto_requeue_enabled (retry.py:46-48) normalizes strip().lower(), matches the four false-like spellings; unset/empty default on (live-verified); gate sits inside the transient branch AFTER publish/owner-waiting exclusions so it cannot re-enable a forbidden retry; disabled reason format auto-requeue-disabled:<detail> matches spec (live: auto-requeue-disabled:timeout).",
+      "unit_digest": "a8e509ffb3b36c8babf2cb7e7904d1b9898cd220b1261f606a84e41d5f073bcf",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "21e18fc28637b7287e15591636d9df31381b098fffb911865288ffd14741711a"
+        }
+      ]
+    },
+    {
+      "unit_id": "kill-switch-impl",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Single decision point; handle_failure is the only router and _requeue has one caller (grep-verified); drive path (jobs.py) never requeues so no second auto-retry mechanism bypasses the flag.",
+      "unit_digest": "a8e509ffb3b36c8babf2cb7e7904d1b9898cd220b1261f606a84e41d5f073bcf",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "21e18fc28637b7287e15591636d9df31381b098fffb911865288ffd14741711a"
+        }
+      ]
+    },
+    {
+      "unit_id": "kill-switch-impl",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "7 new tests assert routing outcome/state/reason-prefix/spellings/default-on; live-behavior script exercises publish exclusion under disabled flag against a real DB.",
+      "unit_digest": "a8e509ffb3b36c8babf2cb7e7904d1b9898cd220b1261f606a84e41d5f073bcf",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "21e18fc28637b7287e15591636d9df31381b098fffb911865288ffd14741711a"
+        }
+      ]
+    },
+    {
+      "unit_id": "kill-switch-impl",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Module docstring (retry.py:18-20) and comment (42-45) state flag, values, default-on, no-restart flip; names match behavior.",
+      "unit_digest": "a8e509ffb3b36c8babf2cb7e7904d1b9898cd220b1261f606a84e41d5f073bcf",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "21e18fc28637b7287e15591636d9df31381b098fffb911865288ffd14741711a"
+        }
+      ]
+    },
+    {
+      "unit_id": "kill-switch-impl",
+      "lens": "REL",
+      "status": "REVIEWED",
+      "reason": "Env read live per routing decision; mid-process flip changes the next decision (verified); disabled path reuses the atomic _to_review transaction.",
+      "unit_digest": "a8e509ffb3b36c8babf2cb7e7904d1b9898cd220b1261f606a84e41d5f073bcf",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "21e18fc28637b7287e15591636d9df31381b098fffb911865288ffd14741711a"
+        }
+      ]
+    },
+    {
+      "unit_id": "kill-switch-impl",
+      "lens": "DAT",
+      "status": "REVIEWED",
+      "reason": "_requeue and _to_review commit state+audit+cost in one explicit transaction; disabled path uses the identical _to_review transaction, no partial-row risk.",
+      "unit_digest": "a8e509ffb3b36c8babf2cb7e7904d1b9898cd220b1261f606a84e41d5f073bcf",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "21e18fc28637b7287e15591636d9df31381b098fffb911865288ffd14741711a"
+        }
+      ]
+    },
+    {
+      "unit_id": "kill-switch-tests",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Tests assert outcomes (routing, DB state, reason prefix, predicate boolean), not internals; parametrized spellings include whitespace/case variants ( Off , FALSE).",
+      "unit_digest": "4ca18a6f21b0d690ce73ff3574982e7562f49b0d7854997cafd5555fcab3a751",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "21e18fc28637b7287e15591636d9df31381b098fffb911865288ffd14741711a"
+        }
+      ]
+    },
+    {
+      "unit_id": "kill-switch-tests",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "New tests reuse existing fixture style (env, _claim_pipeline_job); no new harness layering.",
+      "unit_digest": "4ca18a6f21b0d690ce73ff3574982e7562f49b0d7854997cafd5555fcab3a751",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "21e18fc28637b7287e15591636d9df31381b098fffb911865288ffd14741711a"
+        }
+      ]
+    },
+    {
+      "unit_id": "kill-switch-tests",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "7 new tests target exactly the new branch; disabled-case test asserts the auto-requeue-disabled: reason string that exists nowhere pre-change, so it fails against the broken implementation.",
+      "unit_digest": "4ca18a6f21b0d690ce73ff3574982e7562f49b0d7854997cafd5555fcab3a751",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "21e18fc28637b7287e15591636d9df31381b098fffb911865288ffd14741711a"
+        }
+      ]
+    },
+    {
+      "unit_id": "kill-switch-tests",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Test names and docstrings state the owner-visible behavior plainly.",
+      "unit_digest": "4ca18a6f21b0d690ce73ff3574982e7562f49b0d7854997cafd5555fcab3a751",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "21e18fc28637b7287e15591636d9df31381b098fffb911865288ffd14741711a"
+        }
+      ]
+    },
+    {
+      "unit_id": "work-loop-caller",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Work loop (cli.py:982) calls handle_failure once per handler exception and logs outcome; ValueError (unknown job/lost race) caught as skip; unchanged by this change.",
+      "unit_digest": "aaddd65159f835fd09c9d496275d48a0c2f714aedd37728a4d48aa9deaba7a25",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "21e18fc28637b7287e15591636d9df31381b098fffb911865288ffd14741711a"
+        }
+      ]
+    },
+    {
+      "unit_id": "work-loop-caller",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Work loop is the single integration boundary; the flag needs no CLI plumbing because the read happens inside the router.",
+      "unit_digest": "aaddd65159f835fd09c9d496275d48a0c2f714aedd37728a4d48aa9deaba7a25",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "21e18fc28637b7287e15591636d9df31381b098fffb911865288ffd14741711a"
+        }
+      ]
+    },
+    {
+      "unit_id": "work-loop-caller",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "CLI drive-fail + atomicity tests (21/21) exercise adjacent failure paths; routing fully covered at handle_failure level.",
+      "unit_digest": "aaddd65159f835fd09c9d496275d48a0c2f714aedd37728a4d48aa9deaba7a25",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "21e18fc28637b7287e15591636d9df31381b098fffb911865288ffd14741711a"
+        }
+      ]
+    },
+    {
+      "unit_id": "work-loop-caller",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "cli.py comments (977-979, 996-998) remain accurate under the flag (default on).",
+      "unit_digest": "aaddd65159f835fd09c9d496275d48a0c2f714aedd37728a4d48aa9deaba7a25",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "21e18fc28637b7287e15591636d9df31381b098fffb911865288ffd14741711a"
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "check_id": "check-requeue-tests",
+      "phase": "baseline",
+      "path": "devteam/checkups/checkup-hlflag-2026-09-29/checks/baseline/check-requeue-tests.json",
+      "sha256": "e8af15af5b12ad59c3bc16e735598062f62121fb0fd5131a61d538c959347430"
+    },
+    {
+      "check_id": "check-drive-atomicity",
+      "phase": "baseline",
+      "path": "devteam/checkups/checkup-hlflag-2026-09-29/checks/baseline/check-drive-atomicity.json",
+      "sha256": "1ac4e71db502ffdfc2e09252465854705a8e415f5873ff25fcc658d75c8e9d6d"
+    },
+    {
+      "check_id": "check-live-behavior",
+      "phase": "baseline",
+      "path": "devteam/checkups/checkup-hlflag-2026-09-29/checks/baseline/check-live-behavior.json",
+      "sha256": "e55ac9df3cfb87ce5e9684f4f6188c4bd30c14830b0dba6117ec0c3e3c835269"
+    },
+    {
+      "check_id": "check-requeue-tests",
+      "phase": "final",
+      "path": "devteam/checkups/checkup-hlflag-2026-09-29/checks/final/check-requeue-tests.json",
+      "sha256": "2c2265a3388e4eaa31062e5fdb607c0d26a4ec1a1cf9a452c2e8a4caa2a0e495"
+    },
+    {
+      "check_id": "check-drive-atomicity",
+      "phase": "final",
+      "path": "devteam/checkups/checkup-hlflag-2026-09-29/checks/final/check-drive-atomicity.json",
+      "sha256": "dfc64fb803fc06e13150a575ad349c59a6c6c45bb8813d9abc07601c9f424e4d"
+    },
+    {
+      "check_id": "check-live-behavior",
+      "phase": "final",
+      "path": "devteam/checkups/checkup-hlflag-2026-09-29/checks/final/check-live-behavior.json",
+      "sha256": "87a2adf65602ee4b153c13f98ec3723c5ffc4c6ba6b7b52f3f72742856d45262"
+    }
+  ],
+  "findings": [
+    {
+      "id": "FIND-01",
+      "classification": "SUPPORTED_IMPROVEMENT",
+      "claim": "ARCHITECTURE.md Retry section does not mention the HYPELAB_AUTO_REQUEUE kill switch; an operator reading the architecture doc would not learn the flag exists.",
+      "location": "ARCHITECTURE.md:91-94 (Retry section); contrast hypelab/retry.py:18-20,42-45",
+      "challenge": "No false claim made \u2014 docs gap, not a behavior defect; grepped all *.md, only module docstring/comments mention the flag.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s4-findings.md",
+          "sha256": "27df22221966f184d70e8993c99117be0196c43c89bdbe1916f9570673a05f23"
+        },
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "a6aad85dadfa062cff331cc6a938e1b1d1538c0a2b6eec614ac7fd59fd0bde4b"
+        }
+      ],
+      "resolution": "QUEUED",
+      "verification_checks": [
+        "grep -n HYPELAB_AUTO_REQUEUE ARCHITECTURE.md after update"
+      ],
+      "queue_task_id": "chief-to-assign (HL-FLAG docs follow-up)",
+      "remaining_reason": "docs-only edit; task assignment is the chief/controller decision, no task ID invented"
+    },
+    {
+      "id": "REJECTED_LEAD-01",
+      "classification": "REJECTED_LEAD",
+      "claim": "Drive path (jobs.py) bypasses the flag.",
+      "location": "hypelab/jobs.py:~187",
+      "challenge": "Drive path never auto-requeues by design (operator present); classify_failure used only for the review reason; no auto-retry exists to disable. Not a bypass.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "14a6aed1e553085c13aae7fd25d9afc38808ac1a2033df20cd254c2f0c16c346"
+        },
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s4-findings.md",
+          "sha256": "27df22221966f184d70e8993c99117be0196c43c89bdbe1916f9570673a05f23"
+        }
+      ],
+      "resolution": "REJECTED",
+      "verification_checks": [
+        "check-drive-atomicity"
+      ],
+      "queue_task_id": null,
+      "remaining_reason": "none \u2014 counter-evidence traced"
+    },
+    {
+      "id": "REJECTED_LEAD-02",
+      "classification": "REJECTED_LEAD",
+      "claim": "Unrecognized values (e.g. \"banana\") enable requeue.",
+      "location": "hypelab/retry.py:46-48",
+      "challenge": "Matches the specified default-ON opt-out design; fail-safe direction consistent with the previously accepted auto-retry behavior.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "21e18fc28637b7287e15591636d9df31381b098fffb911865288ffd14741711a"
+        },
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s4-findings.md",
+          "sha256": "27df22221966f184d70e8993c99117be0196c43c89bdbe1916f9570673a05f23"
+        }
+      ],
+      "resolution": "REJECTED",
+      "verification_checks": [
+        "check-requeue-tests"
+      ],
+      "queue_task_id": null,
+      "remaining_reason": "none \u2014 matches owner decision"
+    },
+    {
+      "id": "REJECTED_LEAD-03",
+      "classification": "REJECTED_LEAD",
+      "claim": "Per-call env read could race a mid-batch flag flip.",
+      "location": "hypelab/retry.py:253",
+      "challenge": "Mid-flight flip is the documented requirement (no code change, no restart); each failure routed independently with no cross-decision shared state.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "21e18fc28637b7287e15591636d9df31381b098fffb911865288ffd14741711a"
+        },
+        {
+          "path": "devteam/checkups/checkup-hlflag-2026-09-29/evidence/s4-findings.md",
+          "sha256": "27df22221966f184d70e8993c99117be0196c43c89bdbe1916f9570673a05f23"
+        }
+      ],
+      "resolution": "REJECTED",
+      "verification_checks": [
+        "check-live-behavior"
+      ],
+      "queue_task_id": null,
+      "remaining_reason": "none \u2014 intended behavior"
+    }
+  ],
+  "reviewer_mode": "SELF_REVIEW",
+  "reviewer_identity": "qa-worker (HL-FLAG verifier), dispatched by chief; sequential role pass by the same actor, no independent reviewer",
+  "independent_review_evidence": [],
+  "next_action": "Hand back to chief: (1) FIND-01 docs follow-up dispatch at chief discretion; (2) kill-switch change verified, ready for controller acceptance decision."
+}

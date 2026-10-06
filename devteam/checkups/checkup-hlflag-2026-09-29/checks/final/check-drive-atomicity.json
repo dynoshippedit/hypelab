@@ -1,0 +1,27 @@
+{
+  "review_id": "checkup-hlflag-2026-09-29",
+  "spec_digest": "45d33d0c956614d2bde9bf10f24b7e104a4a6af675a05753494d4aa53bb50e41",
+  "check_id": "check-drive-atomicity",
+  "phase": "final",
+  "argv": [
+    "env",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1",
+    "python3",
+    "-m",
+    "pytest",
+    "tests/test_cli_drive_fail.py",
+    "tests/test_queue_atomicity.py",
+    "-q"
+  ],
+  "cwd": "/home/dino/hypelab",
+  "started_at": "2026-09-29T18:51:22.648789+00:00",
+  "finished_at": "2026-09-29T18:51:25.220013+00:00",
+  "source_before": "9ac0288959dafff5ab96a7279808c4afa558629fdec2f5841ae7e8b4c6857bbf",
+  "source_after": "9ac0288959dafff5ab96a7279808c4afa558629fdec2f5841ae7e8b4c6857bbf",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-hlflag-2026-09-29/checks/final/check-drive-atomicity.json.log",
+    "sha256": "b97adecfecb0a8a1b62c6ebfeb5b0acaaa80924d9ae8c88dd5711f6757255a06"
+  }
+}

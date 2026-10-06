@@ -1,0 +1,21 @@
+{
+  "review_id": "checkup-hlflag-2026-09-29",
+  "spec_digest": "45d33d0c956614d2bde9bf10f24b7e104a4a6af675a05753494d4aa53bb50e41",
+  "check_id": "check-live-behavior",
+  "phase": "baseline",
+  "argv": [
+    "python3",
+    "/home/dino/hypelab/devteam/checkups/checkup-hlflag-2026-09-29/evidence/live_behavior_verify.py"
+  ],
+  "cwd": "/home/dino/hypelab",
+  "started_at": "2026-09-29T18:50:07.731947+00:00",
+  "finished_at": "2026-09-29T18:50:07.847423+00:00",
+  "source_before": "9ac0288959dafff5ab96a7279808c4afa558629fdec2f5841ae7e8b4c6857bbf",
+  "source_after": "9ac0288959dafff5ab96a7279808c4afa558629fdec2f5841ae7e8b4c6857bbf",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-hlflag-2026-09-29/checks/baseline/check-live-behavior.json.log",
+    "sha256": "e65daa663d74585ef5adb38ea0ed5e74506f57c96643b66de86897bfc3c2d7b8"
+  }
+}

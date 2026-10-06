@@ -1,0 +1,441 @@
+{
+  "schema_version": "1.0",
+  "review_id": "checkup-t044-final-2026-09-29",
+  "spec_digest": "75a25ba1b00a724a0194cea5605e12dff9300f82155b2b5d0b49d5b0afcbefc3",
+  "initial_snapshot": {
+    "path": "devteam/checkups/checkup-t044-final-2026-09-29/initial.json",
+    "sha256": "b6f2b3f94bc6daebc4f2f6e1de6e43541563e4c5cb19a0e6325ddf33f1e78aa1"
+  },
+  "stages": [
+    {
+      "id": "S0",
+      "status": "PASS",
+      "summary": "scope frozen: T-044 final state (pin + 0.01 relaxed assertion + un-quarantined crash test + docs); 4 units, 3 gate checks",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s0-scope.md",
+          "sha256": "3ccc0e38e5a80762b91223cdcec84f8b60a99718c52d4d596756b31c8e7f2617"
+        }
+      ]
+    },
+    {
+      "id": "S1",
+      "status": "PASS",
+      "summary": "baseline: tree state recorded; 5x gate 5/5 green (312 passed each, sibling-executed, verified); pin fault-injection proven both ways",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "057515286a04ecd278cd892c16f212f5fa8992d7cbfbdbe9eeef8cd4438b5e58"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "status": "PASS",
+      "summary": "architecture: pin placement after skip path; derive()/gates.py out of scope by design; crash-test deterministic kill point + lease poll",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "e8322568ebb9206e389d2c380742c1795e8324ed01de0cd7e8024685195ac7d1"
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "status": "PASS",
+      "summary": "17 unit/lens cells REVIEWED with source-bound observations; 3 rejected leads with counter-evidence",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "status": "PASS",
+      "summary": "2 SUPPORTED_IMPROVEMENT findings (stale comment, stale TASKS.md); 3 rejected leads; 3 clean verifications",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s4-findings.md",
+          "sha256": "1c7839d2104d3769399aaf7b33ab9215a4fe3f7336c0e60675c55d1e407c0de1"
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "status": "PASS",
+      "summary": "2 doc fixes applied (comment waiver note, TASKS.md corrections); no product behavior changes",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s5-fix.md",
+          "sha256": "a94955bbca5084b527265187a196a2c314b3968776b604e16cc8e97d78b76779"
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "status": "PASS",
+      "summary": "gate receipts: pin/t044 baseline+final, full-suite final \u2014 all exit 0; 5x gate verified; un-quarantine confirmed",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s6-verify.md",
+          "sha256": "33f7cbfb088c5f219942eb7b1ec0fe352f255b70e28202b8dbb9fa78d6a93503"
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "status": "PASS",
+      "summary": "docs-vs-tree: 8/8 claims match; stale items fixed; uncommitted state per constraints",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "15a0ce40a26e69ee5aa1ed905cb6bcc15f4d67ceb1693691ea62ba0401972bc4"
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "status": "PASS",
+      "summary": "verdict ACCEPT pending gate; SELF_REVIEW; next action recorded",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s8-verdict.md",
+          "sha256": "c277071fce0f53f289c4dedfcd5b46b65e227d2ad144de01db34d77afc5cbec8"
+        },
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s9-interference.md",
+          "sha256": "c711ff4403402110797305facf095c024c243c53263af374b2b3fe96c4e90836"
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "unit_id": "ffmpeg-version-pin",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Version parse + OSError handling read; fault-injection proven both directions.",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    },
+    {
+      "unit_id": "ffmpeg-version-pin",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Pin after skip path; derive()/gates.py out of scope by design (audio-copy / measurement-only).",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    },
+    {
+      "unit_id": "ffmpeg-version-pin",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "check-pin-unit green baseline+final; existing skip-path tests green in 5x suite.",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    },
+    {
+      "unit_id": "ffmpeg-version-pin",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Pin comment cites experiment, rationale, fail-closed behavior.",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    },
+    {
+      "unit_id": "ffmpeg-version-pin",
+      "lens": "REL",
+      "status": "REVIEWED",
+      "reason": "Startup-only ~10ms; loud failure beats silent drift.",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    },
+    {
+      "unit_id": "t044-relaxed-assertion",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Video sha256 equality; audio length + max|d|<=0.01; symmetric decode pipeline.",
+      "unit_digest": "18f9a3021e8a21338b5403041a4a2436fe6e99e3ad212a50d2cc64eb7f0af7ab",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    },
+    {
+      "unit_id": "t044-relaxed-assertion",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "check-t044 green; crash test green in all 5 suite runs.",
+      "unit_digest": "18f9a3021e8a21338b5403041a4a2436fe6e99e3ad212a50d2cc64eb7f0af7ab",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    },
+    {
+      "unit_id": "t044-relaxed-assertion",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Tolerance comment cites measurement, margin math, waiver (S5 fix).",
+      "unit_digest": "18f9a3021e8a21338b5403041a4a2436fe6e99e3ad212a50d2cc64eb7f0af7ab",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    },
+    {
+      "unit_id": "t044-relaxed-assertion",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Matches Dino's decided fallback; 0.01 is the S0-S8-reviewed value.",
+      "unit_digest": "18f9a3021e8a21338b5403041a4a2436fe6e99e3ad212a50d2cc64eb7f0af7ab",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    },
+    {
+      "unit_id": "crash-recovery-unquarantine",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Deterministic kill point; explicit miss/early-exit errors; lease poll; atomic-output check.",
+      "unit_digest": "e6cee6fbc54a7207925f6c983aea52608769b38dc0af0c7100be811bdb5d11c7",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    },
+    {
+      "unit_id": "crash-recovery-unquarantine",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "Collected (not skipped) in default gate; green in 5x + final checks.",
+      "unit_digest": "e6cee6fbc54a7207925f6c983aea52608769b38dc0af0c7100be811bdb5d11c7",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    },
+    {
+      "unit_id": "crash-recovery-unquarantine",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Header maps criteria vs quarantined version; TASKS.md corrected (S5).",
+      "unit_digest": "e6cee6fbc54a7207925f6c983aea52608769b38dc0af0c7100be811bdb5d11c7",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    },
+    {
+      "unit_id": "crash-recovery-unquarantine",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Recovery path exonerated; quarantine machinery retained for future use.",
+      "unit_digest": "e6cee6fbc54a7207925f6c983aea52608769b38dc0af0c7100be811bdb5d11c7",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    },
+    {
+      "unit_id": "t044-documentation",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "ARCHITECTURE.md accurate; TASKS.md stale claims corrected.",
+      "unit_digest": "bde117b743e3b7239810b9424153a94210c4c1fda32defc8011a245f473a1c90",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    },
+    {
+      "unit_id": "t044-documentation",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Doc claims verified against tree (S7 8/8 match).",
+      "unit_digest": "bde117b743e3b7239810b9424153a94210c4c1fda32defc8011a245f473a1c90",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    },
+    {
+      "unit_id": "t044-documentation",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "S7 docs-vs-tree check complete; no other stale claims.",
+      "unit_digest": "bde117b743e3b7239810b9424153a94210c4c1fda32defc8011a245f473a1c90",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    },
+    {
+      "unit_id": "t044-documentation",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "Docs carry no executable behavior; covered via the checks they describe.",
+      "unit_digest": "bde117b743e3b7239810b9424153a94210c4c1fda32defc8011a245f473a1c90",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "path": "devteam/checkups/checkup-t044-final-2026-09-29/checks/baseline/check-pin-unit.json",
+      "sha256": "fd149fc37eb3b6655edbca41a471f83c82e707a1492a8d0cbd75c96a07dff03d"
+    },
+    {
+      "path": "devteam/checkups/checkup-t044-final-2026-09-29/checks/baseline/check-t044.json",
+      "sha256": "a6ef448eed3509c8597c82c73d47b7c9f05648347a6f08aa1f81c7e1d6ec3f7c"
+    },
+    {
+      "path": "devteam/checkups/checkup-t044-final-2026-09-29/checks/final/check-full-suite.json",
+      "sha256": "1c7ce8a390a72395658c786239106cf4721f9d14552bed576674cb0f46ad5fb4"
+    },
+    {
+      "path": "devteam/checkups/checkup-t044-final-2026-09-29/checks/final/check-pin-unit.json",
+      "sha256": "904e6a046c6db5777bd06f9f4ac2beeb3636b3a9eb0cdd39ceb6eec2f8b4858a"
+    },
+    {
+      "path": "devteam/checkups/checkup-t044-final-2026-09-29/checks/final/check-t044.json",
+      "sha256": "607e2fea21c4f9abc2609b511a04a932ec8914a45d5828cd98f534e884e9a3bd"
+    }
+  ],
+  "findings": [
+    {
+      "id": "FIND-01",
+      "classification": "SUPPORTED_IMPROVEMENT",
+      "claim": "Test comment said audibility exceedance was 'flagged for his call'; Dino has since waived it.",
+      "challenge": "Comment would confuse next reader; waiver recorded in memory + task brief.",
+      "location": "tests/test_t044_deterministic.py (tolerance comment block)",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s4-findings.md",
+          "sha256": "1c7839d2104d3769399aaf7b33ab9215a4fe3f7336c0e60675c55d1e407c0de1"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-t044",
+        "check-full-suite"
+      ]
+    },
+    {
+      "id": "FIND-02",
+      "classification": "SUPPORTED_IMPROVEMENT",
+      "claim": "TASKS.md claimed '312 passed / 1 skipped' and '5x did not fit time-box' \u2014 both stale.",
+      "challenge": "Quarantined original deleted (deletion accepted); 5x gate has been run 5/5 green.",
+      "location": "devteam/TASKS.md line 314 (UN-QUARANTINED entry)",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s4-findings.md",
+          "sha256": "1c7839d2104d3769399aaf7b33ab9215a4fe3f7336c0e60675c55d1e407c0de1"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-full-suite"
+      ]
+    },
+    {
+      "id": "R1",
+      "classification": "REJECTED_LEAD",
+      "claim": "Pin should also cover derive()/gates.py ffmpeg calls.",
+      "challenge": "derive() copies audio (immune by construction); gates.py calls are measurement-only. Out of scope by design.",
+      "location": "hypelab/render.py derive(); hypelab/gates.py",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ],
+      "resolution": "REJECTED"
+    },
+    {
+      "id": "R2",
+      "classification": "REJECTED_LEAD",
+      "claim": "Adopt sibling's tighter 0.005 tolerance.",
+      "challenge": "Sibling spec is stale; 0.01 is the S0-S8-reviewed value with 8.6dB margin vs 2.4dB; Dino's settled decision.",
+      "location": "tests/test_t044_deterministic.py (T044_AUDIO_TOL_AMP)",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ],
+      "resolution": "REJECTED"
+    },
+    {
+      "id": "R3",
+      "classification": "REJECTED_LEAD",
+      "claim": "Re-litigate the audibility waiver.",
+      "challenge": "Dino waived 2026-09-29; not ours to re-open. Recorded, not re-argued.",
+      "location": "memory + task brief",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-final-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "568473c76d21522e161fc37a12cd1c7cc5b7c651f017206a2a082a15cd34d984"
+        }
+      ],
+      "resolution": "REJECTED"
+    }
+  ],
+  "reviewer_mode": "SELF_REVIEW",
+  "reviewer_identity": "Muse chief-engineer subagent, T-044 finalization run 2026-09-29",
+  "next_action": "Move T-044-RELAX to done/ with the result; uncommitted T-044 tree (pin + 0.01 + un-quarantined test) awaits Dino's merge decision \u2014 no merge per constraints."
+}

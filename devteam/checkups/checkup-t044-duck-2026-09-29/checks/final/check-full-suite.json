@@ -1,0 +1,28 @@
+{
+  "review_id": "checkup-t044-duck-2026-09-29",
+  "spec_digest": "e1d3c181ca36c2ce650dadfb7e725f47f8be3cc0c3ffcf5f45d4c551e0cc53e7",
+  "check_id": "check-full-suite",
+  "phase": "final",
+  "argv": [
+    "env",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1",
+    "python3",
+    "-m",
+    "pytest",
+    "tests/",
+    "-q",
+    "-p",
+    "no:cacheprovider"
+  ],
+  "cwd": "/home/dino/hypelab",
+  "started_at": "2026-09-29T21:10:42.941503+00:00",
+  "finished_at": "2026-09-29T21:14:53.826417+00:00",
+  "source_before": "0f0aed819720abeb4586af08ae719a2e1bb5969094021de18f36b2e7cc4dd940",
+  "source_after": "0f0aed819720abeb4586af08ae719a2e1bb5969094021de18f36b2e7cc4dd940",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-t044-duck-2026-09-29/checks/final/check-full-suite.json.log",
+    "sha256": "fedead1f7f2a6cadfbbf50d36446155c1c2e657397e721ab84a72aa3f0ccdfe2"
+  }
+}

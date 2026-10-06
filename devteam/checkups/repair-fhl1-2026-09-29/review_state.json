@@ -1,0 +1,346 @@
+{
+  "schema_version": "1.0",
+  "review_id": "repair-fhl1-2026-09-29",
+  "spec_digest": "5d27f6e82c577af9e94267384ddcec4fa4357bf73eacd7c8532c934ddac77a7d",
+  "initial_snapshot": {
+    "path": "devteam/checkups/repair-fhl1-2026-09-29/initial.json",
+    "sha256": "4408e75898aedfe1f7e632f59ada08a8447d40a68af4c67a265cfda035af079d"
+  },
+  "stages": [
+    {
+      "id": "S0",
+      "status": "PASS",
+      "summary": "scope frozen: change checkup on F-HL-1, 3 units, 2 gate checks; source identity master@5c185ba + new test file (untracked)",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s0-scope.md",
+          "sha256": "35b9af9ec348da349d12abfa9ead4a0d701e187dfb9a1e5d46ad1ff98dd23619"
+        }
+      ]
+    },
+    {
+      "id": "S1",
+      "status": "PASS",
+      "summary": "baseline receipt: full suite without new tests green (312 passed, 0 skipped), matching the 2026-09-29 principal-review baseline",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "126dc98d25f14dc821157776334e0e5a109390d40b478b4ce3696e89943b92d2"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "status": "PASS",
+      "summary": "flow map: cli._render_job -> render() tmp+os.replace; heartbeat policy traced; two-worker scenario walked process by process",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "cb5a642f8ccf177fd2bacce18f2d2d5002060c4911cdf1ffe7b15932f8d6b28f"
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "status": "PASS",
+      "summary": "14 unit/lens cells REVIEWED with source-bound observations; no NOT_APPLICABLE cells",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "7079c32fe550cf4b11d9a488ca7a1d19675a31a53893f304f80ba9f5c514ff75"
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "status": "PASS",
+      "summary": "F-HL-1 challenged: sub-claim (b) stale at HEAD (temp+rename since 81aaf52), real gap was the missing regression test; F-HL-1a (no abort) split off QUEUED",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s4-findings.md",
+          "sha256": "b82f6b7045df572a34465f9e793289696849295f22e8083156a09b6461f7e9c3"
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "status": "PASS",
+      "summary": "writer evidence: mechanism verified complete (grep: single caller passes tmp); 3 regression tests added; negative control: all 3 fail against direct-write variant",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s5-fix.md",
+          "sha256": "1ccf363f0cf0422785bec8c4bc00b7fa2ee4e33d11d389a33dbe3ae7446106f0"
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "status": "PASS",
+      "summary": "final receipt: full suite 315 passed, 0 skipped (312 + 3 new); no regressions; T-044 settlement intact",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s6-verify.md",
+          "sha256": "128e7768a6ee38f2662bf981dc42d5e11e310b068ae8180b36d987d60d57882f"
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "status": "PASS",
+      "summary": "SELF_REVIEW diff challenge: test-only diff, no product change, tests fail against broken impl, no weakened assertions",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "926227a41a243954e1e6ec5724fc3f99c8224793ad37f7e2bf8b00cf7c1c890f"
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "status": "PASS",
+      "summary": "gate PASS through S8; F-HL-1 FIXED, F-HL-1a QUEUED for owner decision; handback to chief/parent",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s8-verdict.md",
+          "sha256": "c5da1b08708fbbf518d7da3de111ca676a10c04e901b3861c10a2e33c58fe1dc"
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "unit_id": "render-output-atomicity",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "render(): tmp=out.with_name(partial-pid) at :486, os.replace at :522 only write to final path; -y at :384 targets tmp (sole production caller :487)",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "7079c32fe550cf4b11d9a488ca7a1d19675a31a53893f304f80ba9f5c514ff75"
+        }
+      ]
+    },
+    {
+      "unit_id": "render-output-atomicity",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "temp+rename is the single output-commit boundary; derive() reuses it (:594/:618); manifest writes atomic (manifests.py:158-173)",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "7079c32fe550cf4b11d9a488ca7a1d19675a31a53893f304f80ba9f5c514ff75"
+        }
+      ]
+    },
+    {
+      "unit_id": "render-output-atomicity",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "T-044 covers single-worker SIGKILL; new tests cover two-worker lease-loss; negative control proves discrimination",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "7079c32fe550cf4b11d9a488ca7a1d19675a31a53893f304f80ba9f5c514ff75"
+        }
+      ]
+    },
+    {
+      "unit_id": "render-output-atomicity",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "mechanism documented in-code (render.py:483-485) and docstring gate-order; no user doc change needed",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "7079c32fe550cf4b11d9a488ca7a1d19675a31a53893f304f80ba9f5c514ff75"
+        }
+      ]
+    },
+    {
+      "unit_id": "render-output-atomicity",
+      "lens": "REL",
+      "status": "REVIEWED",
+      "reason": "PID-unique temps prevent interleave; orphans never read back; rename(2) atomic for gate readers",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "7079c32fe550cf4b11d9a488ca7a1d19675a31a53893f304f80ba9f5c514ff75"
+        }
+      ]
+    },
+    {
+      "unit_id": "heartbeat-lease-policy",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "heartbeat break-without-abort at cli.py:711-724 confirmed present; intentionally unchanged per chief direction",
+      "unit_digest": "aaddd65159f835fd09c9d496275d48a0c2f714aedd37728a4d48aa9deaba7a25",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "7079c32fe550cf4b11d9a488ca7a1d19675a31a53893f304f80ba9f5c514ff75"
+        }
+      ]
+    },
+    {
+      "unit_id": "heartbeat-lease-policy",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "heartbeat uses separate DB connection c2; render-thread state never shared across threads",
+      "unit_digest": "aaddd65159f835fd09c9d496275d48a0c2f714aedd37728a4d48aa9deaba7a25",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "7079c32fe550cf4b11d9a488ca7a1d19675a31a53893f304f80ba9f5c514ff75"
+        }
+      ]
+    },
+    {
+      "unit_id": "heartbeat-lease-policy",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "no test pins post-loss heartbeat behavior; out of repair scope (F-HL-1a QUEUED)",
+      "unit_digest": "aaddd65159f835fd09c9d496275d48a0c2f714aedd37728a4d48aa9deaba7a25",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "7079c32fe550cf4b11d9a488ca7a1d19675a31a53893f304f80ba9f5c514ff75"
+        }
+      ]
+    },
+    {
+      "unit_id": "heartbeat-lease-policy",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "'lease expired' print acknowledges without acting, matching reviewer observation; no doc change in scope",
+      "unit_digest": "aaddd65159f835fd09c9d496275d48a0c2f714aedd37728a4d48aa9deaba7a25",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "7079c32fe550cf4b11d9a488ca7a1d19675a31a53893f304f80ba9f5c514ff75"
+        }
+      ]
+    },
+    {
+      "unit_id": "heartbeat-lease-policy",
+      "lens": "REL",
+      "status": "REVIEWED",
+      "reason": "60s heartbeat/30-min lease/reaper path unchanged; rename makes lease-loss worker output-safe regardless",
+      "unit_digest": "aaddd65159f835fd09c9d496275d48a0c2f714aedd37728a4d48aa9deaba7a25",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "7079c32fe550cf4b11d9a488ca7a1d19675a31a53893f304f80ba9f5c514ff75"
+        }
+      ]
+    },
+    {
+      "unit_id": "regression-tests",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "3 tests assert R1/R2/R3: concurrent two-process render, kill-simulation byte-identity, argv temp-target invariant",
+      "unit_digest": "4f4b2779d16faf2863377265595ff2bf72acb1aa3fa09a83ca7d0aecffd13fb9",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "7079c32fe550cf4b11d9a488ca7a1d19675a31a53893f304f80ba9f5c514ff75"
+        }
+      ]
+    },
+    {
+      "unit_id": "regression-tests",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "tests at render() level with real ffmpeg/ffprobe; shim delegates ffprobe/version-pin to real runner",
+      "unit_digest": "4f4b2779d16faf2863377265595ff2bf72acb1aa3fa09a83ca7d0aecffd13fb9",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "7079c32fe550cf4b11d9a488ca7a1d19675a31a53893f304f80ba9f5c514ff75"
+        }
+      ]
+    },
+    {
+      "unit_id": "regression-tests",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "deterministic: T-044 video determinism for (1), hermetic shims for (2)/(3); negative control run",
+      "unit_digest": "4f4b2779d16faf2863377265595ff2bf72acb1aa3fa09a83ca7d0aecffd13fb9",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "7079c32fe550cf4b11d9a488ca7a1d19675a31a53893f304f80ba9f5c514ff75"
+        }
+      ]
+    },
+    {
+      "unit_id": "regression-tests",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "module docstring maps each test to finding, chief direction, and falsification property",
+      "unit_digest": "4f4b2779d16faf2863377265595ff2bf72acb1aa3fa09a83ca7d0aecffd13fb9",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "7079c32fe550cf4b11d9a488ca7a1d19675a31a53893f304f80ba9f5c514ff75"
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "path": "devteam/checkups/repair-fhl1-2026-09-29/checks/baseline/check-baseline-suite.json",
+      "sha256": "3b302b313ee8b06bbad62329c7d3f25d0373ecde8f495cf50839929faf9b8c32"
+    },
+    {
+      "path": "devteam/checkups/repair-fhl1-2026-09-29/checks/final/check-final-suite.json",
+      "sha256": "82a600baf600fefcb01db9efd81dc57ea4c787e4ef293f6cca2c1889aaa6bfbf"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-HL-1",
+      "classification": "CONFIRMED_DEFECT",
+      "claim": "Lease-loss/concurrent renders risked shared-output corruption; the temp+rename invariant existed but was unprotected by any regression test.",
+      "location": "hypelab/render.py:440-565 (render), hypelab/cli.py:711-724 (heartbeat); master@5c185ba",
+      "challenge": "Sub-claim (b) 'no temp file, no atomic rename' did not hold at HEAD: render() uses PID-unique temp + os.replace since 81aaf52 (verified: single production caller passes tmp; T-044 crash test references partial-<pid>). The genuine gap was the untested two-worker path. Sub-claim (a) (render continues after lease loss) is true and retained per chief direction; split as F-HL-1a.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s4-findings.md",
+          "sha256": "b82f6b7045df572a34465f9e793289696849295f22e8083156a09b6461f7e9c3"
+        },
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s5-fix.md",
+          "sha256": "1ccf363f0cf0422785bec8c4bc00b7fa2ee4e33d11d389a33dbe3ae7446106f0"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-final-suite"
+      ]
+    },
+    {
+      "id": "F-HL-1a",
+      "classification": "CONFIRMED_DEFECT",
+      "claim": "Worker render continues after lease loss (heartbeat thread breaks without aborting); both workers run to completion and transition the job.",
+      "location": "hypelab/cli.py:711-724; master@5c185ba",
+      "challenge": "Confirmed present by code read; deliberately not changed in this repair per the chief's 'does not change scheduling semantics' direction. Output corruption is prevented at the render layer regardless.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/repair-fhl1-2026-09-29/evidence/s4-findings.md",
+          "sha256": "b82f6b7045df572a34465f9e793289696849295f22e8083156a09b6461f7e9c3"
+        }
+      ],
+      "resolution": "QUEUED",
+      "queue_task_id": "chief-decision-2026-09-29",
+      "remaining_reason": "Needs Dino's call: abort-on-lease-loss vs continue-and-rename (the principal reviewer's 'Fix options (needs Dino's call)'); explicitly deferred by the repair direction for this task."
+    }
+  ],
+  "reviewer_mode": "SELF_REVIEW",
+  "reviewer_identity": "repair-engineer subagent e81a5470-6fdb-4f07-82d2-d24e647039ec, dispatched by parent orchestrator; sequential role pass by the same actor, no independent reviewer",
+  "next_action": "Hand back to parent: F-HL-1 FIXED and checkup-gated (test-only change, uncommitted per instructions); F-HL-1a QUEUED for Dino's call on the lease-loss abort policy."
+}

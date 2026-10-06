@@ -324,3 +324,19 @@ safer for a determinism gate under varying machine load than 2.4 dB;
 kept flagged for HIS call, not waived by us. Pin stays (fail-closed, no
 behavior change). Sibling's test_cli.py deletion of the superseded quarantined
 original accepted (convergent). Restored test re-verified green 2026-09-29.
+
+**T-044 FINALIZATION 2026-09-29 ~17:30 EDT (checkup-t044-final-2026-09-29):**
+5x full-suite gate GREEN -- 5/5 consecutive default-gate runs, 312 passed each,
+0 failed, 0 skipped (runs 3:43 / 4:07 / 3:56 / 3:44 / 3:25; evidence:
+devteam/checkups/t044-relax-2026-09-29/evidence/gate-5x.log, executed by
+sibling coordinator, verified by this checkup). CORRECTIONS to the UN-QUARANTINED
+entry above: (a) "1 skipped (the skip is the quarantined original)" is stale --
+the sibling DELETED the quarantined original from tests/test_cli.py and the
+deletion was accepted as convergent, so the default gate now runs 312 passed /
+0 skipped; zero @pytest.mark.quarantine markers remain on any test (conftest.py
+machinery retained). (b) "5x full-suite gate did not fit the experiment
+time-box" is superseded -- the 5x gate has now been run, 5/5 green.
+(c) Audibility: Dino WAIVED the -48.6 dBFS vs ~-50 dBFS flag 2026-09-29
+("Ok now run it again" -- accepted as inaudible); test comment updated to
+record the waiver. Tree: ffmpeg 8.1.2 pin + 0.01 (-40 dBFS) tolerance +
+un-quarantined crash-recovery test, all uncommitted per constraints.

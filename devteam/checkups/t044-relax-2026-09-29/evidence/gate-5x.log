@@ -1,0 +1,26 @@
+=== RUN 1/5 started 2026-09-29T21:05:37Z ===
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+312 passed, 3 warnings in 223.40s (0:03:43)
+=== RUN 1/5 exit=0 ===
+=== RUN 2/5 started 2026-09-29T21:09:24Z ===
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+312 passed, 3 warnings in 247.55s (0:04:07)
+=== RUN 2/5 exit=0 ===
+=== RUN 3/5 started 2026-09-29T21:13:35Z ===
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+312 passed, 3 warnings in 236.75s (0:03:56)
+=== RUN 3/5 exit=0 ===
+=== RUN 4/5 started 2026-09-29T21:17:36Z ===
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+312 passed, 3 warnings in 224.80s (0:03:44)
+=== RUN 4/5 exit=0 ===
+=== RUN 5/5 started 2026-09-29T21:21:24Z ===
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+312 passed, 3 warnings in 205.61s (0:03:25)
+=== RUN 5/5 exit=0 ===
+GATE GREEN: 5/5 full-suite runs passed

@@ -1,0 +1,28 @@
+{
+  "review_id": "checkup-t044-duck-2026-09-29",
+  "spec_digest": "e1d3c181ca36c2ce650dadfb7e725f47f8be3cc0c3ffcf5f45d4c551e0cc53e7",
+  "check_id": "check-pipeline-tests",
+  "phase": "final",
+  "argv": [
+    "env",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1",
+    "python3",
+    "-m",
+    "pytest",
+    "tests/test_pipeline.py",
+    "-q",
+    "-p",
+    "no:cacheprovider"
+  ],
+  "cwd": "/home/dino/hypelab",
+  "started_at": "2026-09-29T21:09:35.353364+00:00",
+  "finished_at": "2026-09-29T21:09:38.124393+00:00",
+  "source_before": "0f0aed819720abeb4586af08ae719a2e1bb5969094021de18f36b2e7cc4dd940",
+  "source_after": "0f0aed819720abeb4586af08ae719a2e1bb5969094021de18f36b2e7cc4dd940",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-t044-duck-2026-09-29/checks/final/check-pipeline-tests.json.log",
+    "sha256": "f56175a34d7d11e36ca552d8f4777acd09fd6fe0de588f57d1bde1a32a84b39e"
+  }
+}

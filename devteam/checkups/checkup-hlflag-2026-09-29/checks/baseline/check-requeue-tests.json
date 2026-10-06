@@ -1,0 +1,26 @@
+{
+  "review_id": "checkup-hlflag-2026-09-29",
+  "spec_digest": "45d33d0c956614d2bde9bf10f24b7e104a4a6af675a05753494d4aa53bb50e41",
+  "check_id": "check-requeue-tests",
+  "phase": "baseline",
+  "argv": [
+    "env",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1",
+    "python3",
+    "-m",
+    "pytest",
+    "tests/test_failure_requeue.py",
+    "-q"
+  ],
+  "cwd": "/home/dino/hypelab",
+  "started_at": "2026-09-29T18:50:04.095837+00:00",
+  "finished_at": "2026-09-29T18:50:05.013589+00:00",
+  "source_before": "9ac0288959dafff5ab96a7279808c4afa558629fdec2f5841ae7e8b4c6857bbf",
+  "source_after": "9ac0288959dafff5ab96a7279808c4afa558629fdec2f5841ae7e8b4c6857bbf",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-hlflag-2026-09-29/checks/baseline/check-requeue-tests.json.log",
+    "sha256": "be9d30c5b24e31b1a5880e68d99628fe48e554afb6b065e3248cccbd00cb9542"
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0",
+  "review_id": "checkup-t044-duck-2026-09-29",
+  "project_root": "/home/dino/hypelab",
+  "source_paths": [
+    "hypelab/render.py",
+    "tests/test_t044_deterministic.py",
+    "ARCHITECTURE.md"
+  ],
+  "exclusions": [
+    {
+      "pattern": ".git",
+      "reason": "Version control internals; inspect Git status separately"
+    },
+    {
+      "pattern": "__pycache__",
+      "reason": "Generated Python bytecode"
+    },
+    {
+      "pattern": "**/__pycache__",
+      "reason": "Generated Python bytecode"
+    },
+    {
+      "pattern": "devteam/checkups",
+      "reason": "Changing checkup output, not application source"
+    }
+  ],
+  "review_units": [
+    {
+      "id": "ffmpeg-version-pin",
+      "paths": [
+        "hypelab/render.py"
+      ],
+      "lenses": [
+        "COR",
+        "ARC",
+        "TST",
+        "DOC",
+        "REL"
+      ]
+    },
+    {
+      "id": "t044-assertion-relax",
+      "paths": [
+        "tests/test_t044_deterministic.py"
+      ],
+      "lenses": [
+        "COR",
+        "TST",
+        "DOC",
+        "ARC"
+      ]
+    },
+    {
+      "id": "pin-documentation",
+      "paths": [
+        "ARCHITECTURE.md"
+      ],
+      "lenses": [
+        "DOC",
+        "COR",
+        "ARC",
+        "TST"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "check-pipeline-tests",
+      "argv": [
+        "env",
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1",
+        "python3",
+        "-m",
+        "pytest",
+        "tests/test_pipeline.py",
+        "-q",
+        "-p",
+        "no:cacheprovider"
+      ],
+      "cwd": "/home/dino/hypelab",
+      "purpose": "Render-module tests incl. the mocked-subprocess gates the version pin must not disturb",
+      "timeout_seconds": 300,
+      "baseline_required": true,
+      "final_required": true
+    },
+    {
+      "id": "check-t044",
+      "argv": [
+        "env",
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1",
+        "python3",
+        "-m",
+        "pytest",
+        "tests/test_t044_deterministic.py",
+        "-q",
+        "-p",
+        "no:cacheprovider"
+      ],
+      "cwd": "/home/dino/hypelab",
+      "purpose": "T-044 deterministic crash-recovery candidate with relaxed assertion (video exact, audio within tolerance)",
+      "timeout_seconds": 900,
+      "baseline_required": true,
+      "final_required": true
+    },
+    {
+      "id": "check-full-suite",
+      "argv": [
+        "env",
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1",
+        "python3",
+        "-m",
+        "pytest",
+        "tests/",
+        "-q",
+        "-p",
+        "no:cacheprovider"
+      ],
+      "cwd": "/home/dino/hypelab",
+      "purpose": "Default-gate full suite (quarantined original stays skipped)",
+      "timeout_seconds": 3600,
+      "baseline_required": false,
+      "final_required": true
+    }
+  ]
+}

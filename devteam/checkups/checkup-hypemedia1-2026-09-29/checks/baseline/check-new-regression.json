@@ -1,0 +1,26 @@
+{
+  "review_id": "checkup-hypemedia1-2026-09-29",
+  "spec_digest": "13ac1d66710696085f417db1f98a3c8215787640a5fda26ca4cfd0714cec0175",
+  "check_id": "check-new-regression",
+  "phase": "baseline",
+  "argv": [
+    "python3",
+    "-m",
+    "pytest",
+    "tests/test_source_kinds.py",
+    "-q",
+    "-p",
+    "no:cacheprovider"
+  ],
+  "cwd": "/home/dino/hypelab",
+  "started_at": "2026-09-29T22:31:09.617993+00:00",
+  "finished_at": "2026-09-29T22:31:10.836966+00:00",
+  "source_before": "da4e6abb48487a9119c67e4c4d8116c8550fd7d87c9eb65e7793495301537c41",
+  "source_after": "da4e6abb48487a9119c67e4c4d8116c8550fd7d87c9eb65e7793495301537c41",
+  "exit_code": 1,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/checks/baseline/check-new-regression.json.log",
+    "sha256": "3ff4404517f8b5f2103b8c2e969a32dd79488b29e67ac435634ff9d472e24e02"
+  }
+}

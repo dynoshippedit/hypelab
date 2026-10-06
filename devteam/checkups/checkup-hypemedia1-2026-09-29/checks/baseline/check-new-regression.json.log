@@ -1,0 +1,178 @@
+CHECK check-new-regression
+FFF....FF                                                                [100%]
+=================================== FAILURES ===================================
+________________________ test_add_source_rejects_twitch ________________________
+
+conn = <sqlite3.Connection object at 0x7f0cfa7d31f0>
+camp = {'created_at': '2026-09-29T22:31:10+00:00', 'creator': 'Kind Creator', 'id': 'kind-camp', 'marketplace': 'test-mart', ...}
+
+    def test_add_source_rejects_twitch(conn, camp):
+        """twitch is not a listable source kind: rejected at intake, loudly."""
+        with pytest.raises(watcher_mod.WatcherError) as excinfo:
+            watcher_mod.add_source(
+                conn, campaign_id=camp["id"], kind="twitch",
+                url="https://www.twitch.tv/somechannel",
+                authorization=_auth())
+        msg = str(excinfo.value)
+        assert "twitch" in msg
+>       assert "yt_channel" in msg and "rss" in msg and "manual" in msg
+E       AssertionError: assert ('yt_channel' in 'source url rejected by campaign allowlist: host www.twitch.tv not on allowlist')
+
+tests/test_source_kinds.py:62: AssertionError
+_________________ test_add_source_rejects_other_unknown_kinds __________________
+
+conn = <sqlite3.Connection object at 0x7f0cfa64c130>
+camp = {'created_at': '2026-09-29T22:31:10+00:00', 'creator': 'Kind Creator', 'id': 'kind-camp', 'marketplace': 'test-mart', ...}
+
+    def test_add_source_rejects_other_unknown_kinds(conn, camp):
+        with pytest.raises(watcher_mod.WatcherError, match="unsupported source kind"):
+>           watcher_mod.add_source(
+                conn, campaign_id=camp["id"], kind="dailymotion",
+                url="https://www.fixture.example/v",
+                authorization=_auth())
+
+tests/test_source_kinds.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+conn = <sqlite3.Connection object at 0x7f0cfa64c130>
+
+    def add_source(conn: sqlite3.Connection, *, campaign_id: str, kind: str,
+                   url: str, authorization: dict, poll_every_s: int = 900) -> str:
+        """Register a source. The rights manifest is REQUIRED at add time —
+        fail closed: no basis, no source row."""
+        from . import campaigns as campaigns_mod
+    
+        camp = campaigns_mod.load(conn, campaign_id)  # raises if unknown
+        if kind not in ("yt_channel", "rss", "twitch", "manual"):
+>           raise WatcherError(f"unknown source kind {kind!r}")
+E           hypelab.watcher.WatcherError: unknown source kind 'dailymotion'
+
+hypelab/watcher.py:171: WatcherError
+
+During handling of the above exception, another exception occurred:
+
+conn = <sqlite3.Connection object at 0x7f0cfa64c130>
+camp = {'created_at': '2026-09-29T22:31:10+00:00', 'creator': 'Kind Creator', 'id': 'kind-camp', 'marketplace': 'test-mart', ...}
+
+    def test_add_source_rejects_other_unknown_kinds(conn, camp):
+>       with pytest.raises(watcher_mod.WatcherError, match="unsupported source kind"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'unsupported source kind'
+E         Actual message: "unknown source kind 'dailymotion'"
+
+tests/test_source_kinds.py:66: AssertionError
+_______________ test_add_source_rejects_twitch_before_url_check ________________
+
+conn = <sqlite3.Connection object at 0x7f0cfa7d36a0>
+camp = {'created_at': '2026-09-29T22:31:10+00:00', 'creator': 'Kind Creator', 'id': 'kind-camp', 'marketplace': 'test-mart', ...}
+
+    def test_add_source_rejects_twitch_before_url_check(conn, camp):
+        """Kind rejection comes first: even a garbage URL must surface the kind error."""
+        with pytest.raises(watcher_mod.WatcherError, match="unsupported source kind"):
+>           watcher_mod.add_source(
+                conn, campaign_id=camp["id"], kind="twitch",
+                url="not-a-url",
+                authorization=_auth())
+
+tests/test_source_kinds.py:76: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+conn = <sqlite3.Connection object at 0x7f0cfa7d36a0>
+
+    def add_source(conn: sqlite3.Connection, *, campaign_id: str, kind: str,
+                   url: str, authorization: dict, poll_every_s: int = 900) -> str:
+        """Register a source. The rights manifest is REQUIRED at add time —
+        fail closed: no basis, no source row."""
+        from . import campaigns as campaigns_mod
+    
+        camp = campaigns_mod.load(conn, campaign_id)  # raises if unknown
+        if kind not in ("yt_channel", "rss", "twitch", "manual"):
+            raise WatcherError(f"unknown source kind {kind!r}")
+        if not isinstance(authorization, dict) or not authorization.get("basis"):
+            raise WatcherError(
+                "source add requires a rights manifest with a 'basis' "
+                "(campaign_supplied | platform_mechanism | "
+                "explicit_permission | needs_clearance)"
+            )
+        if authorization["basis"] not in (
+            "campaign_supplied", "platform_mechanism",
+            "explicit_permission", "needs_clearance",
+        ):
+            raise WatcherError(
+                f"unknown rights basis {authorization['basis']!r}"
+            )
+        if kind in ("yt_channel", "rss", "twitch"):
+            # C5/A2: the feed URL itself must be a real http(s) URL, and when the
+            # campaign records a source_allowlist the feed's host must satisfy it.
+            # (manual listings are local files; their item URLs are checked at
+            # poll time instead.)
+            if allowlist_mod.scheme_of_url(url) not in ("http", "https") or not (
+                allowlist_mod.host_of_url(url)
+            ):
+>               raise WatcherError(
+                    f"source url must be an http(s) URL with a host for kind "
+                    f"{kind!r}: {url!r}"
+                )
+E               hypelab.watcher.WatcherError: source url must be an http(s) URL with a host for kind 'twitch': 'not-a-url'
+
+hypelab/watcher.py:193: WatcherError
+
+During handling of the above exception, another exception occurred:
+
+conn = <sqlite3.Connection object at 0x7f0cfa7d36a0>
+camp = {'created_at': '2026-09-29T22:31:10+00:00', 'creator': 'Kind Creator', 'id': 'kind-camp', 'marketplace': 'test-mart', ...}
+
+    def test_add_source_rejects_twitch_before_url_check(conn, camp):
+        """Kind rejection comes first: even a garbage URL must surface the kind error."""
+>       with pytest.raises(watcher_mod.WatcherError, match="unsupported source kind"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'unsupported source kind'
+E         Actual message: "source url must be an http(s) URL with a host for kind 'twitch': 'not-a-url'"
+
+tests/test_source_kinds.py:75: AssertionError
+___________________ test_cli_source_add_rejects_twitch_kind ____________________
+
+    def test_cli_source_add_rejects_twitch_kind():
+        """The CLI no longer advertises twitch: click.Choice rejects it (exit 2)."""
+        runner = CliRunner()
+        r = runner.invoke(cli_mod.cli, [
+            "source", "add",
+            "--campaign", "nope",
+            "--kind", "twitch",
+            "--url", "https://www.twitch.tv/x",
+            "--rights", "/tmp/definitely-missing-rights.json",
+        ])
+>       assert r.exit_code == 2, r.output
+E       AssertionError: error: cannot read rights manifest /tmp/definitely-missing-rights.json: [Errno 2] No such file or directory: '/tmp/definitely-missing-rights.json'
+E         
+E       assert 1 == 2
+E        +  where 1 = <Result SystemExit(1)>.exit_code
+
+tests/test_source_kinds.py:124: AssertionError
+_____________ test_cli_source_add_help_lists_only_supported_kinds ______________
+
+    def test_cli_source_add_help_lists_only_supported_kinds():
+        r = CliRunner().invoke(cli_mod.cli, ["source", "add", "--help"])
+        assert r.exit_code == 0, r.output
+>       assert "twitch" not in r.output
+E       AssertionError: assert 'twitch' not in 'Usage: cli ... and exit.\n'
+E         
+E         'twitch' is contained here:
+E           annel|rss|twitch|manual]
+E         ?           ++++++
+E                                             [required]
+E             --url TEXT                      Channel/playlist URL, feed URL, or
+E                                             (kind=manual) the local JSON listing file....
+E         
+E         ...Full output truncated (5 lines hidden), use '-vv' to show
+
+tests/test_source_kinds.py:131: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_source_kinds.py::test_add_source_rejects_twitch - Assertion...
+FAILED tests/test_source_kinds.py::test_add_source_rejects_other_unknown_kinds
+FAILED tests/test_source_kinds.py::test_add_source_rejects_twitch_before_url_check
+FAILED tests/test_source_kinds.py::test_cli_source_add_rejects_twitch_kind - ...
+FAILED tests/test_source_kinds.py::test_cli_source_add_help_lists_only_supported_kinds
+5 failed, 4 passed in 0.23s

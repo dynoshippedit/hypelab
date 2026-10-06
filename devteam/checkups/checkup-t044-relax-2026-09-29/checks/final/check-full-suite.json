@@ -1,0 +1,28 @@
+{
+  "review_id": "checkup-t044-relax-2026-09-29",
+  "spec_digest": "757f405267b6f2c76e749741472807616da1d0f8bcca93e99958088ab3e9402a",
+  "check_id": "check-full-suite",
+  "phase": "final",
+  "argv": [
+    "env",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1",
+    "python3",
+    "-m",
+    "pytest",
+    "tests/",
+    "-q",
+    "-p",
+    "no:cacheprovider"
+  ],
+  "cwd": "/home/dino/hypelab",
+  "started_at": "2026-09-29T21:27:08.004703+00:00",
+  "finished_at": "2026-09-29T21:30:48.484959+00:00",
+  "source_before": "effa95cfbfc380cd347728695351c3d31da0f75bacb2f040601e7aabed85054e",
+  "source_after": "effa95cfbfc380cd347728695351c3d31da0f75bacb2f040601e7aabed85054e",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-t044-relax-2026-09-29/checks/final/check-full-suite.json.log",
+    "sha256": "3bc6c8fc6674093f8bc8d3103090c146a5a6981d90744dedeb5d7430d4a0d7f0"
+  }
+}

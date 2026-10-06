@@ -1,0 +1,26 @@
+{
+  "review_id": "checkup-t044-final-2026-09-29",
+  "spec_digest": "75a25ba1b00a724a0194cea5605e12dff9300f82155b2b5d0b49d5b0afcbefc3",
+  "check_id": "check-t044",
+  "phase": "final",
+  "argv": [
+    "python3",
+    "-m",
+    "pytest",
+    "tests/test_t044_deterministic.py",
+    "-q",
+    "-p",
+    "no:cacheprovider"
+  ],
+  "cwd": "/home/dino/hypelab",
+  "started_at": "2026-09-29T21:29:45.173820+00:00",
+  "finished_at": "2026-09-29T21:30:48.585604+00:00",
+  "source_before": "73928e12ff258163cdae687b5bbdc23f2d7bd39fc55908c2c0127e186205df2a",
+  "source_after": "73928e12ff258163cdae687b5bbdc23f2d7bd39fc55908c2c0127e186205df2a",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-t044-final-2026-09-29/checks/final/check-t044.json.log",
+    "sha256": "72223b610781b7920a2b52795b0234a5c7a9d344fe95ac5eb87ef1d51aab3097"
+  }
+}

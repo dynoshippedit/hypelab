@@ -1,0 +1,15 @@
+{
+  "review_id": "checkup-t044-relax-2026-09-29",
+  "spec_digest": "757f405267b6f2c76e749741472807616da1d0f8bcca93e99958088ab3e9402a",
+  "source_digest": "effa95cfbfc380cd347728695351c3d31da0f75bacb2f040601e7aabed85054e",
+  "files": {
+    "hypelab/render.py": "a08579764a94bd04859090eeecb00ac4f9fad2d5a93b494e0cf758150c259e4d",
+    "tests/test_t044_deterministic.py": "1d69e5e5c877ec23be4068cd84648d7c34e5e6bf65adcf03b49140d39bbe81bd",
+    "tests/test_cli.py": "6707f9253f4ec8d61c15f649e049d4afb6e20979570dab6185cb41c06a2a8e0c"
+  },
+  "unit_digests": {
+    "render-revert": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+    "t044-tolerance-0005": "18f9a3021e8a21338b5403041a4a2436fe6e99e3ad212a50d2cc64eb7f0af7ab",
+    "quarantine-removal": "407f1adb6028329630fcc91e3105e042870b94ec9705eb78e55d911365c15ead"
+  }
+}

@@ -1,0 +1,328 @@
+{
+  "schema_version": "1.0",
+  "review_id": "checkup-hypemedia1-2026-09-29",
+  "spec_digest": "13ac1d66710696085f417db1f98a3c8215787640a5fda26ca4cfd0714cec0175",
+  "initial_snapshot": {
+    "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/initial.json",
+    "sha256": "94222b9983137e3fc4eddb31b432c881f5f86c5e428dde2778cc1a38471c16c5"
+  },
+  "stages": [
+    {
+      "id": "S0",
+      "status": "PASS",
+      "summary": "scope frozen: change checkup, 2 units, 2 gate checks; initial snapshot on pre-fix source",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s0-scope.md",
+          "sha256": "f49472479d715ceef837ec3491fce757f820b896afeaaf19f3952d4b3dfc69a5"
+        }
+      ]
+    },
+    {
+      "id": "S1",
+      "status": "PASS",
+      "summary": "baseline receipts on broken source: new regression 5 failed/4 passed (defect demonstrated), full suite 315 passed/9 failed (baseline intact); before-state repro logged",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "4b9a8456c4635604fac3df0d34f567a7f15d6027ac51c023d22deac06fd0afca"
+        },
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/repro-before.log",
+          "sha256": "68acb708ad24ac57a410cbbaf93d1e7730f4ac43cd583581e12edcc4dfc36f47"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "status": "PASS",
+      "summary": "flow map: CLI source add -> watcher.add_source (intake gate) -> poll/list_new_items; kind validity decided once at intake",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "e3ec044c5017c5bd4e7db657a0099dae75fcc58b5c773484f8ef2ab39d0be29f"
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "status": "PASS",
+      "summary": "12/12 unit/lens cells REVIEWED with source-bound observations; no NOT_APPLICABLE cells",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "96fc5bca4f49a51fd7d42c070b33603b639ebfcc63fc2bf6b32c66746a5a808f"
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "status": "PASS",
+      "summary": "1 CONFIRMED_DEFECT (FIND-HYPE-MEDIA-1, the twitch intake gap); counter-checked against a twitch lister existing or poll surfacing the error \u2014 neither holds",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s4-findings.md",
+          "sha256": "52ffaa8cbf58245955165a57d6e9401877374923b38f6efaa26f2c021fda3e86"
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "status": "PASS",
+      "summary": "repair engineer: twitch dropped from CLI Choice and add_source whitelist with plain-language rejection; 9 regression tests added; related instances grep-verified consistent",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s5-fix.md",
+          "sha256": "56d9a176bbb05ad08ea68c0fa4a708a8c29d3211374dbcfc00497c03010c9d59"
+        },
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/repro-after.log",
+          "sha256": "a485f734a08595c589d6bcf8c8544ae0ee7d9957c340d9927c9e1e88cd76042b"
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "status": "PASS",
+      "summary": "final checks on fixed source, both exit 0: new regression 9/9, full suite 324/324 (315 baseline + 9 new; T-044 1/1 intact)",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s6-verify.md",
+          "sha256": "aecb74445dcf23ae239d6cb297a94026642a36e0d563c3285773bed78a8eb048"
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "status": "PASS",
+      "summary": "SELF_REVIEW diff challenge: cause removed at both enforcement points; tests proven fail-on-broken; no weakened assertions; no semantic drift",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "c983e53c1e6e64e7611e145f8ba4814af4c99a5a077583baaa6ec5826c200e5b"
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "status": "PASS",
+      "summary": "gate PASS through S8; verdict ACCEPT; 0 outstanding findings; change left uncommitted per constraints",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s8-verdict.md",
+          "sha256": "3da53484ba36add4338d01b32adc5bf24b211f16a0dfe5537b126dacb4d82350"
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "unit_id": "source-intake-validation",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "add_source kind whitelist now exactly {yt_channel, rss, manual}; unsupported kinds raise WatcherError naming the supported kinds; CLI Choice mirrors the same three; twitch unreachable in the URL-validation branch (grep-verified no other twitch refs)",
+      "unit_digest": "d560c095dec45d37fa238950dfc98a4c0dfb1a1286fb2b9cc9aeea592bec3d8e",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "96fc5bca4f49a51fd7d42c070b33603b639ebfcc63fc2bf6b32c66746a5a808f"
+        }
+      ]
+    },
+    {
+      "unit_id": "source-intake-validation",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "two enforcement points (CLI parse, add_source) share one policy; no new modules, no signature or schema changes",
+      "unit_digest": "d560c095dec45d37fa238950dfc98a4c0dfb1a1286fb2b9cc9aeea592bec3d8e",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "96fc5bca4f49a51fd7d42c070b33603b639ebfcc63fc2bf6b32c66746a5a808f"
+        }
+      ]
+    },
+    {
+      "unit_id": "source-intake-validation",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "9 tests cover intake rejection (twitch, unknown kind, kind-before-URL ordering), supported-kind acceptance, poll-time fail-closed for legacy rows, CLI Choice rejection and --help content",
+      "unit_digest": "d560c095dec45d37fa238950dfc98a4c0dfb1a1286fb2b9cc9aeea592bec3d8e",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "96fc5bca4f49a51fd7d42c070b33603b639ebfcc63fc2bf6b32c66746a5a808f"
+        }
+      ]
+    },
+    {
+      "unit_id": "source-intake-validation",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "source add --help lists only supported kinds (test-pinned); remaining twitch mentions are historical devteam review notes, intentionally untouched as records",
+      "unit_digest": "d560c095dec45d37fa238950dfc98a4c0dfb1a1286fb2b9cc9aeea592bec3d8e",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "96fc5bca4f49a51fd7d42c070b33603b639ebfcc63fc2bf6b32c66746a5a808f"
+        }
+      ]
+    },
+    {
+      "unit_id": "source-intake-validation",
+      "lens": "SEC",
+      "status": "REVIEWED",
+      "reason": "intake is a fail-closed trust boundary (rights manifest + kind + allowlist); unlistable kinds rejected at intake removes the silent-dead path; no secrets handled here, no new attack surface",
+      "unit_digest": "d560c095dec45d37fa238950dfc98a4c0dfb1a1286fb2b9cc9aeea592bec3d8e",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "96fc5bca4f49a51fd7d42c070b33603b639ebfcc63fc2bf6b32c66746a5a808f"
+        }
+      ]
+    },
+    {
+      "unit_id": "source-intake-validation",
+      "lens": "API",
+      "status": "REVIEWED",
+      "reason": "add_source signature unchanged, still raises WatcherError on bad input; message text changed for unsupported kinds \u2014 grep confirms no test or caller matched the old text",
+      "unit_digest": "d560c095dec45d37fa238950dfc98a4c0dfb1a1286fb2b9cc9aeea592bec3d8e",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "96fc5bca4f49a51fd7d42c070b33603b639ebfcc63fc2bf6b32c66746a5a808f"
+        }
+      ]
+    },
+    {
+      "unit_id": "source-intake-validation",
+      "lens": "DAT",
+      "status": "REVIEWED",
+      "reason": "no schema or migration change; supported-kind rows insert exactly as before; twitch rows were never productive (poll always raised)",
+      "unit_digest": "d560c095dec45d37fa238950dfc98a4c0dfb1a1286fb2b9cc9aeea592bec3d8e",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "96fc5bca4f49a51fd7d42c070b33603b639ebfcc63fc2bf6b32c66746a5a808f"
+        }
+      ]
+    },
+    {
+      "unit_id": "source-intake-validation",
+      "lens": "REL",
+      "status": "REVIEWED",
+      "reason": "poll/claim/release/retry/heartbeat untouched; legacy twitch rows still fail closed at poll with 'unknown source kind' \u2014 loud, zero silent jobs",
+      "unit_digest": "d560c095dec45d37fa238950dfc98a4c0dfb1a1286fb2b9cc9aeea592bec3d8e",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "96fc5bca4f49a51fd7d42c070b33603b639ebfcc63fc2bf6b32c66746a5a808f"
+        }
+      ]
+    },
+    {
+      "unit_id": "regression-tests",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "assertions pin the exact rejection message, CLI exit code 2, and --help content; fixtures follow test_allowlist.py conventions",
+      "unit_digest": "aee7905ca78c9c08c594ede8f730d03ca800feedf2308d3d93bcc1136982c91c",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "96fc5bca4f49a51fd7d42c070b33603b639ebfcc63fc2bf6b32c66746a5a808f"
+        }
+      ]
+    },
+    {
+      "unit_id": "regression-tests",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "single new test file; CliRunner pattern copied from test_cli_die.py; no conftest changes",
+      "unit_digest": "aee7905ca78c9c08c594ede8f730d03ca800feedf2308d3d93bcc1136982c91c",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "96fc5bca4f49a51fd7d42c070b33603b639ebfcc63fc2bf6b32c66746a5a808f"
+        }
+      ]
+    },
+    {
+      "unit_id": "regression-tests",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "falsification demonstrated: 5/9 fail on pre-fix code (the 5 encoding the behavior change), 9/9 pass post-fix; the 4 passing on both pin invariants",
+      "unit_digest": "aee7905ca78c9c08c594ede8f730d03ca800feedf2308d3d93bcc1136982c91c",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "96fc5bca4f49a51fd7d42c070b33603b639ebfcc63fc2bf6b32c66746a5a808f"
+        }
+      ]
+    },
+    {
+      "unit_id": "regression-tests",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "module docstring states the falsification contract and the chief's fail-closed decision",
+      "unit_digest": "aee7905ca78c9c08c594ede8f730d03ca800feedf2308d3d93bcc1136982c91c",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "96fc5bca4f49a51fd7d42c070b33603b639ebfcc63fc2bf6b32c66746a5a808f"
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/checks/baseline/check-new-regression.json",
+      "sha256": "1590d32223bbaaf9b94f89641db592909c1d8409fe2838de460be811eeeb72af"
+    },
+    {
+      "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/checks/baseline/check-full-suite.json",
+      "sha256": "975310be0b40e1be18a33633e5fce81a78f750a0ab8b889a049891fed08a39c5"
+    },
+    {
+      "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/checks/final/check-new-regression.json",
+      "sha256": "df45cadef8850e7207a8ba9c4369930f7be77074677a6af729bc1f7513f17618"
+    },
+    {
+      "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/checks/final/check-full-suite.json",
+      "sha256": "c755bea4289ac737317b0f2dffbf789e8a40b4c06586e17ee307930630d0df8c"
+    }
+  ],
+  "findings": [
+    {
+      "id": "FIND-HYPE-MEDIA-1",
+      "claim": "twitch was advertised and accepted as a source kind at intake but no twitch lister exists; every poll raised WatcherError, swallowed by poll() as 'list failed', producing zero jobs silently",
+      "classification": "CONFIRMED_DEFECT",
+      "location": "hypelab/b2cli.py:157 (CLI Choice); hypelab/watcher.py:170 (add_source whitelist); hypelab/watcher.py:143-155 (list_new_items, no twitch branch)",
+      "challenge": "would be disproved by a twitch branch in list_new_items or by poll() surfacing the error to the operator; grep found no twitch lister and the pre-fix repro confirmed intake-accept + poll-raise",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/s4-findings.md",
+          "sha256": "52ffaa8cbf58245955165a57d6e9401877374923b38f6efaa26f2c021fda3e86"
+        },
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/repro-before.log",
+          "sha256": "68acb708ad24ac57a410cbbaf93d1e7730f4ac43cd583581e12edcc4dfc36f47"
+        },
+        {
+          "path": "devteam/checkups/checkup-hypemedia1-2026-09-29/evidence/repro-after.log",
+          "sha256": "a485f734a08595c589d6bcf8c8544ae0ee7d9957c340d9927c9e1e88cd76042b"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-new-regression",
+        "check-full-suite"
+      ],
+      "queue_task_id": null,
+      "remaining_reason": null
+    }
+  ],
+  "reviewer_mode": "SELF_REVIEW",
+  "reviewer_identity": "Repair Engineer (role muse-repair-engineer), subagent session 0be94284-aaee-4f9a-a8b5-b1a9442dc88c, task HYPE-MEDIA-1; no independent reviewer available this cycle \u2014 challenge pass performed explicitly and recorded as SELF_REVIEW",
+  "independent_review_evidence": [],
+  "next_action": "Hand back to the parent orchestrator/chief: HYPE-MEDIA-1 FIXED, gate PASS S8, suite 324/324, change left UNCOMMITTED per constraints. HYPE-MEDIA-1.json was absent from the review tree; results recorded in repair-HYPE-MEDIA-1-report.md and done/HYPE-MEDIA-1.json instead."
+}

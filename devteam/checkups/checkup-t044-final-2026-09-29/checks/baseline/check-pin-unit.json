@@ -1,0 +1,22 @@
+{
+  "review_id": "checkup-t044-final-2026-09-29",
+  "spec_digest": "75a25ba1b00a724a0194cea5605e12dff9300f82155b2b5d0b49d5b0afcbefc3",
+  "check_id": "check-pin-unit",
+  "phase": "baseline",
+  "argv": [
+    "python3",
+    "-c",
+    "import sys; sys.path.insert(0, '.'); from hypelab.render import _require_ffmpeg_version, FFMPEG_PINNED_VERSION; _require_ffmpeg_version(); assert FFMPEG_PINNED_VERSION == '8.1.2'; print('pin OK:', FFMPEG_PINNED_VERSION)"
+  ],
+  "cwd": "/home/dino/hypelab",
+  "started_at": "2026-09-29T21:28:30.917673+00:00",
+  "finished_at": "2026-09-29T21:28:31.134023+00:00",
+  "source_before": "73928e12ff258163cdae687b5bbdc23f2d7bd39fc55908c2c0127e186205df2a",
+  "source_after": "73928e12ff258163cdae687b5bbdc23f2d7bd39fc55908c2c0127e186205df2a",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-t044-final-2026-09-29/checks/baseline/check-pin-unit.json.log",
+    "sha256": "465b705703797f35837412398cd144056b17e3e65f21064eee8442da552995a0"
+  }
+}

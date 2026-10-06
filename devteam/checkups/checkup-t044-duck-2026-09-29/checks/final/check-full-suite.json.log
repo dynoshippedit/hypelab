@@ -1,0 +1,21 @@
+CHECK check-full-suite
+........................................................................ [ 23%]
+........................................................................ [ 46%]
+........................................................................ [ 69%]
+........................................................................ [ 92%]
+........................                                                 [100%]
+=============================== warnings summary ===============================
+tests/test_align.py::test_force_align_fixture_vo
+  /home/dino/.local/lib/python3.14/site-packages/audioread/rawread.py:16: DeprecationWarning: aifc was removed in Python 3.13. Please be aware that you are currently NOT using standard 'aifc', but instead a separately installed 'standard-aifc'.
+    import aifc
+
+tests/test_align.py::test_force_align_fixture_vo
+  /home/dino/.local/lib/python3.14/site-packages/audioread/rawread.py:19: DeprecationWarning: sunau was removed in Python 3.13. Please be aware that you are currently NOT using standard 'sunau', but instead a separately installed 'standard-sunau'.
+    import sunau
+
+tests/test_align.py::test_force_align_fixture_vo
+  /usr/lib64/python3.14/site-packages/gi/overrides/__init__.py:159: PyGIDeprecationWarning: GLib.unix_signal_add_full is deprecated; use GLibUnix.signal_add_full instead
+    value = getattr(proxy, attr)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+312 passed, 3 warnings in 247.17s (0:04:07)

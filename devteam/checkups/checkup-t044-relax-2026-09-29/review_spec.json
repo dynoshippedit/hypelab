@@ -1,0 +1,141 @@
+{
+  "checks": [
+    {
+      "argv": [
+        "env",
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1",
+        "python3",
+        "-m",
+        "pytest",
+        "tests/test_t044_deterministic.py",
+        "-q",
+        "-p",
+        "no:cacheprovider"
+      ],
+      "baseline_required": false,
+      "cwd": "/home/dino/hypelab",
+      "final_required": true,
+      "id": "check-t044",
+      "purpose": "T-044 crash-recovery candidate with relaxed assertion: video decoded bytes bit-identical, audio decoded PCM max |delta| <= 0.005 (2x measured peak 0.003791)",
+      "timeout_seconds": 900
+    },
+    {
+      "argv": [
+        "env",
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1",
+        "python3",
+        "-m",
+        "pytest",
+        "tests/",
+        "-q",
+        "-p",
+        "no:cacheprovider"
+      ],
+      "baseline_required": false,
+      "cwd": "/home/dino/hypelab",
+      "final_required": true,
+      "id": "check-full-suite",
+      "purpose": "Default-gate full suite after T-044 relax: quarantined original deleted, candidate active, render.py at pre-experiment state",
+      "timeout_seconds": 3600
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--stat",
+        "HEAD",
+        "--",
+        "hypelab/render.py"
+      ],
+      "baseline_required": false,
+      "cwd": "/home/dino/hypelab",
+      "final_required": true,
+      "id": "check-render-revert",
+      "purpose": "Prove hypelab/render.py has zero diff vs HEAD (pre-experiment state restored)",
+      "timeout_seconds": 60
+    },
+    {
+      "id": "check-pipeline-baseline",
+      "argv": [
+        "env",
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1",
+        "python3",
+        "-m",
+        "pytest",
+        "tests/test_pipeline.py",
+        "-q",
+        "-p",
+        "no:cacheprovider"
+      ],
+      "cwd": "/home/dino/hypelab",
+      "purpose": "Render-module tests against render.py at HEAD (pre-experiment state restored by the revert)",
+      "timeout_seconds": 300,
+      "baseline_required": true,
+      "final_required": false
+    }
+  ],
+  "exclusions": [
+    {
+      "pattern": ".git",
+      "reason": "Version control internals; inspect Git status separately"
+    },
+    {
+      "pattern": "__pycache__",
+      "reason": "Generated Python bytecode"
+    },
+    {
+      "pattern": "**/__pycache__",
+      "reason": "Generated Python bytecode"
+    },
+    {
+      "pattern": "devteam/checkups",
+      "reason": "Changing checkup output, not application source"
+    }
+  ],
+  "project_root": "/home/dino/hypelab",
+  "review_id": "checkup-t044-relax-2026-09-29",
+  "review_units": [
+    {
+      "id": "render-revert",
+      "lenses": [
+        "COR",
+        "ARC",
+        "TST",
+        "DOC"
+      ],
+      "paths": [
+        "hypelab/render.py"
+      ]
+    },
+    {
+      "id": "t044-tolerance-0005",
+      "lenses": [
+        "COR",
+        "ARC",
+        "TST",
+        "DOC"
+      ],
+      "paths": [
+        "tests/test_t044_deterministic.py"
+      ]
+    },
+    {
+      "id": "quarantine-removal",
+      "lenses": [
+        "COR",
+        "ARC",
+        "TST",
+        "DOC"
+      ],
+      "paths": [
+        "tests/test_cli.py"
+      ]
+    }
+  ],
+  "schema_version": "1.0",
+  "source_paths": [
+    "hypelab/render.py",
+    "tests/test_t044_deterministic.py",
+    "tests/test_cli.py"
+  ]
+}

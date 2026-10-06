@@ -167,8 +167,11 @@ def add_source(conn: sqlite3.Connection, *, campaign_id: str, kind: str,
     from . import campaigns as campaigns_mod
 
     camp = campaigns_mod.load(conn, campaign_id)  # raises if unknown
-    if kind not in ("yt_channel", "rss", "twitch", "manual"):
-        raise WatcherError(f"unknown source kind {kind!r}")
+    if kind not in ("yt_channel", "rss", "manual"):
+        raise WatcherError(
+            f"unsupported source kind {kind!r}: supported kinds are "
+            f"'yt_channel', 'rss', 'manual' (twitch polling is not implemented)"
+        )
     if not isinstance(authorization, dict) or not authorization.get("basis"):
         raise WatcherError(
             "source add requires a rights manifest with a 'basis' "
@@ -182,7 +185,7 @@ def add_source(conn: sqlite3.Connection, *, campaign_id: str, kind: str,
         raise WatcherError(
             f"unknown rights basis {authorization['basis']!r}"
         )
-    if kind in ("yt_channel", "rss", "twitch"):
+    if kind in ("yt_channel", "rss"):
         # C5/A2: the feed URL itself must be a real http(s) URL, and when the
         # campaign records a source_allowlist the feed's host must satisfy it.
         # (manual listings are local files; their item URLs are checked at

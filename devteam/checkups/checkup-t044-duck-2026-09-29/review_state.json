@@ -1,0 +1,395 @@
+{
+  "schema_version": "1.0",
+  "review_id": "checkup-t044-duck-2026-09-29",
+  "spec_digest": "e1d3c181ca36c2ce650dadfb7e725f47f8be3cc0c3ffcf5f45d4c551e0cc53e7",
+  "initial_snapshot": {
+    "path": "devteam/checkups/checkup-t044-duck-2026-09-29/initial.json",
+    "sha256": "7a6d8d54a2e8686d4dc9be0ff75c78cada10d3444b516badd0e922bae6532774"
+  },
+  "stages": [
+    {
+      "id": "S0",
+      "status": "PASS",
+      "summary": "scope frozen: deterministic-ducking experiment + pin + relaxed assertion; 3 gate checks; source devteam/review-2026-09-29",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s0-scope.md",
+          "sha256": "d129fd7fd4d4cc2fc3e9608680875486bf65469a861496395c80273e5935adc8"
+        }
+      ]
+    },
+    {
+      "id": "S1",
+      "status": "PASS",
+      "summary": "baseline receipts: 15/15 pipeline (181s), T-044 candidate (181s); 450-render experiment: 6 variants both arms",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "291f1a4515651905c3cc17afd0879bd3a9d98654f9cce5c33adcdb1650e2bbf3"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "status": "PASS",
+      "summary": "flow map: cli -> work -> render_cli -> render.render + _require_ffmpeg_version; sidechaincompress nondeterminism located in audio_chain",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "4b0003c2512450e0c94c9f8987375250784ec950b24b5e24b28232de20feeaaf"
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "status": "PASS",
+      "summary": "14 unit/lens cells REVIEWED with source-bound observations; flags removed after failed experiment",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c70bb203c3bf752a0343926c341b820ba42151843aeb51f286b255be1a90089e"
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "status": "PASS",
+      "summary": "0 CONFIRMED_DEFECT; FIND-01 (determinism impossible) -> assertion relaxed per Dino decision tree; 3 REJECTED_LEADs with counter-evidence",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s4-findings.md",
+          "sha256": "630ac4f741961da87619d09ff852b9038badc352fd4b0304642ea04430e2e3ae"
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "status": "PASS",
+      "summary": "VERIFY mode: no product defects; pin added as guard; relaxed assertion implemented; original stays quarantined in this review",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s5-fix.md",
+          "sha256": "af1a0b431cec5d2289102cf7a50d78659c9a27dc57d78194a99f73c069c979c5"
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "status": "PASS",
+      "summary": "final checks all exit 0: pipeline 15/15 (65s), T-044 candidate (181s), full suite 312 passed/1 skipped; pin fault-injection proven",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s6-verify.md",
+          "sha256": "a33d63e06afa49ce6b5b7fccdae992ec367369087aff368f5e7fec403e25c555"
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "status": "PASS",
+      "summary": "SELF_REVIEW diff challenge: minimal additive pin, tolerance documented with measurements, no weakened crash-recovery semantics",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "f4ec4df12cc5888bf4e04e271430c1774877f7adef52ab524a43e30c49d0bc0f"
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "status": "PASS",
+      "summary": "gate PASS through S8; verdict ACCEPT with S9 caveat; evidence complete; handback to chief",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s8-verdict.md",
+          "sha256": "4931bc33ed5ecb47afdd983ec2a06bb5b6046b88755d0e9f24c5075c9049a992"
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "unit_id": "ffmpeg-version-pin",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "source-bound observation recorded in s3-matrix.md",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c70bb203c3bf752a0343926c341b820ba42151843aeb51f286b255be1a90089e"
+        }
+      ]
+    },
+    {
+      "unit_id": "ffmpeg-version-pin",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "source-bound observation recorded in s3-matrix.md",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c70bb203c3bf752a0343926c341b820ba42151843aeb51f286b255be1a90089e"
+        }
+      ]
+    },
+    {
+      "unit_id": "ffmpeg-version-pin",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "source-bound observation recorded in s3-matrix.md",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c70bb203c3bf752a0343926c341b820ba42151843aeb51f286b255be1a90089e"
+        }
+      ]
+    },
+    {
+      "unit_id": "ffmpeg-version-pin",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "source-bound observation recorded in s3-matrix.md",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c70bb203c3bf752a0343926c341b820ba42151843aeb51f286b255be1a90089e"
+        }
+      ]
+    },
+    {
+      "unit_id": "ffmpeg-version-pin",
+      "lens": "REL",
+      "status": "REVIEWED",
+      "reason": "source-bound observation recorded in s3-matrix.md",
+      "unit_digest": "5234ad76f84680dd047ca2805d63ad46ede00be10ebdbd1d7642829e7b50d6c6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c70bb203c3bf752a0343926c341b820ba42151843aeb51f286b255be1a90089e"
+        }
+      ]
+    },
+    {
+      "unit_id": "t044-assertion-relax",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "source-bound observation recorded in s3-matrix.md",
+      "unit_digest": "0387e1431f90bb65d417fc13e84620818364f1eb62498c171c3acda7755703d2",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c70bb203c3bf752a0343926c341b820ba42151843aeb51f286b255be1a90089e"
+        }
+      ]
+    },
+    {
+      "unit_id": "t044-assertion-relax",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "source-bound observation recorded in s3-matrix.md",
+      "unit_digest": "0387e1431f90bb65d417fc13e84620818364f1eb62498c171c3acda7755703d2",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c70bb203c3bf752a0343926c341b820ba42151843aeb51f286b255be1a90089e"
+        }
+      ]
+    },
+    {
+      "unit_id": "t044-assertion-relax",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "source-bound observation recorded in s3-matrix.md",
+      "unit_digest": "0387e1431f90bb65d417fc13e84620818364f1eb62498c171c3acda7755703d2",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c70bb203c3bf752a0343926c341b820ba42151843aeb51f286b255be1a90089e"
+        }
+      ]
+    },
+    {
+      "unit_id": "t044-assertion-relax",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "source-bound observation recorded in s3-matrix.md",
+      "unit_digest": "0387e1431f90bb65d417fc13e84620818364f1eb62498c171c3acda7755703d2",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c70bb203c3bf752a0343926c341b820ba42151843aeb51f286b255be1a90089e"
+        }
+      ]
+    },
+    {
+      "unit_id": "pin-documentation",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "source-bound observation recorded in s3-matrix.md",
+      "unit_digest": "9bc0cae514f622d250a3116afa816e4c246dc45ef9478e842bab16a06138e74f",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c70bb203c3bf752a0343926c341b820ba42151843aeb51f286b255be1a90089e"
+        }
+      ]
+    },
+    {
+      "unit_id": "pin-documentation",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "source-bound observation recorded in s3-matrix.md",
+      "unit_digest": "9bc0cae514f622d250a3116afa816e4c246dc45ef9478e842bab16a06138e74f",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c70bb203c3bf752a0343926c341b820ba42151843aeb51f286b255be1a90089e"
+        }
+      ]
+    },
+    {
+      "unit_id": "pin-documentation",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "source-bound observation recorded in s3-matrix.md",
+      "unit_digest": "9bc0cae514f622d250a3116afa816e4c246dc45ef9478e842bab16a06138e74f",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c70bb203c3bf752a0343926c341b820ba42151843aeb51f286b255be1a90089e"
+        }
+      ]
+    },
+    {
+      "unit_id": "pin-documentation",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "source-bound observation recorded in s3-matrix.md",
+      "unit_digest": "9bc0cae514f622d250a3116afa816e4c246dc45ef9478e842bab16a06138e74f",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c70bb203c3bf752a0343926c341b820ba42151843aeb51f286b255be1a90089e"
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "check_id": "check-pipeline-tests",
+      "phase": "baseline",
+      "path": "devteam/checkups/checkup-t044-duck-2026-09-29/checks/baseline/check-pipeline-tests.json",
+      "sha256": "551279f0f8422b8b2f9b4df333782d2077b187f5253e5d503098d19585b7c055"
+    },
+    {
+      "check_id": "check-t044",
+      "phase": "baseline",
+      "path": "devteam/checkups/checkup-t044-duck-2026-09-29/checks/baseline/check-t044.json",
+      "sha256": "d22cc2e0a670c753384ddb8546a5dcca684f2854888a92686acbe68ebc2bde39"
+    },
+    {
+      "check_id": "check-pipeline-tests",
+      "phase": "final",
+      "path": "devteam/checkups/checkup-t044-duck-2026-09-29/checks/final/check-pipeline-tests.json",
+      "sha256": "98551a4fd2a91851ad538a2fd9d1eba78cb66a50ac942d70f86fa156a903e0ef"
+    },
+    {
+      "check_id": "check-t044",
+      "phase": "final",
+      "path": "devteam/checkups/checkup-t044-duck-2026-09-29/checks/final/check-t044.json",
+      "sha256": "c2a683f930621c57c5b8450ae6bc3fc8fb80c88f37b7ec120b3de576ca969810"
+    },
+    {
+      "check_id": "check-full-suite",
+      "phase": "final",
+      "path": "devteam/checkups/checkup-t044-duck-2026-09-29/checks/final/check-full-suite.json",
+      "sha256": "0fc6a1e86cdb8ef3038c02eae68db0c14edfc1392dd2d74da65b684dc62ad39b"
+    }
+  ],
+  "findings": [
+    {
+      "id": "FIND-01",
+      "classification": "SUPPORTED_IMPROVEMENT",
+      "claim": "Exact-SHA256 determinism assertion unachievable: sidechaincompress nondeterministic in ffmpeg 8.1.2 (450 renders, 6 variants, both single-thread arms).",
+      "location": "hypelab/render.py audio_chain; tests/test_t044_deterministic.py",
+      "challenge": "Dino decision tree anticipated this branch: relax assertion (video exact, audio tolerance) - done.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s4-findings.md",
+          "sha256": "630ac4f741961da87619d09ff852b9038badc352fd4b0304642ea04430e2e3ae"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-t044"
+      ],
+      "queue_task_id": null,
+      "remaining_reason": "none"
+    },
+    {
+      "id": "REJECTED_LEAD-01",
+      "classification": "REJECTED_LEAD",
+      "claim": "Recovery path (kill -9 / lease expiry / reclaim) causes the mismatch.",
+      "location": "hypelab/render.py render_cli",
+      "challenge": "6/6 variants appear in pure audio-chain renders with no crash/recovery involved; recovery path exonerated.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s4-findings.md",
+          "sha256": "630ac4f741961da87619d09ff852b9038badc352fd4b0304642ea04430e2e3ae"
+        }
+      ],
+      "resolution": "REJECTED",
+      "verification_checks": [
+        "check-t044"
+      ],
+      "queue_task_id": null,
+      "remaining_reason": "none"
+    },
+    {
+      "id": "REJECTED_LEAD-02",
+      "classification": "REJECTED_LEAD",
+      "claim": "AAC encoder nondeterminism explains the mismatch.",
+      "location": "hypelab/render.py render()",
+      "challenge": "PCM audio-chain renders (no AAC) show 6 variants; AAC is downstream of already-nondeterministic PCM.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s4-findings.md",
+          "sha256": "630ac4f741961da87619d09ff852b9038badc352fd4b0304642ea04430e2e3ae"
+        }
+      ],
+      "resolution": "REJECTED",
+      "verification_checks": [
+        "check-t044"
+      ],
+      "queue_task_id": null,
+      "remaining_reason": "none"
+    },
+    {
+      "id": "REJECTED_LEAD-03",
+      "classification": "REJECTED_LEAD",
+      "claim": "Single-thread flags should have fixed it; flags were not actually applied.",
+      "location": "hypelab/render.py render()",
+      "challenge": "ffmpeg 8.1.2 accepted -filter_threads 1 and -filter_complex_threads 1; 450-render experiment ran with flags confirmed in command lines.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-t044-duck-2026-09-29/evidence/s4-findings.md",
+          "sha256": "630ac4f741961da87619d09ff852b9038badc352fd4b0304642ea04430e2e3ae"
+        }
+      ],
+      "resolution": "REJECTED",
+      "verification_checks": [
+        "check-t044"
+      ],
+      "queue_task_id": null,
+      "remaining_reason": "none"
+    }
+  ],
+  "reviewer_mode": "SELF_REVIEW",
+  "reviewer_identity": "worker (T-044 experimenter), dispatched by chief; sequential role pass by the same actor, no independent reviewer",
+  "independent_review_evidence": [],
+  "next_action": "Hand back to chief: (1) adjudicate sibling conflicts (tolerance 0.01 vs 0.005, pin vs no pin, audibility call); (2) 5x full-suite decision; (3) acceptance."
+}
