@@ -1,59 +1,111 @@
-# HypeLab v2 — vertical slice
+# HypeLab v2
 
-**Architecture:** [ARCHITECTURE.md](ARCHITECTURE.md) (8 parts + 7 required outputs).
+HypeLab is a local-first Python CLI that turns a script + voiceover + clips +
+music into finished, captioned, platform-sized MP4s. An AI authoring step writes
+an edit decision list (`render.json`); a deterministic FFmpeg renderer plus
+quality gates turn that EDL into verified assets. **Book 1** (foundation / Mode
+A original video), **Book 2** (Clip Mine / Mode B), and **Book 3** (the Hype
+layer: carousel renderer, consent ledger, dry-run publishing) are all
+implemented here. **Nothing is published for real and no paid APIs or
+credentials are used** — every publish adapter's live path refuses by default.
 
-## What runs today (M1–M4 + M6 gate)
+**Architecture:** [ARCHITECTURE.md](ARCHITECTURE.md)
 
-Mode A (Original), Starter tier: script → VO → word alignment → validated
-`render.json` → deterministic ffmpeg render → captioned MP4 → quality gates.
-Job queue with leases, retries, crash recovery. Consent hard gate + publish
-dry-run. **Nothing is published for real; no paid APIs; no credentials.**
+A fuller docs rewrite (devteam task T-038) is pending owner review of
+`devteam/QUESTIONS.md` Q-001.
 
-## Setup (Threadripper)
+## Requirements
+
+- Linux. Python >= 3.12 (verified on 3.14.7).
+- System tools on PATH: `ffmpeg` with `libass` (verified 8.1.2), `espeak-ng`
+  (used by the test fixtures), `google-chrome` or `chromium` (carousel /
+  headless screenshot only), and `deno` (the JavaScript runtime that yt-dlp
+  requires for YouTube sources — Mode B only).
+- CPU-only is fine; no GPU is needed.
+
+## Install
 
 ```bash
-cd /home/dino/hypelab
-export HYPELAB_HOME=/home/dino/hypelab   # default; the DB + jobs/ live here
-python3 -m hypelab.cli doctor            # ffmpeg, whisper, edge-tts, fonts
+cd ~/hypelab
+python3 -m venv .venv
+.venv/bin/pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+.venv/bin/pip install -r requirements.txt
+.venv/bin/pip install -e .
+# exact known-good versions instead:
+# .venv/bin/pip install -r requirements-lock.txt --extra-index-url https://download.pytorch.org/whl/cpu
 ```
 
-## Vertical slice walkthrough
+The wav2vec2 CTC alignment model (`facebook/wav2vec2-base-960h`) lives in
+`HYPELAB_MODELS_DIR` (default `/home/dino/hypelab/models`, ~361 MB). The
+faster-whisper `"medium"` ASR model downloads into `~/.cache/huggingface` on
+first use (transcription, e.g. Mode B ingest). Once both are cached, set `HF_HUB_OFFLINE=1` to keep
+the pipeline fully offline.
 
-```bash
-# 1. brand kit (fixture values)
-python3 -m hypelab.cli kit new --name demo --appearance "LOCKED: ..."
-# 2. job from script
-python3 -m hypelab.cli new <kit_id> --script fixtures/script.txt --title "slice-01"
-# 3. shot prompts (paste into your generator, or attach fixture clips)
-python3 -m hypelab.cli shots <job>
-# 4. attach media (VO, music, one clip per beat)
-python3 -m hypelab.cli attach <job> vo fixtures/vo.mp3 --provenance generated:edge-tts-fixture
-python3 -m hypelab.cli attach <job> music fixtures/bed.mp3 --provenance generated:ffmpeg-fixture
-python3 -m hypelab.cli attach <job> beat:b1 fixtures/clip1.mp4 --provenance generated:ffmpeg-fixture
-# 5-8. pipeline (each enqueues a task; worker executes)
-python3 -m hypelab.cli align <job> && python3 -m hypelab.cli work --once
-python3 -m hypelab.cli plan <job>  && python3 -m hypelab.cli work --once
-python3 -m hypelab.cli render <job> --aspect 9:16,1:1 && python3 -m hypelab.cli work --once
-python3 -m hypelab.cli gates <job> && python3 -m hypelab.cli work --once
-python3 -m hypelab.cli show <job>   # state should be asset_ready
-# outputs: jobs/<job>/master.mp4, render/render_record.json, quality_report.json
-```
+## Configuration
+
+`HYPELAB_HOME` (default `/home/dino/hypelab`) is the single root. The DB,
+`work/`, `outputs/`, `logs/`, `tmp/`, and `kits/` all derive from it, and every
+command prints the resolved config at startup. Per-path overrides exist:
+`HYPELAB_DB_PATH`, `HYPELAB_WORK_DIR`, `HYPELAB_MODELS_DIR`,
+`HYPELAB_OUTPUTS_DIR`. The legacy `HYPELAB_ROOT` and `HYPELAB_DB` are still
+honored. Use a separate `HYPELAB_HOME` for experiments so the main
+`hypelab.db` is untouched.
 
 ## Tests
 
 ```bash
-python3 -m unittest discover -s tests -v
+cd ~/hypelab
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 .venv/bin/python -m pytest tests/ -q
 ```
 
-## Consent gate (expected: REFUSED without a consent record)
+324 tests, about 4 minutes on the Threadripper. The
+`PYTEST_DISABLE_PLUGIN_AUTOLOAD=1` flag avoids a broken langsmith pytest plugin
+in the user site.
+
+## Mode A walkthrough (verified 2026-10-06)
 
 ```bash
-python3 -m hypelab.cli publish <job> --target somecreator        # REFUSED (exit 3)
-python3 -m hypelab.cli publish <job> --target somecreator --real # still refused: no consent
+export HYPELAB_HOME=~/hypelab-runs/my-run      # isolated run root
+HL=~/hypelab/.venv/bin/hypelab
+$HL migrate
+$HL kit new cerebratico --from ~/hypelab/kits/cerebratico/kit.json
+$HL new --kit cerebratico --script script.txt --title my-first-cut   # prints: job <JOB_ID>
+$HL shots <JOB_ID>                       # one paste-ready prompt per beat (b1, b2, ...)
+$HL attach <JOB_ID> b1 clips/b1.mp4      # repeat for every beat
+$HL audio <JOB_ID> --vo vo.wav --music music.mp3
+$HL render <JOB_ID>
+$HL gates <JOB_ID>
 ```
 
-## What is NOT built yet
+`shots` prints one numbered prompt per beat (generate one clip per beat
+elsewhere, then attach it). `audio` force-aligns the VO to the script with
+wav2vec2 and retimes the beat boundaries to the word timestamps. `render` writes
+`work/<job>/out/9x16.mp4` (the job's target aspect). `render --aspect 1:1|16:9`
+exists but has a known state-routing bug (TASKS.md T-014), so treat other
+aspects as experimental for now. `gates` runs
+duration, loudness, first_frame, hook_budget, caption_safe, slots_filled,
+geometry, and word_confidence, then moves the job to `ready` or `gate_failed`
+with a reason in each case.
 
-M5 multi-aspect audio polish beyond 1:1 derivation, M7 carousel, M8 clip mine,
-M9 measurement/what_worked, real publish adapters (Postiz/Zernio/native stubs
-only). Stubs fail loudly with NotImplementedError — nothing is faked.
+`script.txt` has one beat per paragraph (blank-line separated); the first beat
+is the hook and must fit the 3.0 s hook budget. A worked example with real
+inputs is in `~/hypelab-runs/m1-modeA-2026-10-06` (`run-1-setup.sh`,
+`run-2-render.sh`).
+
+## Mode B and Book 3 (pointers only)
+
+Book 2 (Clip Mine) surface: `campaign add`, `source add` (requires a rights
+manifest; fails closed without one), `watch --once`, `work --once`, `moments`,
+`cut`, `tray`, `posted`. Book 3 (Hype layer) surface: `authorize`, `carousel`,
+`pitch`, `consent`, `publish` (dry-run by default; `--live` refuses). These have
+only been exercised on fixtures so far — real campaigns, sources, and
+publishing need Dino's explicit go-ahead.
+
+## Status and open work
+
+The engineering queue and open owner questions live in
+`devteam/TASKS.md` and `devteam/QUESTIONS.md` respectively. Book 1 Mode A
+(Starter) is the verified vertical slice; Books 2 and 3 are implemented but
+operate on fixtures and dry-runs only. See the ARCHITECTURE.md state machine
+for the full job lifecycle and the consent hard-gate that blocks real
+publishing.
