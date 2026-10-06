@@ -300,6 +300,17 @@ def _do_align(conn, job_id, kit, work, edl):
     norm_path = tmpdir / "script_normalized.txt"
     _write_text_atomic(norm_path, norm_text)
 
+    # Fail fast: a punctuation-only / word-less normalized script yields zero
+    # alignable tokens. Without this, align_words falls through to the
+    # faster-whisper ASR path (multi-hundred-MB model download) before failing
+    # in retime_beats. Reuse align's tokenizer on the written file so the check
+    # is identical to the one align_words itself relies on.
+    if not align_mod._script_tokens(norm_path):
+        raise align_mod.AlignError(
+            "script has no alignable words after normalization "
+            "(punctuation-only or empty lines); fix the script before aligning"
+        )
+
     vo_node = (edl.get("audio") or {}).get("vo") or {}
     vo_path = vo_node.get("path") or str(Path(work) / "assets" / "vo.mp3")
 
