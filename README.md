@@ -30,10 +30,15 @@ cd ~/hypelab
 python3 -m venv .venv
 .venv/bin/pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
 .venv/bin/pip install -r requirements.txt
-.venv/bin/pip install -e .
+.venv/bin/pip install -e .      # editable install is REQUIRED (see note)
 # exact known-good versions instead:
 # .venv/bin/pip install -r requirements-lock.txt --extra-index-url https://download.pytorch.org/whl/cpu
 ```
+
+Only the editable install (`pip install -e .`) is supported: the code reads
+`migrations/` from the repository checkout, so a plain `pip install .` /
+wheel install would be missing them (packaging migrations as package data is
+a structural change left for owner review).
 
 The wav2vec2 CTC alignment model (`facebook/wav2vec2-base-960h`) lives in
 `HYPELAB_MODELS_DIR` (default `/home/dino/hypelab/models`, ~361 MB). The
@@ -87,8 +92,10 @@ duration, loudness, first_frame, hook_budget, caption_safe, slots_filled,
 geometry, and word_confidence, then moves the job to `ready` or `gate_failed`
 with a reason in each case.
 
-`script.txt` has one beat per paragraph (blank-line separated); the first beat
-is the hook and must fit the 3.0 s hook budget. A worked example with real
+`script.txt` is split into beats on sentence-ending punctuation (`.` `!` `?`
+`…` followed by whitespace), so one sentence = one beat; blank lines do not
+split on their own. The first sentence is the hook and must fit the 3.0 s hook
+budget (keep it short). A worked example with real
 inputs is in `~/hypelab-runs/m1-modeA-2026-10-06` (`run-1-setup.sh`,
 `run-2-render.sh`).
 

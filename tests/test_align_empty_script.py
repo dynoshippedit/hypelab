@@ -31,6 +31,13 @@ def env(tmp_path, monkeypatch):
     root = tmp_path / "root"
     (root / "work").mkdir(parents=True)
     dbp = tmp_path / "t.db"
+    # Isolate fully: canonical vars win over the legacy aliases, so clear any
+    # inherited overrides and point the canonical ones at tmp_path.
+    for var in ("HYPELAB_DB_PATH", "HYPELAB_WORK_DIR", "HYPELAB_OUTPUTS_DIR",
+                "HYPELAB_LOGS_DIR", "HYPELAB_TMP_DIR", "HYPELAB_KITS_DIR"):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("HYPELAB_HOME", str(root))
+    monkeypatch.setenv("HYPELAB_DB_PATH", str(dbp))
     monkeypatch.setenv("HYPELAB_DB", str(dbp))
     monkeypatch.setenv("HYPELAB_ROOT", str(root))
     runner = CliRunner()

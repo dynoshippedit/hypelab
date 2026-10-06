@@ -29,8 +29,13 @@ test = ["pytest>=9.0"]
 [project.scripts]
 hypelab = "hypelab.cli:main"
 
+# NOTE: only `pip install -e .` is supported. migrations/ (SQL + state_3_0.py)
+# is read from the repo checkout and is not packaged.
 [tool.setuptools.packages.find]
 include = ["hypelab*"]
+
+[tool.setuptools.package-data]
+hypelab = ["weights/*.json", "pitch.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
