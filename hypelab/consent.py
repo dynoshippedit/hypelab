@@ -254,6 +254,22 @@ def gate_consent(conn: sqlite3.Connection, job_id: str,
     return ok, detail
 
 
+_CSV_FORMULA_CHARS = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _csv_safe(value):
+    """Neutralize spreadsheet formula injection in CSV exports.
+
+    A cell whose first character is one of =, +, -, @, a tab or a carriage
+    return is prefixed with a single quote so spreadsheet applications treat
+    it as literal text instead of evaluating it as a formula. Non-string values
+    (None, numbers, etc.) pass through unchanged.
+    """
+    if isinstance(value, str) and value[:1] in _CSV_FORMULA_CHARS:
+        return "'" + value
+    return value
+
+
 def export_ledger(conn: sqlite3.Connection, out_csv: str | Path) -> Path:
     """Export the consent ledger: one row per consent, with artifact hash,
     actor, scope, expiry, revocation state, jurisdiction, terms version.
@@ -276,5 +292,5 @@ def export_ledger(conn: sqlite3.Connection, out_csv: str | Path) -> Path:
             "recorded_at",
         ])
         for r in rows:
-            w.writerow(list(r))
+            w.writerow([_csv_safe(c) for c in r])
     return out
